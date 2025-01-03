@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import axios from 'axios';
+import router from 'next/router';
 
 const Login = () => {
   const [username, setUsername] = useState('');
@@ -12,13 +13,7 @@ const Login = () => {
     e.preventDefault();
 
     try {
-      const response = await axios.post('http://localhost:5001/api/auth/login', {
-        username,
-        password,
-      });
-
-      // Save the token in localStorage
-      localStorage.setItem('token', response.data.token);
+      const response = await axios.post('http://localhost:5001/api/auth/login', { username, password }, { withCredentials: true });
       setMessage('Login successful!');
       setUsername('');
       setPassword('');

@@ -2,19 +2,26 @@
 
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import axios from 'axios';
 
 const ProtectedPage = () => {
   const router = useRouter();
   const [message, setMessage] = useState('');
 
   useEffect(() => {
-    const token = localStorage.getItem('token');
-    if (!token) {
-      setMessage('You are not authorized to view this page. Redirecting...');
-      setTimeout(() => router.push('/login'), 2000);
-    } else {
-      setMessage('Welcome to the protected page!');
-    }
+    const verifyAccess = async () => {
+      try {
+        // Verify the token using cookies
+        await axios.get('http://localhost:5001/api/protected', { withCredentials: true });
+        setMessage('Welcome to the protected page!');
+      } catch (error) {
+        // Redirect if unauthorized
+        setMessage('You are not authorized to view this page. Redirecting...');
+        setTimeout(() => router.push('/login'), 2000);
+      }
+    };
+
+    verifyAccess();
   }, [router]);
 
   return (
