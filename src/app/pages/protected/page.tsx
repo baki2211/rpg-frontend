@@ -17,7 +17,7 @@ const ProtectedPage = () => {
       } catch (error) {
         // Redirect if unauthorized
         setMessage('You are not authorized to view this page. Redirecting...');
-        setTimeout(() => router.push('/login'), 2000);
+        setTimeout(() => router.push('/pages/login'), 2000);
       }
     };
 

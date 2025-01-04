@@ -16,7 +16,7 @@ const LogoutButton: React.FC = () => {
       });
 
       setIsAuthenticated(false); // Update global authentication state
-      router.push('/login'); // Redirect to login page
+      router.push('/pages/login'); // Redirect to login page
     } catch (error) {
       console.error('Error logging out:', error);
     }

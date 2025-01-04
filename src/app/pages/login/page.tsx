@@ -1,45 +1,42 @@
 'use client';
 
 import React, { useState } from 'react';
-import axios from 'axios';
 import { useRouter } from 'next/navigation';
-import { useAuth } from '../utils/AuthContext';
+import axios from 'axios';
+import { useAuth } from '../../utils/AuthContext';
 
-const Register = () => {
+const Login = () => {
   const router = useRouter();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [message, setMessage] = useState('');
-  const { isAuthenticated } = useAuth(); // Access authentication state
+  const { setIsAuthenticated } = useAuth(); // Use AuthContext to update state
 
-  // Redirect if already authenticated
-  if (isAuthenticated) {
-    router.push('/protected');
-    return null; // Prevent rendering the page
-  }
-
-  const handleRegister = async (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
 
     try {
-      const response = await axios.post('http://localhost:5001/api/auth/register', {
+      await axios.post('http://localhost:5001/api/auth/login', {
         username,
         password,
+      }, {
+        withCredentials: true,
       });
 
-      setMessage(response.data.message); // Success message
+      setMessage('Login successful!');
       setUsername('');
       setPassword('');
-      router.push('/login'); // Redirect to login page
+      setIsAuthenticated(true); // Update global authentication state
+      router.push('/pages/dashboard'); // Redirect to protected page
     } catch (error: any) {
-      setMessage(error.response?.data?.message || 'Registration failed.');
-    };
+      setMessage(error.response?.data?.message || 'Login failed.');
+    }
   };
 
   return (
     <div style={{ padding: '2rem' }}>
-      <h1>Register</h1>
-      <form onSubmit={handleRegister}>
+      <h1>Login</h1>
+      <form onSubmit={handleLogin}>
         <div>
           <label>Username:</label>
           <input
@@ -58,11 +55,11 @@ const Register = () => {
             required
           />
         </div>
-        <button type="submit">Register</button>
+        <button type="submit">Login</button>
       </form>
       {message && <p>{message}</p>}
     </div>
   );
 };
 
-export default Register;
+export default Login;

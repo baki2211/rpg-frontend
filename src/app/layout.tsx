@@ -9,7 +9,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <AuthProvider>
       <html lang="en">
         <body>
-          <NavMenu /> {/* Use NavMenu for navigation */}
+          <NavMenu />
           {children}
         </body>
       </html>
