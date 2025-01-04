@@ -1,22 +1,33 @@
 'use client';
 
 import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import axios from 'axios';
-import router from 'next/router';
+import { useAuth } from '../utils/AuthContext';
 
 const Login = () => {
+  const router = useRouter();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [message, setMessage] = useState('');
+  const { setIsAuthenticated } = useAuth(); // Use AuthContext to update state
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
 
     try {
-      const response = await axios.post('http://localhost:5001/api/auth/login', { username, password }, { withCredentials: true });
+      await axios.post('http://localhost:5001/api/auth/login', {
+        username,
+        password,
+      }, {
+        withCredentials: true,
+      });
+
       setMessage('Login successful!');
       setUsername('');
       setPassword('');
+      setIsAuthenticated(true); // Update global authentication state
+      router.push('/protected'); // Redirect to protected page
     } catch (error: any) {
       setMessage(error.response?.data?.message || 'Login failed.');
     }

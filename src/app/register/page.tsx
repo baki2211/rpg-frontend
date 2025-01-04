@@ -2,12 +2,21 @@
 
 import React, { useState } from 'react';
 import axios from 'axios';
-import Router  from 'next/router';
+import { useRouter } from 'next/navigation';
+import { useAuth } from '../utils/AuthContext';
 
 const Register = () => {
+  const router = useRouter();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [message, setMessage] = useState('');
+  const { isAuthenticated } = useAuth(); // Access authentication state
+
+  // Redirect if already authenticated
+  if (isAuthenticated) {
+    router.push('/protected');
+    return null; // Prevent rendering the page
+  }
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -21,9 +30,10 @@ const Register = () => {
       setMessage(response.data.message); // Success message
       setUsername('');
       setPassword('');
+      router.push('/login'); // Redirect to login page
     } catch (error: any) {
       setMessage(error.response?.data?.message || 'Registration failed.');
-    }
+    };
   };
 
   return (
