@@ -1,0 +1,59 @@
+'use client';
+
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+
+const MapPage = () => {
+  const [mapUrl, setMapUrl] = useState('');
+  const [locations, setLocations] = useState([]);
+
+  useEffect(() => {
+    const fetchMapAndLocations = async () => {
+      try {
+        const response = await axios.get('http://localhost:5001/api/maps', {
+          withCredentials: true,
+        });
+        setMapUrl(response.data[0]?.url || ''); // Assume one map for now
+        setLocations(response.data[0]?.locations || []);
+      } catch (error) {
+        console.error('Failed to fetch map and locations');
+      }
+    };
+
+    fetchMapAndLocations();
+  }, []);
+
+  return (
+    <div style={{ position: 'relative', padding: '2rem' }}>
+      <h1>Map</h1>
+      {mapUrl ? (
+        <div style={{ position: 'relative' }}>
+          <img src={mapUrl} alt="Map" style={{ width: '100%' }} />
+          {locations.map((location: any) => (
+            <button
+              key={location.id}
+              style={{
+                position: 'absolute',
+                top: `${location.y}%`,
+                left: `${location.x}%`,
+                transform: 'translate(-50%, -50%)',
+                background: 'red',
+                color: 'white',
+                border: 'none',
+                borderRadius: '50%',
+                padding: '5px',
+              }}
+              onClick={() => alert(`Open chat for ${location.name}`)}
+            >
+              {location.name}
+            </button>
+          ))}
+        </div>
+      ) : (
+        <p>No map available</p>
+      )}
+    </div>
+  );
+};
+
+export default MapPage;

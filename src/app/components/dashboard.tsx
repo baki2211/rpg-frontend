@@ -24,7 +24,7 @@ const Dashboard = () => {
         setMessage(response.data.message);
       } catch (error) {
         setMessage('You are not authorized to view this page. Redirecting...');
-        setTimeout(() => router.push('/login'), 2000);
+        setTimeout(() => router.push('/pages/login'), 2000);
       }
     };
 
@@ -46,7 +46,9 @@ const Dashboard = () => {
       {userData.role === 'admin' && (
         <div>
           <h2>Admin Panel</h2>
-          <a href="/admin/races">Manage Races</a>
+          <a href="/pages/admin/races">Manage Races</a>
+          <br />
+          <a href="/pages/admin/map">Manage Map</a>
         </div>
       )}
     </div>

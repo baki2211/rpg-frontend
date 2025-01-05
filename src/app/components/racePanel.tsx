@@ -88,7 +88,31 @@ const RacePanel: React.FC = () => {
           <label>Health Bonus:</label>
           <input type="number" name="healthBonus" value={newRace.healthBonus || ''} onChange={handleInputChange} />
         </div>
-        {/* Repeat for other bonuses */}
+        <div>
+          <label>Mana Bonus:</label>
+          <input type="number" name="manaBonus" value={newRace.manaBonus || ''} onChange={handleInputChange} />
+        </div>
+        <div>
+          <label>Strength Bonus:</label>
+          <input type="number" name="strengthBonus" value={newRace.strengthBonus || ''} onChange={handleInputChange} />
+        </div>
+        <div>
+          <label>Agility Bonus:</label>
+          <input type="number" name="agilityBonus" value={newRace.agilityBonus || ''} onChange={handleInputChange} />
+        </div>
+        <div>
+          <label>Intelligence Bonus:</label>
+          <input type="number" name="intelligenceBonus" value={newRace.intelligenceBonus || ''} onChange={handleInputChange} />
+        </div>
+        <div>
+          <label>Speed Bonus:</label>
+          <input type="number" name="speedBonus" value={newRace.speedBonus || ''} onChange={handleInputChange} />
+        </div>
+        <div>
+          <label>Armor Bonus:</label>
+          <input type="number" name="armorBonus" value={newRace.armorBonus  || ''} onChange={handleInputChange} />
+        </div>
+        <br />
         <button type="submit">Add Race</button>
       </form>
       {error && <p style={{ color: 'red' }}>{error}</p>}

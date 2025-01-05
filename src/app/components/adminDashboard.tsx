@@ -8,9 +8,11 @@ const AdminDashboard = () => {
       <h1>Admin Dashboard</h1>
       <ul>
         <li>
-          <a href="/admin/races">Manage Races</a>
+          <a href="/pages/admin/races">Manage Races</a>
         </li>
-        {/* Add more admin tools here */}
+        <li>
+          <a href="/pages/admin/map">Manage Map</a>
+        </li>
       </ul>
     </div>
   );
