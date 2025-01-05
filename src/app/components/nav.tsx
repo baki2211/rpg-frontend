@@ -27,6 +27,7 @@ const NavMenu: React.FC = () => {
         <>
           <a href="/pages/dashboard" style={{ marginRight: "1rem" }}>Dashboard</a>
           <a href="/pages/protected" style={{ marginRight: "1rem" }}>Protected</a>
+          <a href="/pages/map" style={{ marginRight: "1rem" }}>Map</a>
           {user?.role === 'admin' && (
             <a href="/pages/admin/dashboard" style={{ marginRight: "1rem" }}>Admin Dashboard</a>
           )}

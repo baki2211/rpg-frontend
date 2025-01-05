@@ -10,18 +10,17 @@ const MapPage = () => {
   useEffect(() => {
     const fetchMapAndLocations = async () => {
       try {
-        const response = await axios.get('http://localhost:5001/api/maps', {
-          withCredentials: true,
-        });
-        setMapUrl(response.data[0]?.url || ''); // Assume one map for now
-        setLocations(response.data[0]?.locations || []);
+        const mainMapResponse = await axios.get('http://localhost:5001/api/maps/main', { withCredentials: true });
+        setMapUrl(mainMapResponse.data.imageUrl);
+        setLocations(mainMapResponse.data.locations || []);
       } catch (error) {
-        console.error('Failed to fetch map and locations');
+        console.error('Failed to fetch main map and locations');
       }
     };
-
+  
     fetchMapAndLocations();
   }, []);
+  
 
   return (
     <div style={{ position: 'relative', padding: '2rem' }}>

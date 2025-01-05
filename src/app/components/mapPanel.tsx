@@ -4,14 +4,15 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '../utils/AuthContext';
+import { Map, Location } from '../../types/types';
 
 const AdminMapPanel = () => {
   const router = useRouter();
   const { user } = useAuth();
   const [map, setMap] = useState<File | null>(null);
   const [mapName, setMapName] = useState('');
+  const [maps, setMaps] = useState<Map[]>([]); 
   const [locations, setLocations] = useState([]);
-  const [mapId, setMapId] = useState<number | null>(null);
   const [locationData, setLocationData] = useState({
     name: '',
     description: '',
@@ -22,28 +23,29 @@ const AdminMapPanel = () => {
 
   useEffect(() => {
     if (user && user.role !== 'admin') {
-      router.push('/pages/dashboard'); // Redirect non-admins to dashboard
+      router.push('/pages/dashboard'); // Redirect non-admins to the dashboard
     }
-    fetchMapAndLocations();
+    fetchMapsAndLocations();
   }, [user, router]);
 
-  const fetchMapAndLocations = async () => {
+  const fetchMapsAndLocations = async () => {
     try {
       const response = await axios.get('http://localhost:5001/api/maps', {
         withCredentials: true,
       });
-      setMapId(response.data[0]?.id || null); // Assume one map for now
-      setLocations(response.data[0]?.locations || []);
+      setMaps(response.data); // Store all maps
+      const mainMap = response.data.find((map: any) => map.isMainMap);
+      setLocations(mainMap?.locations || []); // Use locations of the main map
     } catch (error) {
-      setErrorMessage('Failed to fetch map and locations');
+      setErrorMessage('Failed to fetch maps and locations');
     }
   };
 
   const handleMapUpload = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!map || !mapName) {
-        setErrorMessage('Map name and file are required');
-        return;
+      setErrorMessage('Map name and file are required');
+      return;
     }
 
     const formData = new FormData();
@@ -51,37 +53,57 @@ const AdminMapPanel = () => {
     formData.append('name', mapName); // The map name
 
     try {
-        await axios.post('http://localhost:5001/api/maps/new', formData, {
-            headers: { 'Content-Type': 'multipart/form-data' },
-            withCredentials: true,
-        });
-        setMap(null);
-        setMapName('');
-        fetchMapAndLocations(); // Refresh map and locations
+      await axios.post('http://localhost:5001/api/maps/new', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+        withCredentials: true,
+      });
+      setMap(null);
+      setMapName('');
+      fetchMapsAndLocations(); // Refresh maps and locations
     } catch (error) {
-        setErrorMessage('Failed to upload map');
+      setErrorMessage('Failed to upload map');
     }
-};
+  };
 
+  const handleSetMainMap = async (mapId: number) => {
+    if (!mapId) {
+      setErrorMessage('Invalid map ID');
+      return;
+    }
+    try {
+      await axios.put(`http://localhost:5001/api/maps/${mapId}/main`, {}, { withCredentials: true });
+      fetchMapsAndLocations(); // Refresh after updating main map
+    } catch (error) {
+      setErrorMessage('Failed to update main map');
+    }
+  };
 
   const handleLocationSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    if (!mapId) {
-      setErrorMessage('No map available to add location');
-      return;
-    }
-
     try {
-      await axios.post(`http://localhost:5001/api/locations/${mapId}/new`, locationData, {
+      // Fetch the main map
+      const mainMapResponse = await axios.get('http://localhost:5001/api/maps/main', { withCredentials: true });
+      console.log('Main Map Response:', mainMapResponse.data);
+      const mainMapId = mainMapResponse.data.id;
+      console.log('Main Map ID:', mainMapId);
+      if (!mainMapId) {
+        setErrorMessage('Main map not found');
+        return;
+      }
+  
+      // Add a location to the main map
+      await axios.post(`http://localhost:5001/api/locations/${mainMapId}/new`, locationData, {
         withCredentials: true,
       });
+  
       setLocationData({ name: '', description: '', x: 0, y: 0 });
-      fetchMapAndLocations(); // Refresh locations
-    } catch (error) {
-      setErrorMessage('Failed to add location');
+      fetchMapsAndLocations();
+    } catch (error: any) {
+      console.error('Failed to add location:', error.response?.data || error.message);
+      setErrorMessage('Failed to add location to the main map');
     }
   };
+  
 
   if (!user) {
     return <div>Loading...</div>; // Show a loading state while user is being fetched
@@ -93,6 +115,7 @@ const AdminMapPanel = () => {
 
       {errorMessage && <p style={{ color: 'red' }}>{errorMessage}</p>}
 
+      {/* Upload Map */}
       <form onSubmit={handleMapUpload} encType="multipart/form-data">
         <h2>Upload Map</h2>
         <div>
@@ -112,6 +135,21 @@ const AdminMapPanel = () => {
         <button type="submit">Upload Map</button>
       </form>
 
+      {/* List of Maps */}
+      <h2>Uploaded Maps</h2>
+      {maps.map((map: any) => (
+        <div key={map.id}>
+          <span>{map.name}</span>
+          <button
+            onClick={() => handleSetMainMap(map.id)}
+            disabled={map.isMainMap}
+          >
+            {map.isMainMap ? 'Main Map' : 'Set as Main'}
+          </button>
+        </div>
+      ))}
+
+      {/* Manage Locations */}
       <h2>Manage Locations</h2>
       <form onSubmit={handleLocationSubmit}>
         <div>
@@ -160,6 +198,7 @@ const AdminMapPanel = () => {
         <button type="submit">Add Location</button>
       </form>
 
+      {/* Existing Locations */}
       <h3>Existing Locations</h3>
       <ul>
         {locations.map((location: any) => (
