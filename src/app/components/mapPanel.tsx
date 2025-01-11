@@ -12,12 +12,12 @@ const AdminMapPanel = () => {
   const [map, setMap] = useState<File | null>(null);
   const [mapName, setMapName] = useState('');
   const [maps, setMaps] = useState<Map[]>([]); 
-  const [locations, setLocations] = useState([]);
+  const [locations, setLocations] = useState<Location[]>([]);
   const [locationData, setLocationData] = useState({
     name: '',
     description: '',
-    x: 0,
-    y: 0,
+    xCoordinate: 0,
+    yCoordinate: 0,
   });
   const [errorMessage, setErrorMessage] = useState('');
 
@@ -30,16 +30,28 @@ const AdminMapPanel = () => {
 
   const fetchMapsAndLocations = async () => {
     try {
+      // Fetch all maps
       const response = await axios.get('http://localhost:5001/api/maps', {
         withCredentials: true,
       });
       setMaps(response.data); // Store all maps
-      const mainMap = response.data.find((map: any) => map.isMainMap);
-      setLocations(mainMap?.locations || []); // Use locations of the main map
+  
+      // Fetch the main map
+      const mainMapResponse = await axios.get('http://localhost:5001/api/maps/main', {
+        withCredentials: true,
+      });
+      const mainMap = mainMapResponse.data;
+      setLocations(mainMap?.locations || []); // Load locations (empty if none exist)
     } catch (error) {
+      if (axios.isAxiosError(error)) {
+        console.error('Error fetching maps or main map:', error.response?.data || error.message);
+      } else {
+        console.error('Error fetching maps or main map:', error);
+      }
       setErrorMessage('Failed to fetch maps and locations');
     }
   };
+  
 
   const handleMapUpload = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -82,10 +94,12 @@ const AdminMapPanel = () => {
     e.preventDefault();
     try {
       // Fetch the main map
-      const mainMapResponse = await axios.get('http://localhost:5001/api/maps/main', { withCredentials: true });
-      console.log('Main Map Response:', mainMapResponse.data);
-      const mainMapId = mainMapResponse.data.id;
-      console.log('Main Map ID:', mainMapId);
+      const mainMapResponse = await axios.get('http://localhost:5001/api/maps/main', {
+        withCredentials: true,
+      });
+      const mainMap = mainMapResponse.data;
+      const mainMapId = mainMap.id;
+  
       if (!mainMapId) {
         setErrorMessage('Main map not found');
         return;
@@ -95,16 +109,16 @@ const AdminMapPanel = () => {
       await axios.post(`http://localhost:5001/api/locations/${mainMapId}/new`, locationData, {
         withCredentials: true,
       });
-  
-      setLocationData({ name: '', description: '', x: 0, y: 0 });
+
+      setLocationData({ name: '', description: '', xCoordinate: 0, yCoordinate: 0 });
       fetchMapsAndLocations();
     } catch (error: any) {
-      console.error('Failed to add location:', error.response?.data || error.message);
+      console.error('Failed to add location:', locationData, error.response?.data || error.message);
       setErrorMessage('Failed to add location to the main map');
     }
   };
   
-
+  
   if (!user) {
     return <div>Loading...</div>; // Show a loading state while user is being fetched
   }
@@ -177,9 +191,9 @@ const AdminMapPanel = () => {
           <label>X Coordinate:</label>
           <input
             type="number"
-            value={locationData.x}
+            value={locationData.xCoordinate}
             onChange={(e) =>
-              setLocationData({ ...locationData, x: parseFloat(e.target.value) })
+              setLocationData({ ...locationData, xCoordinate: parseFloat(e.target.value) })
             }
             required
           />
@@ -188,9 +202,9 @@ const AdminMapPanel = () => {
           <label>Y Coordinate:</label>
           <input
             type="number"
-            value={locationData.y}
+            value={locationData.yCoordinate}
             onChange={(e) =>
-              setLocationData({ ...locationData, y: parseFloat(e.target.value) })
+              setLocationData({ ...locationData, yCoordinate: parseFloat(e.target.value) })
             }
             required
           />
