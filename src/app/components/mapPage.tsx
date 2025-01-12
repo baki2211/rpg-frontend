@@ -2,8 +2,10 @@
 
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { useRouter } from 'next/navigation';
 
 const MapPage = () => {
+  const router = useRouter();
   const [mapUrl, setMapUrl] = useState('');
   const [locations, setLocations] = useState([]);
 
@@ -21,6 +23,9 @@ const MapPage = () => {
     fetchMapAndLocations();
   }, []);
   
+  const navigateToChat = (locationId: number) => {
+    router.push(`/pages/chat/${locationId}`);
+  };
 
   return (
     <div style={{ position: 'relative', padding: '2rem' }}>
@@ -41,7 +46,8 @@ const MapPage = () => {
                 borderRadius: '50%',
                 padding: '5px',
               }}
-              onClick={() => alert(`Open chat for ${location.name}`)}
+              
+              onClick={() => navigateToChat(location.id)}
             >
               {location.name}
             </button>
