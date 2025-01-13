@@ -26,7 +26,7 @@ const useWebSocket = ({ locationId, onMessage, onError, onClose }: WebSocketOpti
     let retryCount = 0;
 
     const connectWebSocket = () => {
-      ws.current = new WebSocket(`ws://localhost:5001?locationId=${locationId}`);
+      ws.current = new WebSocket(`ws://localhost:5002?locationId=${locationId}`);
 
       ws.current.onopen = () => {
         console.log(`WebSocket connection established for location: ${locationId}`);
@@ -35,6 +35,7 @@ const useWebSocket = ({ locationId, onMessage, onError, onClose }: WebSocketOpti
       };
 
       ws.current.onmessage = (event) => {
+        console.log('Message received:', JSON.parse(event.data));
         const message = JSON.parse(event.data);
         onMessage(message); // Call the onMessage callback
       };
@@ -68,7 +69,7 @@ const useWebSocket = ({ locationId, onMessage, onError, onClose }: WebSocketOpti
 
     return () => {
       if (ws.current) {
-        ws.current.close();
+        ws.current?.close();
       }
     };
   }, [locationId, onMessage, onError, onClose]);

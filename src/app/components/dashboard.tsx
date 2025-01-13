@@ -3,9 +3,11 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useRouter } from 'next/navigation';
+import CharacterPanel from './characterPanel';
 
 const Dashboard = () => {
   const router = useRouter();
+  
   interface UserData {
     username: string;
     role: string;
@@ -43,6 +45,7 @@ const Dashboard = () => {
         <li><strong>Username:</strong> {userData.username}</li>
         <li><strong>Role:</strong> {userData.role ? userData.role : 'No role assigned'}</li>
       </ul>
+      
       {userData.role === 'admin' && (
         <div>
           <h2>Admin Panel</h2>
@@ -51,6 +54,11 @@ const Dashboard = () => {
           <a href="/pages/admin/map">Manage Map</a>
         </div>
       )}
+
+      <div>
+        <h2>Character Management</h2>
+        <CharacterPanel /> {/* Render the CharacterPanel here */}
+      </div>
     </div>
   );
 };

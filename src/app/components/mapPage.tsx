@@ -28,7 +28,7 @@ const MapPage = () => {
   };
 
   return (
-    <div style={{ position: 'relative', padding: '2rem' }}>
+    <div style={{ position: 'relative', padding: '2rem', backgroundColor: '#b7abab' }}>
       {mapUrl ? (
         <div style={{ position: 'relative' }}>
           <img src={mapUrl} alt="Map-alt" style={{ width: '100%' }} />
@@ -37,8 +37,8 @@ const MapPage = () => {
               key={location.id}
               style={{
                 position: 'absolute',
-                top: `${location.y}%`,
-                left: `${location.x}%`,
+                top: `${location.yCoordinate}%`,
+                left: `${location.xCoordinate}%`,
                 transform: 'translate(-50%, -50%)',
                 background: 'red',
                 color: 'white',

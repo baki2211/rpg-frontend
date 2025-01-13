@@ -7,10 +7,10 @@ export interface Map {
   }
   
   export interface Location {
+    xCoordinate: string | number | readonly string[] | undefined;
+    yCoordinate: string | number | readonly string[] | undefined;
     id: number;
     name: string;
     description: string;
-    x: number;
-    y: number;
   }
   

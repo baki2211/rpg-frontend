@@ -11,7 +11,7 @@ const AdminMapPanel = () => {
   const { user } = useAuth();
   const [map, setMap] = useState<File | null>(null);
   const [mapName, setMapName] = useState('');
-  const [maps, setMaps] = useState<Map[]>([]); 
+  const [maps, setMaps] = useState<Map[]>([]);
   const [locations, setLocations] = useState<Location[]>([]);
   const [locationData, setLocationData] = useState({
     name: '',
@@ -19,6 +19,7 @@ const AdminMapPanel = () => {
     xCoordinate: 0,
     yCoordinate: 0,
   });
+  const [selectedLocation, setSelectedLocation] = useState<Location | null>(null); // For editing a location
   const [errorMessage, setErrorMessage] = useState('');
 
   useEffect(() => {
@@ -34,24 +35,19 @@ const AdminMapPanel = () => {
       const response = await axios.get('http://localhost:5001/api/maps', {
         withCredentials: true,
       });
-      setMaps(response.data); // Store all maps
-  
+      setMaps(response.data);
+
       // Fetch the main map
       const mainMapResponse = await axios.get('http://localhost:5001/api/maps/main', {
         withCredentials: true,
       });
       const mainMap = mainMapResponse.data;
-      setLocations(mainMap?.locations || []); // Load locations (empty if none exist)
+      setLocations(mainMap?.locations || []);
     } catch (error) {
-      if (axios.isAxiosError(error)) {
-        console.error('Error fetching maps or main map:', error.response?.data || error.message);
-      } else {
-        console.error('Error fetching maps or main map:', error);
-      }
+      console.error('Error fetching maps or locations:', error);
       setErrorMessage('Failed to fetch maps and locations');
     }
   };
-  
 
   const handleMapUpload = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -61,8 +57,8 @@ const AdminMapPanel = () => {
     }
 
     const formData = new FormData();
-    formData.append('map', map); // The file
-    formData.append('name', mapName); // The map name
+    formData.append('map', map);
+    formData.append('name', mapName);
 
     try {
       await axios.post('http://localhost:5001/api/maps/new', formData, {
@@ -71,8 +67,9 @@ const AdminMapPanel = () => {
       });
       setMap(null);
       setMapName('');
-      fetchMapsAndLocations(); // Refresh maps and locations
+      fetchMapsAndLocations();
     } catch (error) {
+      console.error('Failed to upload map:', error);
       setErrorMessage('Failed to upload map');
     }
   };
@@ -84,43 +81,57 @@ const AdminMapPanel = () => {
     }
     try {
       await axios.put(`http://localhost:5001/api/maps/${mapId}/main`, {}, { withCredentials: true });
-      fetchMapsAndLocations(); // Refresh after updating main map
+      fetchMapsAndLocations();
     } catch (error) {
+      console.error('Failed to set main map:', error);
       setErrorMessage('Failed to update main map');
     }
   };
 
   const handleLocationSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
     try {
-      // Fetch the main map
       const mainMapResponse = await axios.get('http://localhost:5001/api/maps/main', {
         withCredentials: true,
       });
-      const mainMap = mainMapResponse.data;
-      const mainMapId = mainMap.id;
-  
-      if (!mainMapId) {
-        setErrorMessage('Main map not found');
-        return;
-      }
-  
-      // Add a location to the main map
-      await axios.post(`http://localhost:5001/api/locations/${mainMapId}/new`, locationData, {
-        withCredentials: true,
-      });
+      const mainMapId = mainMapResponse.data.id;
 
-      setLocationData({ name: '', description: '', xCoordinate: 0, yCoordinate: 0 });
+      if (selectedLocation) {
+        // Update existing location
+        await axios.put(`http://localhost:5001/api/locations/${selectedLocation.id}`, selectedLocation, {
+          withCredentials: true,
+        });
+        setSelectedLocation(null);
+      } else {
+        // Add a new location
+        await axios.post(`http://localhost:5001/api/locations/${mainMapId}/new`, locationData, {
+          withCredentials: true,
+        });
+        setLocationData({ name: '', description: '', xCoordinate: 0, yCoordinate: 0 });
+      }
+
       fetchMapsAndLocations();
-    } catch (error: any) {
-      console.error('Failed to add location:', locationData, error.response?.data || error.message);
-      setErrorMessage('Failed to add location to the main map');
+    } catch (error) {
+      console.error('Failed to save location:', error);
+      setErrorMessage('Failed to save location');
     }
   };
-  
-  
+
+  const handleDeleteLocation = async (locationId: number) => {
+    try {
+      await axios.delete(`http://localhost:5001/api/locations/${locationId}`, {
+        withCredentials: true,
+      });
+      fetchMapsAndLocations();
+    } catch (error) {
+      console.error('Failed to delete location:', error);
+      setErrorMessage('Failed to delete location');
+    }
+  };
+
   if (!user) {
-    return <div>Loading...</div>; // Show a loading state while user is being fetched
+    return <div>Loading...</div>;
   }
 
   return (
@@ -151,7 +162,7 @@ const AdminMapPanel = () => {
 
       {/* List of Maps */}
       <h2>Uploaded Maps</h2>
-      {maps.map((map: any) => (
+      {maps.map((map) => (
         <div key={map.id}>
           <span>{map.name}</span>
           <button
@@ -170,9 +181,11 @@ const AdminMapPanel = () => {
           <label>Name:</label>
           <input
             type="text"
-            value={locationData.name}
+            value={selectedLocation ? selectedLocation.name : locationData.name}
             onChange={(e) =>
-              setLocationData({ ...locationData, name: e.target.value })
+              selectedLocation
+                ? setSelectedLocation({ ...selectedLocation, name: e.target.value })
+                : setLocationData({ ...locationData, name: e.target.value })
             }
             required
           />
@@ -180,9 +193,11 @@ const AdminMapPanel = () => {
         <div>
           <label>Description:</label>
           <textarea
-            value={locationData.description}
+            value={selectedLocation ? selectedLocation.description : locationData.description}
             onChange={(e) =>
-              setLocationData({ ...locationData, description: e.target.value })
+              selectedLocation
+                ? setSelectedLocation({ ...selectedLocation, description: e.target.value })
+                : setLocationData({ ...locationData, description: e.target.value })
             }
             required
           />
@@ -191,9 +206,17 @@ const AdminMapPanel = () => {
           <label>X Coordinate:</label>
           <input
             type="number"
-            value={locationData.xCoordinate}
+            value={selectedLocation ? selectedLocation.xCoordinate : locationData.xCoordinate}
             onChange={(e) =>
-              setLocationData({ ...locationData, xCoordinate: parseFloat(e.target.value) })
+              selectedLocation
+                ? setSelectedLocation({
+                    ...selectedLocation,
+                    xCoordinate: parseFloat(e.target.value),
+                  })
+                : setLocationData({
+                    ...locationData,
+                    xCoordinate: parseFloat(e.target.value),
+                  })
             }
             required
           />
@@ -202,22 +225,47 @@ const AdminMapPanel = () => {
           <label>Y Coordinate:</label>
           <input
             type="number"
-            value={locationData.yCoordinate}
+            value={selectedLocation ? selectedLocation.yCoordinate : locationData.yCoordinate}
             onChange={(e) =>
-              setLocationData({ ...locationData, yCoordinate: parseFloat(e.target.value) })
+              selectedLocation
+                ? setSelectedLocation({
+                    ...selectedLocation,
+                    yCoordinate: parseFloat(e.target.value),
+                  })
+                : setLocationData({
+                    ...locationData,
+                    yCoordinate: parseFloat(e.target.value),
+                  })
             }
             required
           />
         </div>
-        <button type="submit">Add Location</button>
+        <button type="submit">
+          {selectedLocation ? 'Update Location' : 'Add Location'}
+        </button>
+        {selectedLocation && (
+          <button onClick={() => setSelectedLocation(null)} style={{ marginLeft: '1rem' }}>
+            Cancel
+          </button>
+        )}
       </form>
 
       {/* Existing Locations */}
       <h3>Existing Locations</h3>
       <ul>
-        {locations.map((location: any) => (
+        {locations.map((location) => (
           <li key={location.id}>
-            {location.name} - {location.description}
+            <strong>{location.name}</strong> - {location.description} - (
+            {location.xCoordinate}, {location.yCoordinate})
+            <button onClick={() => setSelectedLocation(location)} style={{ marginLeft: '1rem' }}>
+              Edit
+            </button>
+            <button
+              onClick={() => handleDeleteLocation(location.id)}
+              style={{ marginLeft: '1rem', color: 'red' }}
+            >
+              Delete
+            </button>
           </li>
         ))}
       </ul>
