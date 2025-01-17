@@ -3,7 +3,6 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 
-
 interface User {
   id: number;
   username: string;
@@ -23,21 +22,21 @@ interface Character {
   surname: string;
   age: number;
   gender: string;
-  race: string;
+  race: Race;
   isActive: boolean;
 }
 
 const CharacterPanel = () => {
   const [characters, setCharacters] = useState<Character[]>([]);
-  const [races, setRaces] = useState<Race[]>([]);
+  const [races, setRaces] = useState<Race[]>([]); // Initialize as an array
   const [user, setUser] = useState<User | null>(null);
   const [characterData, setCharacterData] = useState({
-    userId: '',
+    userId: null as number | null,
     name: '',
     surname: '',
     age: 0,
     gender: '',
-    raceId: '',
+    raceId: null as number | null, // Ensure raceId is of type number or null
     stats: {
       STR: 0,
       DEX: 0,
@@ -50,10 +49,25 @@ const CharacterPanel = () => {
   const [successMessage, setSuccessMessage] = useState('');
 
   useEffect(() => {
+    fetchUser();
     fetchCharacters();
     fetchRaces();
-    fetchUser();
   }, []);
+
+  const fetchUser = async () => {
+    try {
+      const response = await axios.get('http://localhost:5001/api/user/', { withCredentials: true });
+      const fetchedUser = response.data;
+      setUser(fetchedUser);
+      setCharacterData((prev) => ({
+        ...prev,
+        userId: fetchedUser.id, // Attach userId to characterData
+      }));
+    } catch (error) {
+      console.error('Failed to fetch user:', error);
+      setErrorMessage('Failed to fetch user');
+    }
+  };
 
   const fetchCharacters = async () => {
     try {
@@ -68,34 +82,43 @@ const CharacterPanel = () => {
   const fetchRaces = async () => {
     try {
       const response = await axios.get('http://localhost:5001/api/races', { withCredentials: true });
-      setRaces(response.data);
+      setRaces(response.data); // Ensure races is an array
     } catch (error) {
       console.error('Failed to fetch races:', error);
       setErrorMessage('Failed to fetch races');
     }
   };
 
-  const fetchUser = async () => {
-    try {
-      const response = await axios.get('http://localhost:5001/api/user', { withCredentials: true });
-      setUser(response.data[0]);
-    } catch (error) {
-      console.error('Failed to fetch user:', error);
-      setErrorMessage('Failed to fetch user');
-    }
-  }
-
   const handleCharacterSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+  
+    if (!user || !characterData.userId) {
+      console.error('User or userId not found');
+      setErrorMessage('You must be logged in to create a character');
+      return;
+    }
+  
+    if (!characterData.raceId) {
+      console.error('RaceId not selected');
+      setErrorMessage('Please select a race');
+      return;
+    }
+  
+    const newCharacterData = { 
+      ...characterData,
+      userId: user.id, 
+    };
+    console.log('Submitting Character Data:', newCharacterData);
+  
     try {
-      await axios.post('http://localhost:5001/api/characters/new', characterData, { withCredentials: true });
+      await axios.post('http://localhost:5001/api/characters/new', newCharacterData, { withCredentials: true });
       setCharacterData({
-        userId: user ? user.id.toString() : '',
+        userId: user.id,
         name: '',
         surname: '',
         age: 0,
         gender: '',
-        raceId: '',
+        raceId: null,
         stats: { STR: 0, DEX: 0, RES: 0, MN: 0, CHA: 0 },
       });
       setSuccessMessage('Character created successfully');
@@ -178,16 +201,20 @@ const CharacterPanel = () => {
         <div>
           <label>Race:</label>
           <select
-            value={characterData.raceId}
-            onChange={(e) => setCharacterData({ ...characterData, raceId: e.target.value })}
+            value={characterData.raceId || ''}
+            onChange={(e) => setCharacterData({ ...characterData, raceId: parseInt(e.target.value, 10) })}
             required
           >
             <option value="">Select Race</option>
-            {races.map((race) => (
-              <option key={race.id} value={race.id}>
-                {race.name}
-              </option>
-            ))}
+    {races.length > 0 ? (
+      races.map((race) => (
+        <option key={race.id} value={race.id}>
+          {race.name}
+        </option>
+      ))
+    ) : (
+      <option value="">No races available</option>
+            )}
           </select>
         </div>
         <button type="submit">Create Character</button>
@@ -196,21 +223,23 @@ const CharacterPanel = () => {
       {/* Display Existing Characters */}
       <h3>Your Characters</h3>
       <ul>
-        {characters.map((character) => (
-          <li key={character.id}>
-            <strong>{character.name} {character.surname}</strong> ({character.race}) -{' '}
-            <em>{character.isActive ? 'Active' : 'Not Active'}</em>
-            <br />
-            <button
-              onClick={() => handleActivateCharacter(character.id)}
-              disabled={character.isActive}
-            >
-              {character.isActive ? 'Active' : 'Activate'}
-            </button>
-            <button onClick={() => handleDeleteCharacter(character.id)}>Delete</button>
-          </li>
-        ))}
-      </ul>
+    {characters.map((character) => (
+      <li key={character.id}>
+        <strong>{character.name} {character.surname}</strong> 
+        (Race: {character.race?.name || 'Unknown'}) -{' '}
+        <em>{character.isActive ? 'Active' : 'Not Active'}</em>
+        <br />
+        <button
+          onClick={() => handleActivateCharacter(character.id)}
+          disabled={character.isActive}
+        >
+          {character.isActive ? 'Active' : 'Activate'}
+        </button>
+        <button onClick={() => handleDeleteCharacter(character.id)}>Delete</button>
+      </li>
+    ))}
+  </ul>
+
     </div>
   );
 };
