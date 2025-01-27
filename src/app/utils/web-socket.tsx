@@ -35,30 +35,30 @@ const useWebSocket = ({ locationId, onMessage, onError, onClose }: WebSocketOpti
       };
 
       ws.current.onmessage = (event) => {
-        console.log('Message received:', JSON.parse(event.data));
         const message = JSON.parse(event.data);
+        console.log('Message received:', JSON.parse(event.data));
         onMessage(message); // Call the onMessage callback
       };
 
       ws.current.onerror = (event) => {
         console.error(`WebSocket error for location: ${locationId}`, event);
         setConnectionStatus('error');
-        setErrorMessage('WebSocket connection encountered an error.');
+        setErrorMessage('WebSocket connection encountered an error. Check server logs for more details.');
         if (onError) onError(event);
       };
-
+      
       ws.current.onclose = (event) => {
         console.warn(`WebSocket connection closed for location: ${locationId}`, event);
         setConnectionStatus('closed');
 
         if (retryCount < 5) {
-            console.log(`Retrying WebSocket connection in ${retryDelay / 1000} seconds...`);
-            setTimeout(connectWebSocket, retryDelay);
-            retryDelay = Math.min(retryDelay * 2, maxRetryDelay); // Exponential backoff
-            retryCount += 1;
+          console.log(`Retrying WebSocket connection in ${retryDelay / 1000} seconds...`);
+          setTimeout(connectWebSocket, retryDelay);
+          retryDelay = Math.min(retryDelay * 2, maxRetryDelay); // Exponential backoff
+          retryCount += 1;
         } else {
-            console.error('Max retry attempts reached. Unable to reconnect WebSocket.');
-            setErrorMessage('Max retry attempts reached. Please refresh the page.');
+          console.error('Max retry attempts reached. Unable to reconnect WebSocket.');
+          setErrorMessage('Max retry attempts reached. Please refresh the page.');
         }
 
         if (onClose) onClose(event);
@@ -70,15 +70,16 @@ const useWebSocket = ({ locationId, onMessage, onError, onClose }: WebSocketOpti
     return () => {
       if (ws.current) {
         ws.current?.close();
+        ws.current = null;
       }
     };
   }, [locationId, onMessage, onError, onClose]);
 
   const sendMessage = (message: any) => {
     if (ws.current && ws.current.readyState === WebSocket.OPEN) {
-      ws.current.send(JSON.stringify(message));
+      ws.current.send(JSON.stringify({ type: 'message', content: message })); // Match the structure of your message
     } else {
-      console.warn('Cannot send message: WebSocket is not open.');
+      console.warn('WebSocket is not open. Unable to send message.');
     }
   };
 

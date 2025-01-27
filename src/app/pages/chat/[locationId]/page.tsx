@@ -66,12 +66,16 @@ const ChatPage = () => {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100vh' }}>
       <div style={{ flex: 1, overflowY: 'auto', padding: '1rem', backgroundColor: '#b7abab' }}>
-        {messages.map((msg, index) => (
+          {Array.isArray(messages) && messages.length > 0 ? (
+        messages.map((msg, index) => (
           <div key={index} style={{ marginBottom: '1rem' }}>
             <strong>{msg.username}</strong> - <em>{new Date(msg.createdAt).toLocaleString()}:</em>
             <p>{msg.message}</p>
           </div>
-        ))}
+        ))
+      ) : (
+        <p>No messages yet...</p>
+      )}
       </div>
       <form onSubmit={handleSendMessage} style={{ display: 'flex', padding: '1rem', borderTop: '1px solid #ccc' }}>
         <input
