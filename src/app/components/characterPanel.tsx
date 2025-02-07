@@ -47,6 +47,9 @@ const CharacterPanel = () => {
   });
   const [errorMessage, setErrorMessage] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
+  const totalPoints = 40;
+  const allocatedPoints = Object.values(characterData.stats).reduce((sum, val) => sum + val, 0);
+  const remainingPoints = totalPoints - allocatedPoints;
 
   useEffect(() => {
     fetchUser();
@@ -89,6 +92,17 @@ const CharacterPanel = () => {
     }
   };
 
+  const handleStatChange = (stat: keyof typeof characterData.stats, value: number) => {
+    const newStats = { ...characterData.stats, [stat]: value };
+    const newTotal = Object.values(newStats).reduce((sum, val) => sum + val, 0);
+    if (newTotal > totalPoints) {
+      setErrorMessage(`You have only ${remainingPoints} points remaining.`);
+      return;
+    }
+    setCharacterData({ ...characterData, stats: newStats });
+    setErrorMessage(''); 
+  };
+
   const handleCharacterSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
   
@@ -101,6 +115,11 @@ const CharacterPanel = () => {
     if (!characterData.raceId) {
       console.error('RaceId not selected');
       setErrorMessage('Please select a race');
+      return;
+    }
+
+    if (allocatedPoints > totalPoints) {
+      setErrorMessage(`Allocated points exceed ${totalPoints}. Please adjust your stats.`);
       return;
     }
   
@@ -216,6 +235,53 @@ const CharacterPanel = () => {
       <option value="">No races available</option>
             )}
           </select>
+        </div>
+        <div>
+          <h4>Allocate Stat Points (Remaining: {remainingPoints})</h4>
+          <label>STR:</label>
+          <input
+            type="number"
+            value={characterData.stats.STR}
+            onChange={(e) => handleStatChange('STR', parseInt(e.target.value, 10))}
+            min="0"
+            required
+          />
+          <br />
+          <label>DEX:</label>
+          <input
+            type="number"
+            value={characterData.stats.DEX}
+            onChange={(e) => handleStatChange('DEX', parseInt(e.target.value, 10))}
+            min="0"
+            required
+          />
+          <br />
+          <label>RES:</label>
+          <input
+            type="number"
+            value={characterData.stats.RES}
+            onChange={(e) => handleStatChange('RES', parseInt(e.target.value, 10))}
+            min="0"
+            required
+          />
+          <br />
+          <label>MN:</label>
+          <input
+            type="number"
+            value={characterData.stats.MN}
+            onChange={(e) => handleStatChange('MN', parseInt(e.target.value, 10))}
+            min="0"
+            required
+          />
+          <br />
+          <label>CHA:</label>
+          <input
+            type="number"
+            value={characterData.stats.CHA}
+            onChange={(e) => handleStatChange('CHA', parseInt(e.target.value, 10))}
+            min="0"
+            required
+          />
         </div>
         <button type="submit">Create Character</button>
       </form>

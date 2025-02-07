@@ -1,13 +1,13 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { useAuth } from '../../../utils/AuthContext'; // Adjust the path as needed
+import { useAuth } from '../../../utils/AuthContext'; 
 import { useParams } from 'next/navigation';
-import useWebSocket from '../../../utils/web-socket'; // Import the WebSocket logic
+import useWebSocket from '../../../utils/web-socket'; 
 
 const ChatPage = () => {
-  const { user } = useAuth(); // Retrieve the logged-in user
-  const params = useParams(); // Use `useParams` to get the `locationId`
+  const { user } = useAuth(); 
+  const params = useParams(); 
   const locationId = params?.locationId as string; // Extract locationId
 
   const [messages, setMessages] = useState<{ username: string; createdAt: string; message: string }[]>([]);
@@ -54,13 +54,13 @@ const ChatPage = () => {
 
     const message = {
       locationId,
-      userId: user.id, // User ID from AuthContext
-      username: user.username, // Username from AuthContext
+      userId: user.id, 
+      username: user.username,
       message: newMessage,
       createdAt: new Date().toISOString(),
     };
-    sendMessage(message); // Use the `sendMessage` function
-    setNewMessage(''); // Clear the input field
+    sendMessage(message); 
+    setNewMessage('');
   };
 
   return (

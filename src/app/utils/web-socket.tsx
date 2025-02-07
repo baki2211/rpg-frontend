@@ -51,15 +51,15 @@ const useWebSocket = ({ locationId, onMessage, onError, onClose }: WebSocketOpti
         console.warn(`WebSocket connection closed for location: ${locationId}`, event);
         setConnectionStatus('closed');
 
-        if (retryCount < 5) {
-          console.log(`Retrying WebSocket connection in ${retryDelay / 1000} seconds...`);
-          setTimeout(connectWebSocket, retryDelay);
-          retryDelay = Math.min(retryDelay * 2, maxRetryDelay); // Exponential backoff
-          retryCount += 1;
-        } else {
-          console.error('Max retry attempts reached. Unable to reconnect WebSocket.');
-          setErrorMessage('Max retry attempts reached. Please refresh the page.');
-        }
+        // if (retryCount < 5) {
+        //   console.log(`Retrying WebSocket connection in ${retryDelay / 1000} seconds...`);
+        //   setTimeout(connectWebSocket, retryDelay);
+        //   retryDelay = Math.min(retryDelay * 2, maxRetryDelay); // Exponential backoff
+        //   retryCount += 1;
+        // } else {
+        //   console.error('Max retry attempts reached. Unable to reconnect WebSocket.');
+        //   setErrorMessage('Max retry attempts reached. Please refresh the page.');
+        // }
 
         if (onClose) onClose(event);
       };
