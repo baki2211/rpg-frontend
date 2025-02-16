@@ -3,8 +3,8 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useRouter } from 'next/navigation';
-import { useAuth } from '../utils/AuthContext';
-import { Map, Location } from '../../types/types';
+import { useAuth } from '../../utils/AuthContext';
+import { Map, Location } from '../../../types/types';
 
 const AdminMapPanel = () => {
   const router = useRouter();

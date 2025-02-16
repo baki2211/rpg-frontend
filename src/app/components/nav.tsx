@@ -26,6 +26,7 @@ const NavMenu: React.FC = () => {
       {isAuthenticated && (
         <>
           <a href="/pages/dashboard" style={{ marginRight: "1rem" }}>Dashboard</a>
+          <a href="/pages/characters" style={{ marginRight: "1rem" }}>Characters</a>
           <a href="/pages/protected" style={{ marginRight: "1rem" }}>Protected</a>
           <a href="/pages/map" style={{ marginRight: "1rem" }}>Map</a>
           {user?.role === 'admin' && (

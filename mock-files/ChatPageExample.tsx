@@ -1,9 +1,3 @@
-'use client';
-
-import React, { useState, useEffect, useRef } from 'react';
-import { useAuth } from '../../../utils/AuthContext'; 
-import { useParams } from 'next/navigation';
-import useWebSocket from '../../../utils/web-socket'; 
 
 const ChatPage = () => {
   const { user } = useAuth();
@@ -75,11 +69,10 @@ const ChatPage = () => {
     setNewMessage('');
   };
 
-
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100vh' }}>
-      <div style={{ flex: 1, overflowY: 'auto', padding: '1rem', backgroundColor: '#b7abab' }}>
-      {error && (
+    <div className="flex flex-col h-screen bg-gray-100">
+      <div className="flex-1 overflow-y-auto p-6 space-y-4">
+        {error && (
           <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4">
             {error}
           </div>
@@ -90,34 +83,70 @@ const ChatPage = () => {
             Connecting to chat...
           </div>
         )}
-          {Array.isArray(messages) && messages.length > 0 ? (
-        messages.map((msg, index) => (
-          <div key={index} style={{ marginBottom: '1rem' }}>
-            <strong>{msg.username}</strong> - <em>{new Date(msg.createdAt).toLocaleString()}:</em>
-            <p>{msg.message}</p>
+
+        {messages.map((msg, index) => (
+          <div
+            key={index}
+            className="bg-white rounded-lg shadow-sm p-4 transition-all duration-200 hover:shadow-md"
+          >
+            <div className="flex justify-between items-start mb-2">
+              <span className="font-semibold text-gray-800">{msg.username}</span>
+              <span className="text-xs text-gray-500">
+                {new Date(msg.createdAt).toLocaleString()}
+              </span>
+            </div>
+            <p className="text-gray-700">{msg.message}</p>
           </div>
-        ))
-      ) : (
-        <p>No messages yet...</p>
-      )}
+        ))}
+        <div ref={messagesEndRef} />
       </div>
-      <form onSubmit={handleSendMessage} style={{ display: 'flex', padding: '1rem', borderTop: '1px solid #ccc' }}>
-        <input
-          type="text"
-          value={newMessage}
-          onChange={(e) => setNewMessage(e.target.value)}
-          placeholder="Type a message..."
-          style={{ flex: 1, marginRight: '1rem' }}
-          required
-        />
-        <button type="submit">Send</button>
+
+      <form
+        onSubmit={handleSendMessage}
+        className="border-t border-gray-200 bg-white p-4 shadow-lg"
+      >
+        <div className="flex gap-4">
+          <input
+            type="text"
+            value={newMessage}
+            onChange={(e) => setNewMessage(e.target.value)}
+            placeholder="Type your message..."
+            className="flex-1 rounded-lg border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            disabled={connectionStatus !== 'open'}
+          />
+          <button
+            type="submit"
+            disabled={connectionStatus !== 'open'}
+            className="bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-blue-600 transition-colors duration-200 disabled:bg-gray-400 disabled:cursor-not-allowed"
+          >
+            Send
+          </button>
+        </div>
         {connectionStatus === 'error' && (
           <p className="text-red-500 text-sm mt-2">{errorMessage}</p>
         )}
       </form>
-      {connectionStatus === 'error' && <p style={{ color: 'red' }}>WebSocket connection failed.</p>}
     </div>
+    
   );
 };
 
 export default ChatPage;
+
+
+// dashboard bit 
+
+{activeCharacter ? (
+  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem' }}>    
+      <div key={activeCharacter.id} style={{ border: '1px solid #ccc', padding: '1rem', borderRadius: '8px', maxWidth: '200px' }}>
+        <img 
+          src={activeCharacter.imageUrl || '/placeholder.jpg'} 
+          alt={activeCharacter.imageUrl || 'activeCharacter Image'} 
+          style={{ width: '100%', height: '150px', objectFit: 'cover', borderRadius: '4px' }}
+        />
+        <h3>{activeCharacter.name}</h3>
+        <p><strong>Race:</strong> {activeCharacter.race.name}</p>
+        <p><strong>Gender:</strong> {activeCharacter.gender}</p>
+        <p><strong>Active:</strong> {activeCharacter.isActive ? 'Yes' : 'No'}</p>
+      </div>
+  </div>

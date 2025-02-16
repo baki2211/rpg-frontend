@@ -4,10 +4,11 @@ import { useEffect, useRef, useState } from 'react';
 
 interface WebSocketOptions {
   locationId: string;
-  onMessage: (message: any) => void; // Callback to handle received messages
-  onError?: (error: Event) => void; // Optional callback for handling errors
-  onClose?: (event: CloseEvent) => void; // Optional callback for handling close events
+  onMessage: (message: any) => void; 
+  onError?: (error: Event) => void; 
+  onClose?: (event: CloseEvent) => void;
 }
+const activeWebSockets: { [key: string]: WebSocket } = {};
 
 const useWebSocket = ({ locationId, onMessage, onError, onClose }: WebSocketOptions) => {
   const ws = useRef<WebSocket | null>(null);
@@ -21,12 +22,31 @@ const useWebSocket = ({ locationId, onMessage, onError, onClose }: WebSocketOpti
       setErrorMessage('Missing locationId for WebSocket connection.');
       return;
     }
+
+    if (ws.current) {
+      console.warn('WebSocket already exists. Not creating a new one.');
+      return;
+    }
+
+    ws.current = new WebSocket(`ws://localhost:5002?locationId=${locationId}`);
+
+    // if (activeWebSockets[locationId]) {
+    //   console.warn(`WebSocket connection already exists for location: ${locationId}`);
+    //   ws.current = activeWebSockets[locationId];
+    //   setConnectionStatus(ws.current.readyState === WebSocket.OPEN ? 'open' : 'connecting');
+    //   return;
+    // }
+    
     let retryDelay = 1000; // Start with 1 second
     const maxRetryDelay = 30000; // Max delay of 30 seconds
     let retryCount = 0;
 
-    const connectWebSocket = () => {
-      ws.current = new WebSocket(`ws://localhost:5002?locationId=${locationId}`);
+    //const connectWebSocket = () => {
+    //ws.current = new WebSocket(`ws://localhost:5002?locationId=${locationId}`);
+    //  activeWebSockets[locationId] = ws.current;
+      setConnectionStatus('connecting');
+      setErrorMessage('Connecting to WebSocket...');
+
 
       ws.current.onopen = () => {
         console.log(`WebSocket connection established for location: ${locationId}`);
@@ -48,8 +68,10 @@ const useWebSocket = ({ locationId, onMessage, onError, onClose }: WebSocketOpti
       };
       
       ws.current.onclose = (event) => {
-        console.warn(`WebSocket connection closed for location: ${locationId}`, event);
+        console.warn(`WebSocket connection closed for location: ${locationId} Code: ${event.code}, Reason: ${event.reason}`, event);
         setConnectionStatus('closed');
+        setErrorMessage('WebSocket connection was closed. Refresh the page to reconnect.');
+        delete activeWebSockets[locationId];
 
         // if (retryCount < 5) {
         //   console.log(`Retrying WebSocket connection in ${retryDelay / 1000} seconds...`);
@@ -63,9 +85,9 @@ const useWebSocket = ({ locationId, onMessage, onError, onClose }: WebSocketOpti
 
         if (onClose) onClose(event);
       };
-    };
+    //};
 
-    connectWebSocket();
+    //connectWebSocket();
 
     return () => {
       if (ws.current) {

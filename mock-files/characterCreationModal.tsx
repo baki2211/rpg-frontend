@@ -26,7 +26,7 @@ interface Character {
   isActive: boolean;
 }
 
-const CharacterPanel = () => {
+const CharacterCreationModalPanel = () => {
   const [characters, setCharacters] = useState<Character[]>([]);
   const [races, setRaces] = useState<Race[]>([]); // Initialize as an array
   const [user, setUser] = useState<User | null>(null);
@@ -147,27 +147,7 @@ const CharacterPanel = () => {
       setErrorMessage('Failed to create character');
     }
   };
-
-  const handleActivateCharacter = async (characterId: number) => {
-    try {
-      await axios.put(`http://localhost:5001/api/characters/${characterId}/activate`, {}, { withCredentials: true });
-      fetchCharacters();
-    } catch (error) {
-      console.error('Failed to activate character:', error);
-      setErrorMessage('Failed to activate character');
-    }
-  };
-
-  const handleDeleteCharacter = async (characterId: number) => {
-    try {
-      await axios.delete(`http://localhost:5001/api/characters/${characterId}`, { withCredentials: true });
-      fetchCharacters();
-    } catch (error) {
-      console.error('Failed to delete character:', error);
-      setErrorMessage('Failed to delete character');
-    }
-  };
-
+  
   return (
     <div style={{ padding: '1rem' }}>
       <h2>Character Management</h2>
@@ -285,29 +265,8 @@ const CharacterPanel = () => {
         </div>
         <button type="submit">Create Character</button>
       </form>
-
-      {/* Display Existing Characters */}
-      <h3>Your Characters</h3>
-      <ul>
-    {characters.map((character) => (
-      <li key={character.id}>
-        <strong>{character.name} {character.surname}</strong> 
-        (Race: {character.race?.name || 'Unknown'}) -{' '}
-        <em>{character.isActive ? 'Active' : 'Not Active'}</em>
-        <br />
-        <button
-          onClick={() => handleActivateCharacter(character.id)}
-          disabled={character.isActive}
-        >
-          {character.isActive ? 'Active' : 'Activate'}
-        </button>
-        <button onClick={() => handleDeleteCharacter(character.id)}>Delete</button>
-      </li>
-    ))}
-  </ul>
-
     </div>
   );
 };
 
-export default CharacterPanel;
+export default CharacterCreationModalPanel;
