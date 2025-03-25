@@ -10,6 +10,7 @@ export interface Race {
 
 export interface Character {
   id: number;
+  userId: number;
   name: string;
   surname: string;
   age: number;
@@ -62,23 +63,31 @@ export const useCharacters = () => {
     }
   };
 
-  const activateCharacter = async (characterId: number) => {
+  const activateCharacter = async (characterId: number, userId: number) => {
     try {
-      await axios.put(`http://localhost:5001/api/characters/${characterId}/activate`, {}, { withCredentials: true });
+      await axios.put(
+        `http://localhost:5001/api/characters/${characterId}/activate`,
+        { userId },  // Pass userId in the request body
+        { withCredentials: true }
+      );
       fetchCharacters();
     } catch (error) {
       console.error("Failed to activate character:", error);
     }
   };
 
-  const deleteCharacter = async (characterId: number) => {
+  const deleteCharacter = async (characterId: number, userId: number) => {
     try {
-      await axios.delete(`http://localhost:5001/api/characters/${characterId}`, { withCredentials: true });
+      await axios.delete(`http://localhost:5001/api/characters/${characterId}`, {
+        data: { userId },  // Pass userId in the request body
+        withCredentials: true,
+      });
       fetchCharacters();
     } catch (error) {
       console.error("Failed to delete character:", error);
     }
   };
+  
 
   return {
     characters,

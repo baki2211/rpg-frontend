@@ -15,11 +15,14 @@ const Dashboard = () => {
 
   interface Character {
     id: number;
+    userId: number;
     name: string;
     surname: string;
     age: number;
     gender: string;
-    race: string;
+    race: {
+      name: string;
+    };
     isActive: boolean;
     imageUrl?: string;
   }
@@ -76,7 +79,6 @@ const Dashboard = () => {
   if (!userData) {
     return <p>{message || 'Loading your dashboard...'}</p>;
   }
-  const activeCharacter = characters.find((character) => character.isActive);
   return (
     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '1rem', padding: '2rem' }}>
       {/* User Info & Active Characters */}

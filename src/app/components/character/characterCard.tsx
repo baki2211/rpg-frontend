@@ -3,11 +3,14 @@ import { useCharacters } from '../../hooks/useCharacter';
 
 interface Character {
   id: number;
+  userId: number;
   name: string;
   surname: string;
   age: number;
   gender: string;
-  race: string;
+  race: {
+    name: string;
+  };
   isActive: boolean;
   imageUrl?: string;
 }
@@ -27,18 +30,18 @@ const CharacterCard: React.FC<CharacterCardProps> = ({ character, isCharacterPan
         style={{ width: '100%', height: '150px', objectFit: 'cover', borderRadius: '4px' }}
       />
       <h3>{character.name} {character.surname}</h3>
-      <p><strong>Race:</strong> {character.race}</p>
+      <p><strong>Race:</strong> {character.race.name}</p>
       <p><strong>Gender:</strong> {character.gender}</p>
       <p><strong>Active:</strong> {character.isActive ? 'Yes' : 'No'}</p>
       {isCharacterPanel && (
         <div>
           <button 
-            onClick={() => activateCharacter(character.id)}
+            onClick={() => activateCharacter(character.id, character.userId)}
             disabled={character.isActive}
             >
           {character.isActive ? 'Active' : 'Activate'}
           </button>
-          <button onClick={() => deleteCharacter(character.id) }>Delete</button>
+          <button onClick={() => deleteCharacter(character.id, character.userId) }>Delete</button>
         </div>
       )}
     </div>
