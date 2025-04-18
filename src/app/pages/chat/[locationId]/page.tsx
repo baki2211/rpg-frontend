@@ -21,6 +21,8 @@ const ChatPage = () => {
   };
 
   useEffect(() => {
+    let hasAttemptedFirstConnect = false;
+    
     if (!locationId) return;
 
     // Fetch messages from the database
@@ -42,7 +44,7 @@ const ChatPage = () => {
     fetchMessages();
 
     // Initialize WebSocket connection
-    const wsUrl = `ws://localhost:5002?locationId=${locationId}`;
+    const wsUrl = `ws://localhost:5001?locationId=${locationId}`;
     webSocketServiceRef.current = new WebSocketService({
       url: wsUrl,
       onMessage: (message) => {
@@ -50,7 +52,16 @@ const ChatPage = () => {
         scrollToBottom();
       },
       onError: (error) => {
-        console.error('WebSocket error:', error);
+        if (!hasAttemptedFirstConnect) {
+          hasAttemptedFirstConnect = true;
+          console.warn('Initial WebSocket connection failed. Retrying silently...');
+          return; 
+        }
+        if (error instanceof Event) {
+          console.error('WebSocket error (event):', error);
+        } else {
+          console.error('WebSocket error:', JSON.stringify(error));
+        }
         setError('Connection error. Trying to reconnect...');
         setConnectionStatus('error');
       },
@@ -90,8 +101,6 @@ const ChatPage = () => {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100vh' }}>
       <div style={{ flex: 1, overflowY: 'auto', padding: '1rem', backgroundColor: '#b7abab' }}>
-        {error && <div style={{ color: 'red' }}>{error}</div>}
-        {connectionStatus === 'connecting' && <div>Connecting to chat...</div>}
         {messages.map((msg, index) => (
           <div key={index} style={{ marginBottom: '1rem' }}>
             <strong>{msg.username}</strong> - <em>{new Date(msg.createdAt).toLocaleString()}:</em>

@@ -28,7 +28,7 @@ const useWebSocket = ({ locationId, onMessage, onError, onClose }: WebSocketOpti
       return;
     }
 
-    ws.current = new WebSocket(`wss://localhost:5002?locationId=${locationId}`);
+    ws.current = new WebSocket(`ws://localhost:5001?locationId=${locationId}`);
 
     // if (activeWebSockets[locationId]) {
     //   console.warn(`WebSocket connection already exists for location: ${locationId}`);

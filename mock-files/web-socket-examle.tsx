@@ -24,7 +24,7 @@ const useWebSocket = ({ locationId, onMessage, onError, onClose }: WebSocketOpti
     if (!mounted.current) return;
 
     try {
-      ws.current = new WebSocket(`ws://localhost:5002?locationId=${locationId}`);
+      ws.current = new WebSocket(`ws://localhost:5001?locationId=${locationId}`);
 
       // Set a timeout for the initial connection
       const connectionTimeout = setTimeout(() => {

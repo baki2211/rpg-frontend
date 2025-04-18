@@ -64,6 +64,8 @@ export const useCharacters = () => {
   };
 
   const activateCharacter = async (characterId: number, userId: number) => {
+    console.log('Activating character:', characterId);
+
     try {
       await axios.put(
         `http://localhost:5001/api/characters/${characterId}/activate`,

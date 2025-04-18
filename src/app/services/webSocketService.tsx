@@ -45,7 +45,12 @@ export class WebSocketService extends EventEmitter {
     this.socket.onerror = (event) => {
       console.error('WebSocket error:', event);
       this.options.onError?.(event);
-      this.emit('error', event);
+
+      if (this.listenerCount('error') > 0) {
+        this.emit('error', event);
+      } else {
+        console.warn('WebSocket error occurred, but no error listener is attached:', event);
+      }
     };
 
     this.socket.onclose = (event) => {
