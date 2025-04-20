@@ -5,6 +5,8 @@ import axios from 'axios';
 import { useRouter } from 'next/navigation';
 import CharacterCard from '../character/characterCard';
 import OnlineUsers from './OnlineUsers';
+import usePresenceWebSocket from '../../hooks/usePresenceWebSocket';
+
 
 const Dashboard = () => {
   const router = useRouter();
@@ -30,11 +32,10 @@ const Dashboard = () => {
 
   const [userData, setUserData] = useState<UserData | null>(null);
   const [characters, setCharacters] = useState<Character[]>([]);
-  const [onlineUsers, setOnlineUsers] = useState<string[]>([]);
+  const [onlineUsers, setOnlineUsers] = useState<{ username: string; location: string }[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
-  const [websocket, setWebsocket] = useState<WebSocket | null>(null);
 
   useEffect(() => {
     const fetchDashboard = async () => {
@@ -44,27 +45,12 @@ const Dashboard = () => {
         });
         setUserData(response.data.user);
         setMessage(response.data.message);
-
-        const ws = new WebSocket(
-          `ws://localhost:5001/ws/dashboard?username=${encodeURIComponent(response.data.user.username)}&locationId=dashboard`
-        );
-        setWebsocket(ws);
-        ws.onopen = () => {
-          console.log('WebSocket connected for dashboard');
-        };
-
-        ws.onclose = () => {
-          console.log('WebSocket disconnected from dashboard');
-        };
-
-        return () => {
-          ws.close();
-        };
       } catch (error) {
         setMessage('You are not authorized to view this page. Redirecting...');
         setTimeout(() => router.push('/pages/login'), 2000);
       }
     };
+
     const fetchCharacters = async () => {
       try {
         const response = await axios.get('http://localhost:5001/api/characters', {
@@ -93,6 +79,9 @@ const Dashboard = () => {
     fetchDashboard();
   }, [router]);
 
+  usePresenceWebSocket(userData?.username || '', setOnlineUsers);
+
+
   if (!userData) {
     return <p>{message || 'Loading your dashboard...'}</p>;
   }
@@ -102,11 +91,11 @@ const Dashboard = () => {
       <div>
         <h3>Active Characters</h3>
         {characters.some((char) => char.isActive) ? (
-  <div>
-    {characters.filter((char) => char.isActive).map((character) => (
-      <CharacterCard key={character.id} character={character} isCharacterPanel={false} />
-    ))}
-  </div>
+      <div>
+          {characters.filter((char) => char.isActive).map((character) => (
+            <CharacterCard key={character.id} character={character} isCharacterPanel={false} />
+          ))}
+       </div>
         ) : (
         <p>No Active character, activate one <a href="/pages/characters" style={{ marginRight: "1rem" }}>here</a></p>
         )}
@@ -120,20 +109,7 @@ const Dashboard = () => {
 
       {/* Online Users */}
       <div>
-        <h3>Online</h3>
-        <OnlineUsers 
-        websocket={websocket} 
-        currentUsername={userData?.username || ''} 
-      />
-        {/* {onlineUsers.length > 0 ? (
-          <ul>
-            {onlineUsers.map((user, index) => (
-              <li key={index}>{user}</li>
-            ))}
-          </ul>
-        ) : (
-          <p>No users online</p>
-        )} */}
+        <OnlineUsers onlineUsers={onlineUsers} currentUsername={userData?.username}/>
       </div>
     </div>
   );

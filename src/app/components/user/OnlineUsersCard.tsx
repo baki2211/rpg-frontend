@@ -18,7 +18,7 @@ const UserCard: React.FC<UserCardProps> = ({ username, isCurrentUser = false, lo
       marginBottom: '0.5rem',
       backgroundColor: '#f8f9fa',
       borderRadius: '8px',
-      borderLeft: isCurrentUser ? '4px solid #4e73df' : '4px solid transparent'
+      borderLeft: isCurrentUser ? '4px solid rgb(0, 0, 1)' : '4px solid transparent'
     }}>
       <div style={{
         width: '40px',
