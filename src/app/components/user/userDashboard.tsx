@@ -3,7 +3,8 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useRouter } from 'next/navigation';
-import CharacterCard from './character/characterCard';
+import CharacterCard from '../character/characterCard';
+import OnlineUsers from './OnlineUsers';
 
 const Dashboard = () => {
   const router = useRouter();
@@ -33,6 +34,7 @@ const Dashboard = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
+  const [websocket, setWebsocket] = useState<WebSocket | null>(null);
 
   useEffect(() => {
     const fetchDashboard = async () => {
@@ -42,6 +44,22 @@ const Dashboard = () => {
         });
         setUserData(response.data.user);
         setMessage(response.data.message);
+
+        const ws = new WebSocket(
+          `ws://localhost:5001/ws/dashboard?username=${encodeURIComponent(response.data.user.username)}&locationId=dashboard`
+        );
+        setWebsocket(ws);
+        ws.onopen = () => {
+          console.log('WebSocket connected for dashboard');
+        };
+
+        ws.onclose = () => {
+          console.log('WebSocket disconnected from dashboard');
+        };
+
+        return () => {
+          ws.close();
+        };
       } catch (error) {
         setMessage('You are not authorized to view this page. Redirecting...');
         setTimeout(() => router.push('/pages/login'), 2000);
@@ -72,7 +90,6 @@ const Dashboard = () => {
     };
   
     fetchCharacters();
-
     fetchDashboard();
   }, [router]);
 
@@ -104,7 +121,11 @@ const Dashboard = () => {
       {/* Online Users */}
       <div>
         <h3>Online</h3>
-        {onlineUsers.length > 0 ? (
+        <OnlineUsers 
+        websocket={websocket} 
+        currentUsername={userData?.username || ''} 
+      />
+        {/* {onlineUsers.length > 0 ? (
           <ul>
             {onlineUsers.map((user, index) => (
               <li key={index}>{user}</li>
@@ -112,7 +133,7 @@ const Dashboard = () => {
           </ul>
         ) : (
           <p>No users online</p>
-        )}
+        )} */}
       </div>
     </div>
   );

@@ -3,7 +3,7 @@
 import React from "react";
 import axios from "axios";
 import { useRouter } from 'next/navigation';
-import { useAuth } from "../utils/AuthContext";
+import { useAuth } from "../../utils/AuthContext";
 
 const LogoutButton: React.FC = () => {
   const router = useRouter();

@@ -1,7 +1,7 @@
 const WebSocket = require('ws');
 
 const locationId = 4;
-const ws = new WebSocket(`ws://localhost:5001?locationId=${locationId}`);
+const ws = new WebSocket(`ws://localhost:5001/ws/chat?locationId=${locationId}`);
 
 ws.on('open', () => {
   console.log('Connected to WebSocket server');

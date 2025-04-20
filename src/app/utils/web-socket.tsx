@@ -4,13 +4,14 @@ import { useEffect, useRef, useState } from 'react';
 
 interface WebSocketOptions {
   locationId: string;
+  username?: string; 
   onMessage: (message: any) => void; 
   onError?: (error: Event) => void; 
   onClose?: (event: CloseEvent) => void;
 }
 const activeWebSockets: { [key: string]: WebSocket } = {};
 
-const useWebSocket = ({ locationId, onMessage, onError, onClose }: WebSocketOptions) => {
+const useWebSocket = ({ locationId, username, onMessage, onError, onClose }: WebSocketOptions) => {
   const ws = useRef<WebSocket | null>(null);
   const [connectionStatus, setConnectionStatus] = useState<'connecting' | 'open' | 'closed' | 'error'>('connecting');
   const [errorMessage, setErrorMessage] = useState<string>('');
@@ -28,22 +29,11 @@ const useWebSocket = ({ locationId, onMessage, onError, onClose }: WebSocketOpti
       return;
     }
 
-    ws.current = new WebSocket(`ws://localhost:5001?locationId=${locationId}`);
+      ws.current = new WebSocket(`ws://localhost:5001/ws/chat?locationId=${locationId}&username=${username}`); 
+      let retryDelay = 1000; // Start with 1 second
+      const maxRetryDelay = 30000; // Max delay of 30 seconds
+      let retryCount = 0;
 
-    // if (activeWebSockets[locationId]) {
-    //   console.warn(`WebSocket connection already exists for location: ${locationId}`);
-    //   ws.current = activeWebSockets[locationId];
-    //   setConnectionStatus(ws.current.readyState === WebSocket.OPEN ? 'open' : 'connecting');
-    //   return;
-    // }
-    
-    let retryDelay = 1000; // Start with 1 second
-    const maxRetryDelay = 30000; // Max delay of 30 seconds
-    let retryCount = 0;
-
-    //const connectWebSocket = () => {
-    //ws.current = new WebSocket(`ws://localhost:5002?locationId=${locationId}`);
-    //  activeWebSockets[locationId] = ws.current;
       setConnectionStatus('connecting');
       setErrorMessage('Connecting to WebSocket...');
 
@@ -73,21 +63,8 @@ const useWebSocket = ({ locationId, onMessage, onError, onClose }: WebSocketOpti
         setErrorMessage('WebSocket connection was closed. Refresh the page to reconnect.');
         delete activeWebSockets[locationId];
 
-        // if (retryCount < 5) {
-        //   console.log(`Retrying WebSocket connection in ${retryDelay / 1000} seconds...`);
-        //   setTimeout(connectWebSocket, retryDelay);
-        //   retryDelay = Math.min(retryDelay * 2, maxRetryDelay); // Exponential backoff
-        //   retryCount += 1;
-        // } else {
-        //   console.error('Max retry attempts reached. Unable to reconnect WebSocket.');
-        //   setErrorMessage('Max retry attempts reached. Please refresh the page.');
-        // }
-
         if (onClose) onClose(event);
       };
-    //};
-
-    //connectWebSocket();
 
     return () => {
       if (ws.current) {
@@ -97,9 +74,14 @@ const useWebSocket = ({ locationId, onMessage, onError, onClose }: WebSocketOpti
     };
   }, [locationId, onMessage, onError, onClose]);
 
-  const sendMessage = (message: any) => {
+  const sendMessage = (message: any, userId: any, username: any) => {
     if (ws.current && ws.current.readyState === WebSocket.OPEN) {
-      ws.current.send(JSON.stringify({ type: 'message', content: message })); // Match the structure of your message
+      ws.current.send(JSON.stringify({ 
+        type: 'message', 
+        content: message,
+        userId: userId,
+        username: username
+       })); // Match the structure of your message
     } else {
       console.warn('WebSocket is not open. Unable to send message.');
     }

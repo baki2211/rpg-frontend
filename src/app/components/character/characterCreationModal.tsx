@@ -80,7 +80,7 @@ const CharacterCreationModalPanel = () => {
       console.error('Failed to fetch characters:', error);
       setErrorMessage('Failed to fetch characters');
     }
-  };
+  }; 
 
   const fetchRaces = async () => {
     try {

@@ -44,7 +44,7 @@ const ChatPage = () => {
     fetchMessages();
 
     // Initialize WebSocket connection
-    const wsUrl = `ws://localhost:5001?locationId=${locationId}`;
+    const wsUrl = `ws://localhost:5001/ws/chat?locationId=${locationId}`;
     webSocketServiceRef.current = new WebSocketService({
       url: wsUrl,
       onMessage: (message) => {
@@ -58,7 +58,7 @@ const ChatPage = () => {
           return; 
         }
         if (error instanceof Event) {
-          console.error('WebSocket error (event):', error);
+          console.warn('WebSocket connection error (might be expected during reconnect):', error.type);
         } else {
           console.error('WebSocket error:', JSON.stringify(error));
         }
@@ -79,6 +79,7 @@ const ChatPage = () => {
     // Cleanup on unmount
     return () => {
       webSocketServiceRef.current?.close();
+      hasAttemptedFirstConnect = false;
     };
   }, [locationId]);
 
