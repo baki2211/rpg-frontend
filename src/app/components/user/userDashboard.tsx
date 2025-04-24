@@ -12,8 +12,14 @@ const Dashboard = () => {
   const router = useRouter();
   
   interface UserData {
+    id: string;
     username: string;
     role: string;
+  }
+
+  interface PresenceUser {
+    username: string;
+    location: string;
   }
 
   interface Character {
@@ -32,7 +38,7 @@ const Dashboard = () => {
 
   const [userData, setUserData] = useState<UserData | null>(null);
   const [characters, setCharacters] = useState<Character[]>([]);
-  const [onlineUsers, setOnlineUsers] = useState<{ username: string; location: string }[]>([]);
+  const [onlineUsers, setOnlineUsers] = useState<PresenceUser[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
@@ -79,8 +85,8 @@ const Dashboard = () => {
     fetchDashboard();
   }, [router]);
 
-  usePresenceWebSocket(userData?.username || '', setOnlineUsers);
-
+  usePresenceWebSocket(userData?.id || '', userData?.username || '', setOnlineUsers);
+  console.log('Online Users:', onlineUsers);
 
   if (!userData) {
     return <p>{message || 'Loading your dashboard...'}</p>;

@@ -23,7 +23,7 @@ interface CharacterCardProps {
 const CharacterCard: React.FC<CharacterCardProps> = ({ character, isCharacterPanel}) => {  
   const { activateCharacter, deleteCharacter } = useCharacters();
   return (
-    <div style={{ border: '1px solid #ccc', padding: '1rem', borderRadius: '8px' }}>
+    <div style={{ border: '1px solid #ccc', padding: '1rem', borderRadius: '8px', maxWidth: '300px', backgroundColor: '#f9f9f9', margin: '1rem' }}>
       <img 
         src={character.imageUrl || '/placeholder.jpg'} 
         alt={character.imageUrl || 'Character Placeholder Image'} 
