@@ -1,5 +1,6 @@
-import { useEffect, useRef } from 'react';
+import { useEffect } from 'react';
 import { usePathname } from 'next/navigation';
+import { useAuthenticatedWebSocket } from './useAuthenticatedWebSocket';
 
 interface PresenceUser {
   username: string;
@@ -11,7 +12,6 @@ const usePresenceWebSocket = (
   username: string,
   onUpdate: (users: PresenceUser[]) => void
 ) => {
-  const wsRef = useRef<WebSocket | null>(null);
   const pathname = usePathname();
 
   const deriveLocation = (path: string) => {
@@ -20,51 +20,32 @@ const usePresenceWebSocket = (
     return 'Dashboard';
   };
 
-  useEffect(() => {
-    if (!userId) return;
-
-     const ws = new WebSocket(`ws://localhost:5001/ws/presence?userId=${userId}&username=${encodeURIComponent(username)}`);
-    wsRef.current = ws;
-
-    ws.onopen = () => {
-      console.log(`Connected to presence WebSocket as ${userId}`);
-      ws.send(
+  const wsRef = useAuthenticatedWebSocket(
+    `ws://localhost:5001/ws/presence?userId=${userId}&username=${encodeURIComponent(username)}`,
+    (event, socket) => {
+      socket.send(
         JSON.stringify({
           type: 'updateLocation',
           location: deriveLocation(pathname),
         })
       );
-    };
-
-    ws.onmessage = (event) => {
+    },
+    (event, socket) => {
       const data = JSON.parse(event.data);
-
       if (data.type === 'onlineUsers') {
-        onUpdate(data.users); 
+        onUpdate(data.users);
       }
-    };
-
-    ws.onclose = () => {
-      console.log('Presence WebSocket closed');
-    };
-
-    ws.onerror = (err) => {
-      console.error('Presence WebSocket error', err);
-    };
-
-    return () => {
-      ws?.close();
-    };
-  }, [userId, username]);
+    }
+  );
 
   useEffect(() => {
-    const ws = wsRef.current;
-    if (!ws || ws.readyState !== WebSocket.OPEN) return;
-
-    const newLoc = deriveLocation(pathname);
-    ws.send(JSON.stringify({ type: 'updateLocation', location: newLoc }));
+    const socket = wsRef.current;
+    if (socket && socket.readyState === WebSocket.OPEN) {
+      socket.send(JSON.stringify({ type: 'updateLocation', location: deriveLocation(pathname) }));
+    }
   }, [pathname]);
-  
+
+  return wsRef;
 };
 
 export default usePresenceWebSocket;

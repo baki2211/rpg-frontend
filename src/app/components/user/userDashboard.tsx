@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import CharacterCard from '../character/characterCard';
 import OnlineUsers from './OnlineUsers';
 import usePresenceWebSocket from '../../hooks/usePresenceWebSocket';
+import { usePresence } from '../../utils/presenceContext';
 
 
 const Dashboard = () => {
@@ -15,11 +16,6 @@ const Dashboard = () => {
     id: string;
     username: string;
     role: string;
-  }
-
-  interface PresenceUser {
-    username: string;
-    location: string;
   }
 
   interface Character {
@@ -38,10 +34,10 @@ const Dashboard = () => {
 
   const [userData, setUserData] = useState<UserData | null>(null);
   const [characters, setCharacters] = useState<Character[]>([]);
-  const [onlineUsers, setOnlineUsers] = useState<PresenceUser[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
+  const {onlineUsers} = usePresence();
 
   useEffect(() => {
     const fetchDashboard = async () => {
@@ -84,9 +80,6 @@ const Dashboard = () => {
     fetchCharacters();
     fetchDashboard();
   }, [router]);
-
-  usePresenceWebSocket(userData?.id || '', userData?.username || '', setOnlineUsers);
-  console.log('Online Users:', onlineUsers);
 
   if (!userData) {
     return <p>{message || 'Loading your dashboard...'}</p>;

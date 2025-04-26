@@ -12,8 +12,9 @@ interface User {
 interface AuthContextType {
   isAuthenticated: boolean;
   setIsAuthenticated: React.Dispatch<React.SetStateAction<boolean>>;
-  user: User | null; // Add user to context
-  setUser: React.Dispatch<React.SetStateAction<User | null>>; // Setter for user
+  user: User | null;
+  setUser: React.Dispatch<React.SetStateAction<User | null>>;
+  loading: boolean; 
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -21,6 +22,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true); // <- NEW!
 
   useEffect(() => {
     const checkAuthStatus = async () => {
@@ -29,18 +31,20 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           withCredentials: true,
         });
         setIsAuthenticated(true);
-        setUser(response.data.user); // Assume the backend sends user details
+        setUser(response.data.user);
       } catch {
         setIsAuthenticated(false);
-        setUser(null); // Clear user on error
+        setUser(null);
+      } finally {
+        setLoading(false); // <- Always stop loading, success or fail
       }
     };
 
     checkAuthStatus();
-  }, []); // Run once on initialization
+  }, []);
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated, setIsAuthenticated, user, setUser }}>
+    <AuthContext.Provider value={{ isAuthenticated, setIsAuthenticated, user, setUser, loading }}>
       {children}
     </AuthContext.Provider>
   );

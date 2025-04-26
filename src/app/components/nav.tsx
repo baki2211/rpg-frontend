@@ -3,7 +3,7 @@ import { useAuth } from "../utils/AuthContext";
 import LogoutButton from "./buttons/logoutButton";
 
 const NavMenu: React.FC = () => {
-  const { isAuthenticated, user } = useAuth();
+  const { isAuthenticated, user, loading } = useAuth();
   const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
@@ -13,6 +13,11 @@ const NavMenu: React.FC = () => {
   if (!isClient) {
     // Prevent rendering during SSR
     return null;
+  }
+
+  if (loading) {
+    // Optionally, you can show a loading spinner or placeholder here
+    return <div>Loading...</div>;
   }
 
   return (

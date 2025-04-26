@@ -1,4 +1,5 @@
 import { EventEmitter } from 'events';
+import { useAuth } from '../utils/AuthContext';
 
 interface WebSocketOptions {
   url: string;
@@ -19,7 +20,21 @@ export class WebSocketService extends EventEmitter {
   constructor(private options: WebSocketOptions) {
     super();
     this.url = options.url;
-    this.connect();
+    //this.connect();
+    this.waitForAuthAndConnect();
+  }
+  private waitForAuthAndConnect() {
+    const checkAuth = () => {
+      const auth = JSON.parse(localStorage.getItem('authState') || '{}'); // your auth storage
+      if (auth.isAuthenticated) {
+        console.log('Auth ready, connecting WebSocket');
+        this.connect();
+      } else {
+        console.log('Waiting for auth...');
+        setTimeout(checkAuth, 500);
+      }
+    };
+    checkAuth();
   }
 
   private connect() {
