@@ -4,6 +4,13 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useRouter } from 'next/navigation';
 
+interface Location {
+  id: number;
+  name: string;
+  xCoordinate: number;
+  yCoordinate: number;
+}
+
 const MapPage = () => {
   const router = useRouter();
   const [mapUrl, setMapUrl] = useState('');
@@ -16,7 +23,7 @@ const MapPage = () => {
         setMapUrl(`http://localhost:5001${mainMapResponse.data.imageUrl}`);
         setLocations(mainMapResponse.data.locations || []);
       } catch (error) {
-        console.error('Failed to fetch main map and locations');
+        console.error('Failed to fetch main map and locations', error);
       }
     };
   
@@ -32,7 +39,7 @@ const MapPage = () => {
       {mapUrl ? (
         <div style={{ position: 'relative' }}>
           <img src={mapUrl} alt="Map-alt" style={{ width: '100%' }} />
-          {locations.map((location: any) => (
+          {locations.map((location: Location) => (
             <button
               key={location.id}
               style={{

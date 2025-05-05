@@ -7,7 +7,7 @@ interface OnlineUser {
   location: string;
 }
 
-const useOnlineUsers = (websocket: WebSocket | null, currentUsername: string) => {
+const useOnlineUsers = (websocket: WebSocket | null) => {
   const [onlineUsers, setOnlineUsers] = useState<OnlineUser[]>([]);
   const [loading, setLoading] = useState(true);
 

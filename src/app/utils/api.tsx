@@ -12,7 +12,7 @@ export const api = {
       throw error;
     }
   },
-  post: async (url: string, data: any) => {
+  post: async (url: string, data: JSON) => {
     try {
       const response = await axios.post(`${API_BASE_URL}${url}`, data, { withCredentials: true });
       return response.data;
@@ -21,7 +21,7 @@ export const api = {
       throw error;
     }
   },
-  put: async (url: string, data?: any) => {
+  put: async (url: string, data?: JSON) => {
     try {
       const response = await axios.put(`${API_BASE_URL}${url}`, data, { withCredentials: true });
       return response.data;

@@ -27,7 +27,7 @@ interface Character {
 }
 
 const CharacterCreationModalPanel = () => {
-  const [characters, setCharacters] = useState<Character[]>([]);
+  const [, setCharacters] = useState<Character[]>([]);
   const [races, setRaces] = useState<Race[]>([]); // Initialize as an array
   const [user, setUser] = useState<User | null>(null);
   const [characterData, setCharacterData] = useState({

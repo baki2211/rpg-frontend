@@ -39,8 +39,8 @@ const Dashboard = () => {
   const [userData, setUserData] = useState<UserData | null>(null);
   const [characters, setCharacters] = useState<Character[]>([]);
   const [onlineUsers, setOnlineUsers] = useState<PresenceUser[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const [, setLoading] = useState(true);
+  const [, setError] = useState('');
   const [message, setMessage] = useState('');
 
   useEffect(() => {
@@ -53,6 +53,7 @@ const Dashboard = () => {
         setMessage(response.data.message);
       } catch (error) {
         setMessage('You are not authorized to view this page. Redirecting...');
+        console.error('Error fetching dashboard:', error);
         setTimeout(() => router.push('/pages/login'), 2000);
       }
     };
@@ -62,7 +63,7 @@ const Dashboard = () => {
         const response = await axios.get('http://localhost:5001/api/characters', {
           withCredentials: true,
         });
-        const formattedCharacters = response.data.map((char: any) => ({
+        const formattedCharacters = response.data.map((char: Character) => ({
           id: char.id,
           name: char.name,
           surname: char.surname || 'Unknown', // Adjust if class is missing
@@ -70,12 +71,14 @@ const Dashboard = () => {
           gender: char.gender || 'Unknown', // Adjust 
           race: char.race.name || 'Unknown', // Adjust based on API structure
           isActive: char.isActive,
-          imageUrl: char.image || '/placeholder.jpg', // Adjust based on API response
+          imageUrl: char.imageUrl || '/uploads/placeholder.jpg', // Adjust based on API response
         }));
   
         setCharacters(formattedCharacters);
-      } catch (err) {
-        setError('Failed to fetch characters');
+      } catch (error) {
+        setError(error instanceof Error ? error.message : 'An unknown error occurred');
+        setMessage('Error fetching characters. Please try again later.');
+        console.error('Error fetching characters:', error);
       } finally {
         setLoading(false);
       }

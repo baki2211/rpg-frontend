@@ -52,8 +52,12 @@ const RacePanel: React.FC = () => {
       });
       setRaces([...races, response.data]);
       setNewRace({});
-    } catch (error: any) {
-      setError(error.response?.data?.message || 'Failed to add race');
+    } catch (error: unknown) {
+      if (axios.isAxiosError(error)) {
+        setError(error.response?.data?.message || 'Failed to add race');
+      } else {
+        setError('An unexpected error occurred');
+      }
     }
   };
 

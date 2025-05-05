@@ -1,4 +1,5 @@
 import React from 'react';
+import Image from 'next/image';
 import { useCharacters } from '../../hooks/useCharacter';
 
 interface Character {
@@ -24,10 +25,12 @@ const CharacterCard: React.FC<CharacterCardProps> = ({ character, isCharacterPan
   const { activateCharacter, deleteCharacter } = useCharacters();
   return (
     <div style={{ border: '1px solid #ccc', padding: '1rem', borderRadius: '8px', maxWidth: '300px', backgroundColor: '#f9f9f9', margin: '1rem' }}>
-      <img 
-        src={character.imageUrl || '/placeholder.jpg'} 
+      <Image 
+        src={character.imageUrl || '/placeholder.png'} 
         alt={character.imageUrl || 'Character Placeholder Image'} 
-        style={{ width: '100%', height: '150px', objectFit: 'cover', borderRadius: '4px' }}
+        width={300}
+        height={150}
+        style={{ objectFit: 'cover', borderRadius: '4px' }}
       />
       <h3>{character.name} {character.surname}</h3>
       <p><strong>Race:</strong> {character.race.name}</p>

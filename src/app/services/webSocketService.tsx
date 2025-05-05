@@ -2,7 +2,7 @@ import { EventEmitter } from 'events';
 
 interface WebSocketOptions {
   url: string;
-  onMessage?: (message: any) => void;
+  onMessage?: (message: JSON) => void;
   onError?: (error: Event) => void;
   onClose?: (event: CloseEvent) => void;
   onOpen?: (event: Event) => void;
@@ -69,7 +69,7 @@ export class WebSocketService extends EventEmitter {
     };
   }
 
-  public sendMessage(message: any) {
+  public sendMessage(message: JSON) {
     if (this.socket && this.socket.readyState === WebSocket.OPEN) {
       this.socket.send(JSON.stringify(message));
     } else {

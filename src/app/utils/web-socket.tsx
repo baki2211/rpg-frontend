@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from 'react';
 interface WebSocketOptions {
   locationId: string;
   username?: string; 
-  onMessage: (message: any) => void; 
+  onMessage: (message: JSON) => void; 
   onError?: (error: Event) => void; 
   onClose?: (event: CloseEvent) => void;
 }
@@ -29,10 +29,7 @@ const useWebSocket = ({ locationId, username, onMessage, onError, onClose }: Web
       return;
     }
 
-      ws.current = new WebSocket(`ws://localhost:5001/ws/chat?locationId=${locationId}&username=${username}`); 
-      let retryDelay = 1000; // Start with 1 second
-      const maxRetryDelay = 30000; // Max delay of 30 seconds
-      let retryCount = 0;
+      ws.current = new WebSocket(`ws://localhost:5001/ws/chat?locationId=${locationId}&username=${username}`);
 
       setConnectionStatus('connecting');
       setErrorMessage('Connecting to WebSocket...');
@@ -41,7 +38,6 @@ const useWebSocket = ({ locationId, username, onMessage, onError, onClose }: Web
       ws.current.onopen = () => {
         console.log(`WebSocket connection established for location: ${locationId}`);
         setConnectionStatus('open');
-        retryCount = 0; // Reset retry count on successful connection
       };
 
       ws.current.onmessage = (event) => {
@@ -72,9 +68,9 @@ const useWebSocket = ({ locationId, username, onMessage, onError, onClose }: Web
         ws.current = null;
       }
     };
-  }, [locationId, onMessage, onError, onClose]);
+  }, [locationId, onMessage, onError, onClose, username]);
 
-  const sendMessage = (message: any, userId: any, username: any) => {
+  const sendMessage = (message: JSON, userId: number, username: string) => {
     if (ws.current && ws.current.readyState === WebSocket.OPEN) {
       ws.current.send(JSON.stringify({ 
         type: 'message', 
