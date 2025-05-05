@@ -12,6 +12,7 @@ const AdminMapPanel = () => {
   const [map, setMap] = useState<File | null>(null);
   const [mapName, setMapName] = useState('');
   const [maps, setMaps] = useState<Map[]>([]);
+  const [selectedMapForPreview, setSelectedMapForPreview] = useState<Map | null>(null);
   const [locations, setLocations] = useState<Location[]>([]);
   const [locationData, setLocationData] = useState({
     name: '',
@@ -130,11 +131,28 @@ const AdminMapPanel = () => {
     }
   };
 
+  const handleDeleteMap = async (mapId: number) => {
+    const confirm = window.confirm('Are you sure you want to delete this map? This action cannot be undone.');
+    if (!confirm) return;
+  
+    try {
+      await axios.delete(`http://localhost:5001/api/maps/${mapId}`, {
+        withCredentials: true,
+      });
+      fetchMapsAndLocations();
+    } catch (error) {
+      console.error('Failed to delete map:', error);
+    }
+  };
+
   if (!user) {
     return <div>Loading...</div>;
   }
 
   return (
+    <div style={{ display: 'flex', padding: '2rem' }}>
+    {/* Left: Main panel */}
+    <div style={{ flex: 1, marginRight: '2rem' }}>
     <div style={{ padding: '2rem' }}>
       <h1>Admin Map Management</h1>
 
@@ -163,16 +181,38 @@ const AdminMapPanel = () => {
       {/* List of Maps */}
       <h2>Uploaded Maps</h2>
       {maps.map((map) => (
-        <div key={map.id}>
-          <span>{map.name}</span>
-          <button
-            onClick={() => handleSetMainMap(map.id)}
-            disabled={map.isMainMap}
-          >
-            {map.isMainMap ? 'Main Map' : 'Set as Main'}
-          </button>
-        </div>
-      ))}
+  <div key={map.id} style={{ marginBottom: '1rem' }}>
+    <span>{map.name}</span>
+    <button
+      onClick={() => handleSetMainMap(map.id)}
+      disabled={map.isMainMap}
+      style={{ marginLeft: '1rem' }}
+    >
+      {map.isMainMap ? 'Main Map' : 'Set as Main'}
+    </button>
+    <button
+      onClick={() => handleDeleteMap(map.id)}
+      disabled={map.isMainMap || maps.length <= 1}
+      style={{
+        marginLeft: '1rem',
+        color: 'white',
+        backgroundColor: map.isMainMap || maps.length <= 1 ? 'gray' : 'red',
+        border: 'none',
+        padding: '0.3rem 0.6rem',
+        cursor: map.isMainMap || maps.length <= 1 ? 'not-allowed' : 'pointer',
+      }}
+    >
+      Delete
+    </button>
+    <button
+      onClick={() => setSelectedMapForPreview(map)}
+      style={{ marginLeft: '1rem' }}
+    >
+      Preview
+    </button>
+  </div>
+))}
+
 
       {/* Manage Locations */}
       <h2>Manage Locations</h2>
@@ -270,6 +310,36 @@ const AdminMapPanel = () => {
         ))}
       </ul>
     </div>
+    </div>
+
+    {/* Right: Preview panel */}
+    <div style={{ width: '400px' }}>
+      <h2>Map Preview</h2>
+      {selectedMapForPreview ? (
+        <div>
+          <p><strong>{selectedMapForPreview.name}</strong></p>
+          <img
+            src={`http://localhost:5001${selectedMapForPreview.imageUrl}`}
+            alt={selectedMapForPreview.name}
+            style={{
+              maxWidth: '100%',
+              border: '1px solid #ccc',
+              borderRadius: '4px',
+              boxShadow: '0 0 5px rgba(0,0,0,0.1)',
+            }}
+          />
+          <button
+            onClick={() => setSelectedMapForPreview(null)}
+            style={{ marginTop: '1rem' }}
+          >
+            Close Preview
+          </button>
+        </div>
+      ) : (
+        <p>No map selected</p>
+      )}
+    </div>
+  </div>
   );
 };
 
