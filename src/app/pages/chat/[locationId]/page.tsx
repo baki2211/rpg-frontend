@@ -10,10 +10,8 @@ const ChatPage = () => {
   const params = useParams();
   const locationId = params?.locationId as string;
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const [messages, setMessages] = useState<{ username: string; createdAt: string; message: string }[]>([]);
+  const [messages, setMessages] = useState<{ username: string; createdAt: string; message: string; formattedMessage?: string }[]>([]);
   const [newMessage, setNewMessage] = useState('');
-  const [error, setError] = useState<string | null>(null);
-  const [connectionStatus, setConnectionStatus] = useState<'connecting' | 'open' | 'closed' | 'error'>('connecting');
   const webSocketServiceRef = useRef<WebSocketService | null>(null);
 
   const scrollToBottom = () => {
@@ -33,11 +31,15 @@ const ChatPage = () => {
         });
         if (!response.ok) throw new Error('Failed to fetch messages');
         const data = await response.json();
-        setMessages(data);
+        // Add formattedMessage to each message
+        const formatted = data.map((msg: { username: string; createdAt: string; message: string }) => ({
+          ...msg,
+          formattedMessage: `${new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - ${msg.username}`,
+        }));
+        setMessages(formatted);
         scrollToBottom();
       } catch (error) {
         console.error('Failed to fetch messages:', error);
-        setError('Failed to load messages. Please try again later.');
       }
     };
 
@@ -48,7 +50,12 @@ const ChatPage = () => {
     webSocketServiceRef.current = new WebSocketService({
       url: wsUrl,
       onMessage: (message) => {
-        setMessages((prev) => [...prev, message]);
+        const typedMessage = message as unknown as { username: string; createdAt: string; message: string };
+        const formattedMessage = {
+          ...typedMessage,
+          formattedMessage: `${new Date(typedMessage.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - ${typedMessage.username}`,
+        };
+        setMessages((prev) => [...prev, formattedMessage]);
         scrollToBottom();
       },
       onError: (error) => {
@@ -62,17 +69,12 @@ const ChatPage = () => {
         } else {
           console.error('WebSocket error:', JSON.stringify(error));
         }
-        setError('Connection error. Trying to reconnect...');
-        setConnectionStatus('error');
       },
       onClose: (event) => {
         console.warn('WebSocket connection closed:', event);
-        setError('Connection lost. Attempting to reconnect...');
-        setConnectionStatus('closed');
       },
       onOpen: (event) => {
         console.log('WebSocket connection opened:', event);
-        setConnectionStatus('open');
       },
     });
 
@@ -93,7 +95,7 @@ const ChatPage = () => {
       username: user.username,
       message: newMessage,
       createdAt: new Date().toISOString(),
-    };
+    } as unknown as JSON;
 
     webSocketServiceRef.current?.sendMessage(message);
     setNewMessage('');
@@ -104,7 +106,7 @@ const ChatPage = () => {
       <div style={{ flex: 1, overflowY: 'auto', padding: '1rem', backgroundColor: '#b7abab' }}>
         {messages.map((msg, index) => (
           <div key={index} style={{ marginBottom: '1rem' }}>
-            <strong>{msg.username}</strong> - <em>{new Date(msg.createdAt).toLocaleString()}:</em>
+            <strong>{msg.formattedMessage || `${msg.username} - ${new Date(msg.createdAt).toLocaleString()}`}</strong>
             <p>{msg.message}</p>
           </div>
         ))}
