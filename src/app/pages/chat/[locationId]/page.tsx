@@ -12,6 +12,7 @@ const ChatPage = () => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const [messages, setMessages] = useState<{ username: string; createdAt: string; message: string; formattedMessage?: string }[]>([]);
   const [newMessage, setNewMessage] = useState('');
+  const [charCount, setCharCount] = useState(0);
   const webSocketServiceRef = useRef<WebSocketService | null>(null);
 
   const scrollToBottom = () => {
@@ -99,6 +100,7 @@ const ChatPage = () => {
 
     webSocketServiceRef.current?.sendMessage(message);
     setNewMessage('');
+    setCharCount(0);
   };
 
   return (
@@ -116,13 +118,19 @@ const ChatPage = () => {
         <input
           type="text"
           value={newMessage}
-          onChange={(e) => setNewMessage(e.target.value)}
+          onChange={(e) => {
+            setNewMessage(e.target.value);
+            setCharCount(e.target.value.length);
+          }}
           placeholder="Type a message..."
           style={{ flex: 1, marginRight: '1rem' }}
           required
         />
         <button type="submit">Send</button>
       </form>
+      <div style={{ textAlign: 'right', padding: '0.5rem', color: 'gray' }}>
+        {charCount} characters
+      </div>
     </div>
   );
 };
