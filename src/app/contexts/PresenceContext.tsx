@@ -1,9 +1,18 @@
 import React, { createContext, useContext, useEffect, useState, useRef } from 'react';
 import { usePathname } from 'next/navigation';
+import axios from 'axios';
 
 interface PresenceUser {
   username: string;
   location: string;
+}
+
+interface Location {
+  id: number;
+  name: string;
+  description: string;
+  xCoordinate: number;
+  yCoordinate: number;
 }
 
 interface PresenceContextType {
@@ -21,13 +30,23 @@ const PresenceContext = createContext<PresenceContextType>({
 
 export const usePresence = () => useContext(PresenceContext);
 
-const getLocationFromPath = (path: string | null): string => {
+const getLocationFromPath = async (path: string | null): Promise<string> => {
   if (!path) return 'Dashboard';
   
   if (path.includes('/pages/map')) return 'Map';
   if (path.includes('/pages/chat/')) {
     const locationId = path.split('/pages/chat/')[1];
-    return `Chat ${locationId}`;
+    try {
+      const response = await axios.get<{ locations: Location[] }>('http://localhost:5001/api/maps/main', {
+        withCredentials: true
+      });
+      const location = response.data.locations.find((loc) => loc.id === parseInt(locationId));
+      return location ? `Chat: ${location.name}` : `Chat ${locationId}`;
+    } catch (error) {
+      console.error('Error fetching location name:', error);
+      // If we can't get the location name, just return the ID
+      return `Chat ${locationId}`;
+    }
   }
   if (path.includes('/pages/dashboard')) return 'Dashboard';
   if (path.includes('/pages/characters')) return 'Characters';
@@ -51,9 +70,9 @@ export const PresenceProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     const ws = new WebSocket(`ws://localhost:5001/ws/presence?userId=${userId}&username=${encodeURIComponent(username)}`);
     wsRef.current = ws;
 
-    ws.onopen = () => {
+    ws.onopen = async () => {
       console.log('Presence WebSocket connected');
-      const location = getLocationFromPath(pathname);
+      const location = await getLocationFromPath(pathname);
       ws.send(JSON.stringify({ type: 'updateLocation', location }));
     };
 
@@ -112,12 +131,16 @@ export const PresenceProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
   // Update location when pathname changes
   useEffect(() => {
-    const ws = wsRef.current;
-    if (!ws || ws.readyState !== WebSocket.OPEN || !currentUser) return;
+    const updateLocation = async () => {
+      const ws = wsRef.current;
+      if (!ws || ws.readyState !== WebSocket.OPEN || !currentUser) return;
 
-    const location = getLocationFromPath(pathname);
-    console.log('Updating location to:', location);
-    ws.send(JSON.stringify({ type: 'updateLocation', location }));
+      const location = await getLocationFromPath(pathname);
+      console.log('Updating location to:', location);
+      ws.send(JSON.stringify({ type: 'updateLocation', location }));
+    };
+
+    updateLocation();
   }, [pathname, currentUser]);
 
   return (
