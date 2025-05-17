@@ -1,7 +1,7 @@
 'use client';
 
-import React, { useState } from 'react';
-import axios from 'axios';
+import React, { useState, useEffect } from 'react';
+import axios, { AxiosError } from 'axios';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '../../utils/AuthContext';
 
@@ -10,13 +10,13 @@ const Register = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [message, setMessage] = useState('');
-  const { isAuthenticated } = useAuth(); // Access authentication state
+  const { isAuthenticated } = useAuth();
 
-  // Redirect if already authenticated
-  if (isAuthenticated) {
-    router.push('/pages/dashboard');
-    return null; // Prevent rendering the page
-  }
+  useEffect(() => {
+    if (isAuthenticated) {
+      router.push('/pages/dashboard');
+    }
+  }, [isAuthenticated, router]);
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -31,10 +31,18 @@ const Register = () => {
       setUsername('');
       setPassword('');
       router.push('/pages/login'); // Redirect to login page
-    } catch (error: any) {
-      setMessage(error.response?.data?.message || 'Registration failed.');
-    };
+    } catch (error) {
+      if (error instanceof AxiosError) {
+        setMessage(error.response?.data?.message || 'Registration failed.');
+      } else {
+        setMessage('Registration failed.');
+      }
+    }
   };
+
+  if (isAuthenticated) {
+    return null; // Prevent rendering the page while redirecting
+  }
 
   return (
     <div style={{ padding: '2rem' }}>

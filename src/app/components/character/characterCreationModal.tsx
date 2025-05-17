@@ -27,7 +27,12 @@ interface Character {
   imageUrl?: string;
 }
 
-const CharacterCreationModalPanel = () => {
+interface CharacterCreationModalPanelProps {
+  onSuccess?: () => void;
+  createCharacter: (formData: FormData) => Promise<void>;
+}
+
+const CharacterCreationModalPanel: React.FC<CharacterCreationModalPanelProps> = ({ onSuccess, createCharacter }) => {
   const [, setCharacters] = useState<Character[]>([]);
   const [races, setRaces] = useState<Race[]>([]); // Initialize as an array
   const [user, setUser] = useState<User | null>(null);
@@ -124,12 +129,6 @@ const CharacterCreationModalPanel = () => {
       setErrorMessage(`Allocated points exceed ${totalPoints}. Please adjust your stats.`);
       return;
     }
-  
-    // const newCharacterData = { 
-    //   ...characterData,
-    //   userId: user.id, 
-    // };
-    // console.log('Submitting Character Data:', newCharacterData);
 
     const formData = new FormData();
     formData.append('name', characterData.name);
@@ -144,25 +143,9 @@ const CharacterCreationModalPanel = () => {
     formData.append('userId', characterData.userId.toString());
   
     try {
-      await axios.post('http://localhost:5001/api/characters/new', 
-        formData, 
-        { withCredentials: true,
-          headers: {
-            'Content-Type': 'multipart/form-data',
-          },
-         }
-      );
-      // setCharacterData({
-      //   userId: user.id,
-      //   name: '',
-      //   surname: '',
-      //   age: 0,
-      //   gender: '',
-      //   raceId: null,
-      //   stats: { STR: 0, DEX: 0, RES: 0, MN: 0, CHA: 0 },
-      // });
+      await createCharacter(formData);
       setSuccessMessage('Character created successfully');
-      fetchCharacters();
+      onSuccess?.();
     } catch (error) {
       console.error('Failed to create character:', error);
       setErrorMessage('Failed to create character');

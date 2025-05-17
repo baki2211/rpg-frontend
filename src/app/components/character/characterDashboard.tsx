@@ -4,9 +4,10 @@ import React, { useState } from 'react';
 import CharacterCreationModalPanel from './characterCreationModal';
 import { useCharacters } from '../../hooks/useCharacter';
 import CharacterCard from './characterCard';
+import Modal from '../common/Modal';
 
 const CharactersDashboard = () => {
-  const { characters, loading, error, activateCharacter, deleteCharacter } = useCharacters();
+  const { characters, loading, error, activateCharacter, deleteCharacter, createCharacter } = useCharacters();
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   if (loading) return <p>Loading characters...</p>;
@@ -31,14 +32,16 @@ const CharactersDashboard = () => {
       ) : (
         <p>No characters found.</p>
       )}
-      {isModalOpen && (
-        <div className="modal-overlay">
-          <div className="modal-content">
-            <CharacterCreationModalPanel />
-            <button onClick={() => setIsModalOpen(false)}>Close</button>
-          </div>
-        </div>
-      )}
+      <Modal 
+        isOpen={isModalOpen} 
+        onClose={() => setIsModalOpen(false)}
+        title="Create New Character"
+      >
+        <CharacterCreationModalPanel 
+          onSuccess={() => setIsModalOpen(false)} 
+          createCharacter={createCharacter}
+        />
+      </Modal>
     </div>
   );
 };

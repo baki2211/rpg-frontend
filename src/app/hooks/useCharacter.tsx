@@ -53,13 +53,19 @@ export const useCharacters = () => {
     }
   };
 
-  const createCharacter = async (characterData: Omit<Character, "id">) => {
+  const createCharacter = async (formData: FormData) => {
     try {
-      const response = await axios.post("http://localhost:5001/api/characters/new", characterData, { withCredentials: true });
+      const response = await axios.post("http://localhost:5001/api/characters/new", formData, { 
+        withCredentials: true,
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
       setCharacters(prev => [...prev, response.data]);
     } catch (error) {
       console.error("Failed to create character:", error);
       setError("Failed to create character");
+      throw error; // Re-throw to handle in the component
     }
   };
 
