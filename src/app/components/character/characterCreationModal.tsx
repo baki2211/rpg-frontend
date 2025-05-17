@@ -24,12 +24,14 @@ interface Character {
   gender: string;
   race: Race;
   isActive: boolean;
+  imageUrl?: string;
 }
 
 const CharacterCreationModalPanel = () => {
   const [, setCharacters] = useState<Character[]>([]);
   const [races, setRaces] = useState<Race[]>([]); // Initialize as an array
   const [user, setUser] = useState<User | null>(null);
+  const [imageFile, setImageFile] = useState<File | null>(null);
   const [characterData, setCharacterData] = useState({
     userId: null as number | null,
     name: '',
@@ -123,23 +125,42 @@ const CharacterCreationModalPanel = () => {
       return;
     }
   
-    const newCharacterData = { 
-      ...characterData,
-      userId: user.id, 
-    };
-    console.log('Submitting Character Data:', newCharacterData);
+    // const newCharacterData = { 
+    //   ...characterData,
+    //   userId: user.id, 
+    // };
+    // console.log('Submitting Character Data:', newCharacterData);
+
+    const formData = new FormData();
+    formData.append('name', characterData.name);
+    formData.append('surname', characterData.surname);
+    formData.append('age', characterData.age.toString());
+    formData.append('gender', characterData.gender);
+    formData.append('raceId', characterData.raceId!.toString());
+    formData.append('stats', JSON.stringify(characterData.stats));
+    if (imageFile) {
+      formData.append('image', imageFile);
+    }
+    formData.append('userId', characterData.userId.toString());
   
     try {
-      await axios.post('http://localhost:5001/api/characters/new', newCharacterData, { withCredentials: true });
-      setCharacterData({
-        userId: user.id,
-        name: '',
-        surname: '',
-        age: 0,
-        gender: '',
-        raceId: null,
-        stats: { STR: 0, DEX: 0, RES: 0, MN: 0, CHA: 0 },
-      });
+      await axios.post('http://localhost:5001/api/characters/new', 
+        formData, 
+        { withCredentials: true,
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+         }
+      );
+      // setCharacterData({
+      //   userId: user.id,
+      //   name: '',
+      //   surname: '',
+      //   age: 0,
+      //   gender: '',
+      //   raceId: null,
+      //   stats: { STR: 0, DEX: 0, RES: 0, MN: 0, CHA: 0 },
+      // });
       setSuccessMessage('Character created successfully');
       fetchCharacters();
     } catch (error) {
@@ -174,6 +195,14 @@ const CharacterCreationModalPanel = () => {
             onChange={(e) => setCharacterData({ ...characterData, surname: e.target.value })}
             required
           />
+        </div>
+        <div>
+          <label>Character Image:</label>
+          <input type="file" accept="image/*" onChange={(e) => {
+            if (e.target.files && e.target.files[0]) {
+              setImageFile(e.target.files[0]);
+            }
+          }} />
         </div>
         <div>
           <label>Age:</label>

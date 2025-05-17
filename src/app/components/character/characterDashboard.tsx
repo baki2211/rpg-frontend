@@ -6,7 +6,7 @@ import { useCharacters } from '../../hooks/useCharacter';
 import CharacterCard from './characterCard';
 
 const CharactersDashboard = () => {
-  const { characters, loading, error } = useCharacters();
+  const { characters, loading, error, activateCharacter, deleteCharacter } = useCharacters();
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   if (loading) return <p>Loading characters...</p>;
@@ -19,7 +19,13 @@ const CharactersDashboard = () => {
       {characters.length > 0 ? (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem' }}>
           {characters.map((character) => (
-            <CharacterCard key={character.id} character={character} isCharacterPanel={true} />
+            <CharacterCard 
+              key={character.id} 
+              character={character} 
+              isCharacterPanel={true}
+              onActivate={activateCharacter}
+              onDelete={deleteCharacter}
+            />
           ))}
         </div>
       ) : (

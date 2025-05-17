@@ -1,6 +1,5 @@
 import React from 'react';
 import Image from 'next/image';
-import { useCharacters } from '../../hooks/useCharacter';
 
 interface Character {
   id: number;
@@ -19,16 +18,22 @@ interface Character {
 interface CharacterCardProps {
   character: Character;
   isCharacterPanel: boolean;
+  onActivate: (characterId: number, userId: number) => Promise<void>;
+  onDelete: (characterId: number) => Promise<void>;
 }
 
-const CharacterCard: React.FC<CharacterCardProps> = ({ character, isCharacterPanel}) => {  
-  const { activateCharacter, deleteCharacter } = useCharacters();
+const CharacterCard: React.FC<CharacterCardProps> = ({ 
+  character, 
+  isCharacterPanel,
+  onActivate,
+  onDelete
+}) => {  
   return (
     <div style={{ border: '1px solid #ccc', padding: '1rem', borderRadius: '8px', maxWidth: '300px', backgroundColor: '#f9f9f9', margin: '1rem' }}>
       <Image 
-        src={character.imageUrl || '/placeholder.png'} 
-        alt={character.imageUrl || 'Character Placeholder Image'} 
-        width={300}
+        src={`http://localhost:5001${character.imageUrl ?? '/uploads/placeholder.jpg'}`} 
+        alt={'Character Image'} 
+        width={150}
         height={150}
         style={{ objectFit: 'cover', borderRadius: '4px' }}
       />
@@ -39,12 +44,12 @@ const CharacterCard: React.FC<CharacterCardProps> = ({ character, isCharacterPan
       {isCharacterPanel && (
         <div>
           <button 
-            onClick={() => activateCharacter(character.id, character.userId)}
+            onClick={() => onActivate(character.id, character.userId)}
             disabled={character.isActive}
             >
           {character.isActive ? 'Active' : 'Activate'}
           </button>
-          <button onClick={() => deleteCharacter(character.id, character.userId) }>Delete</button>
+          <button onClick={() => onDelete(character.id)}>Delete</button>
         </div>
       )}
     </div>

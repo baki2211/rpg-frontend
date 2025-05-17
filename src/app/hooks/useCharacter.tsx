@@ -55,8 +55,8 @@ export const useCharacters = () => {
 
   const createCharacter = async (characterData: Omit<Character, "id">) => {
     try {
-      await axios.post("http://localhost:5001/api/characters/new", characterData, { withCredentials: true });
-      fetchCharacters();
+      const response = await axios.post("http://localhost:5001/api/characters/new", characterData, { withCredentials: true });
+      setCharacters(prev => [...prev, response.data]);
     } catch (error) {
       console.error("Failed to create character:", error);
       setError("Failed to create character");
@@ -69,22 +69,21 @@ export const useCharacters = () => {
     try {
       await axios.put(
         `http://localhost:5001/api/characters/${characterId}/activate`,
-        { userId },  // Pass userId in the request body
+        { userId },
         { withCredentials: true }
       );
-      fetchCharacters();
+      await fetchCharacters();
     } catch (error) {
       console.error("Failed to activate character:", error);
     }
   };
 
-  const deleteCharacter = async (characterId: number, userId: number) => {
+  const deleteCharacter = async (characterId: number) => {
     try {
-      await axios.delete(`http://localhost:5001/api/characters/${characterId}`, {
-        data: { userId },  // Pass userId in the request body
+      await axios.delete(`http://localhost:5001/api/characters/${characterId}/delete`, {
         withCredentials: true,
       });
-      fetchCharacters();
+      setCharacters(prev => prev.filter(char => char.id !== characterId));
     } catch (error) {
       console.error("Failed to delete character:", error);
     }
