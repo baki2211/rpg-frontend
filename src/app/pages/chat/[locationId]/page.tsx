@@ -86,15 +86,69 @@ const ChatPage = () => {
     };
   }, [locationId]);
 
+  const sanitizeMessage = (message: string) => {
+    // First, handle our special formatting
+    let formatted = message;
+    
+    // Replace <text> with « text » for bold
+    formatted = formatted.replace(/<([^<>]+)>/g, '« $1 »');
+    
+    // Replace "text" with italic text
+    formatted = formatted.replace(/"([^"]+)"/g, '"$1"');
+    
+    // Then remove any remaining HTML or JavaScript
+    formatted = formatted
+      .replace(/<[^>]*>/g, '') // Remove any remaining HTML tags
+      .replace(/javascript:/gi, ''); // Remove any javascript: protocol
+
+    return formatted;
+  };
+
+  // Add styles for the formatted text
+  const styles = `
+    .speech-text {
+      color: #4a90e2;
+      font-weight: bold;
+    }
+    .thought-text {
+      color: #666;
+      font-style: italic;
+    }
+  `;
+
+  // Add the styles to the component
+  useEffect(() => {
+    const styleSheet = document.createElement("style");
+    styleSheet.textContent = styles;
+    document.head.appendChild(styleSheet);
+    return () => {
+      document.head.removeChild(styleSheet);
+    };
+  }, []);
+
+  // Function to format the message after sanitization
+  const formatMessage = (message: string) => {
+    return message.split(/(«[^»]+»|"[^"]+")/).map((part, i) => {
+      if (part.startsWith('«') && part.endsWith('»')) {
+        return <span key={i} className="speech-text">{part}</span>;
+      } else if (part.startsWith('"') && part.endsWith('"')) {
+        return <span key={i} className="thought-text">{part}</span>;
+      }
+      return part;
+    });
+  };
+
   const handleSendMessage = (e: React.FormEvent) => {
     e.preventDefault();
     if (!user || !newMessage.trim()) return;
+
+    const sanitizedMessage = sanitizeMessage(newMessage);
 
     const message = {
       locationId,
       userId: user.id,
       username: user.username,
-      message: newMessage,
+      message: sanitizedMessage,
       createdAt: new Date().toISOString(),
     } as unknown as JSON;
 
@@ -109,7 +163,7 @@ const ChatPage = () => {
         {messages.map((msg, index) => (
           <div key={index} style={{ marginBottom: '1rem' }}>
             <strong>{msg.formattedMessage || `${msg.username} - ${new Date(msg.createdAt).toLocaleString()}`}</strong>
-            <p>{msg.message}</p>
+            <p>{formatMessage(msg.message)}</p>
           </div>
         ))}
         <div ref={messagesEndRef} />
