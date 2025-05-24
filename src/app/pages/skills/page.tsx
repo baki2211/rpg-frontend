@@ -1,13 +1,14 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { SkillCard } from '@/app/components/SkillCard';
+import { SkillCard } from '@/app/components/skills/SkillCard';
 import { useCharacters, type Skill } from '@/app/hooks/useCharacter';
 import './skills.css';
 
 export default function SkillsPage() {
   const { characters, fetchCharacters } = useCharacters();
   const [availableSkills, setAvailableSkills] = useState<Skill[]>([]);
+  const [acquiredSkills, setAcquiredSkills] = useState<Skill[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -16,13 +17,24 @@ export default function SkillsPage() {
 
   useEffect(() => {
     const fetchSkills = async () => {
+      if (!activeCharacter) return;
+      
       try {
-        const skillsResponse = await fetch('http://localhost:5001/api/skills', {
+        // Fetch available skills
+        const availableSkillsResponse = await fetch(`http://localhost:5001/api/character-skills/${activeCharacter.id}/available-skills?include=branch,type`, {
           credentials: 'include'
         });
-        if (!skillsResponse.ok) throw new Error('Failed to fetch skills');
-        const skills = await skillsResponse.json();
-        setAvailableSkills(skills);
+        if (!availableSkillsResponse.ok) throw new Error('Failed to fetch available skills');
+        const available = await availableSkillsResponse.json();
+        setAvailableSkills(available);
+
+        // Fetch acquired skills
+        const acquiredSkillsResponse = await fetch(`http://localhost:5001/api/character-skills/${activeCharacter.id}/acquired-skills?include=branch,type`, {
+          credentials: 'include'
+        });
+        if (!acquiredSkillsResponse.ok) throw new Error('Failed to fetch acquired skills');
+        const acquired = await acquiredSkillsResponse.json();
+        setAcquiredSkills(acquired);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'An error occurred');
       } finally {
@@ -30,14 +42,16 @@ export default function SkillsPage() {
       }
     };
 
-    fetchSkills();
-  }, []);
+    if (activeCharacter) {
+      fetchSkills();
+    }
+  }, [activeCharacter?.id]);
 
   const acquireSkill = async (skillId: number) => {
     if (!activeCharacter) return;
     
     try {
-      const response = await fetch(`http://localhost:5001/api/characters/characters/skills/${skillId}`, {
+      const response = await fetch(`http://localhost:5001/api/character-skills/${skillId}`, {
         method: 'POST',
         credentials: 'include',
         headers: {
@@ -53,8 +67,26 @@ export default function SkillsPage() {
       // Refresh character data
       await fetchCharacters();
       
-      // Remove the acquired skill from the available skills list
-      setAvailableSkills(prevSkills => prevSkills.filter(skill => skill.id !== skillId));
+      // Fetch both available and acquired skills again
+      const [availableSkillsResponse, acquiredSkillsResponse] = await Promise.all([
+        fetch(`http://localhost:5001/api/character-skills/${activeCharacter.id}/available-skills?include=branch,type`, {
+          credentials: 'include'
+        }),
+        fetch(`http://localhost:5001/api/character-skills/${activeCharacter.id}/acquired-skills?include=branch,type`, {
+          credentials: 'include'
+        })
+      ]);
+
+      if (!availableSkillsResponse.ok) throw new Error('Failed to fetch updated available skills');
+      if (!acquiredSkillsResponse.ok) throw new Error('Failed to fetch updated acquired skills');
+
+      const [updatedAvailable, updatedAcquired] = await Promise.all([
+        availableSkillsResponse.json(),
+        acquiredSkillsResponse.json()
+      ]);
+
+      setAvailableSkills(updatedAvailable);
+      setAcquiredSkills(updatedAcquired);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to acquire skill');
     }
@@ -90,37 +122,60 @@ export default function SkillsPage() {
     );
   }
 
-  // Filter out already acquired skills
-  const filteredSkills = availableSkills.filter(skill => 
-    !activeCharacter.skills?.some(acquiredSkill => acquiredSkill.id === skill.id)
-  );
-
   return (
     <div className="skills-page">
       <div className="skills-container">
         <div className="skills-header">
-          <h1>Skill Acquisition</h1>
+          <h1>Skills</h1>
           <div className="character-info">
             <span>Character: {activeCharacter.name}</span>
             <span className="separator">•</span>
             <span>Available Points: {activeCharacter.skillPoints}</span>
           </div>
         </div>
+
+        {/* Acquired Skills Section */}
+        <div className="skills-section">
+          <h2>Acquired Skills</h2>
+          <div className="skills-grid">
+            {acquiredSkills.length > 0 ? (
+              acquiredSkills.map((skill) => (
+                <SkillCard
+                  key={skill.id}
+                  skill={skill}
+                  isAcquired={true}
+                  canAcquire={false}
+                  onAcquire={() => {}}
+                />
+              ))
+            ) : (
+              <p className="no-skills-message">No skills acquired yet.</p>
+            )}
+          </div>
+        </div>
         
-        <div className="skills-grid">
-          {filteredSkills.map((skill) => {
-            const canAcquire = (activeCharacter?.skillPoints || 0) >= skill.skillPointCost;
-            
-            return (
-              <SkillCard
-                key={skill.id}
-                skill={skill}
-                isAcquired={false}
-                canAcquire={canAcquire}
-                onAcquire={acquireSkill}
-              />
-            );
-          })}
+        {/* Available Skills Section */}
+        <div className="skills-section">
+          <h2>Available Skills</h2>
+          <div className="skills-grid">
+            {availableSkills.length > 0 ? (
+              availableSkills.map((skill) => {
+                const canAcquire = (activeCharacter?.skillPoints || 0) >= skill.skillPointCost;
+                
+                return (
+                  <SkillCard
+                    key={skill.id}
+                    skill={skill}
+                    isAcquired={false}
+                    canAcquire={canAcquire}
+                    onAcquire={acquireSkill}
+                  />
+                );
+              })
+            ) : (
+              <p className="no-skills-message">No more skills available to acquire.</p>
+            )}
+          </div>
         </div>
       </div>
     </div>

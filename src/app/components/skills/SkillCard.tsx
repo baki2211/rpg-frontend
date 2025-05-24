@@ -48,11 +48,11 @@ export const SkillCard: React.FC<SkillCardProps> = ({
           </div>
           <div className="skill-detail">
             <span className="detail-label">Branch:</span>
-            <span className="detail-value">{skill.branch?.name}</span>
+            <span className="detail-value">{skill.branchId}</span>
           </div>
           <div className="skill-detail">
             <span className="detail-label">Type:</span>
-            <span className="detail-value">{skill.type?.name}</span>
+            <span className="detail-value">{skill.typeId}</span>
           </div>
         </div>
 

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { useAuth } from "../utils/AuthContext";
-import LogoutButton from "./buttons/logoutButton";
+import { useAuth } from "../../utils/AuthContext";
+import LogoutButton from "../buttons/logoutButton";
 
 const NavMenu: React.FC = () => {
   const { isAuthenticated, user } = useAuth();

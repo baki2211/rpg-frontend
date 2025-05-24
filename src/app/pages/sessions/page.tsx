@@ -1,6 +1,6 @@
 'use client';
 
-import SessionList from '../../components/SessionList';
+import SessionList from '../../components/sessions/SessionList';
 
 export default function SessionsPage() {
   return (

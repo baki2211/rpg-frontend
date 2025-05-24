@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import './admin.css';
 
 interface Skill {
   id: number;
@@ -139,120 +140,150 @@ const SkillDashboard: React.FC = () => {
   };
 
   return (
-    <div>
-      <h2>Skill Dashboard</h2>
-      <form onSubmit={handleSubmit}>
-        <div>
-          <label>Name:</label>
-          <input type="text" name="name" value={formData.name} onChange={handleInputChange} required />
+    <div className="admin-panel">
+      <div className="admin-container">
+        <div className="admin-header">
+          <h1>Skill Dashboard</h1>
         </div>
-        <div>
-          <label>Description:</label>
-          <textarea name="description" value={formData.description} onChange={handleInputChange} required />
-        </div>
-        <div>
-          <label>Branch:</label>
-          <select name="branchId" value={formData.branchId} onChange={handleInputChange} required>
-            <option value="">Select Branch</option>
-            {branches.map(branch => (
-              <option key={branch.id} value={branch.id}>
-                {branch.name}
-              </option>
-            ))}
-          </select>
-        </div>
-        <div>
-          <label>Type:</label>
-          <select name="typeId" value={formData.typeId} onChange={handleInputChange} required>
-            <option value="">Select Type</option>
-            {types.map(type => (
-              <option key={type.id} value={type.id}>
-                {type.name}
-              </option>
-            ))}
-          </select>
-        </div>
-        <div>
-          <label>Base Power:</label>
-          <input type="number" name="basePower" value={formData.basePower} onChange={handleInputChange} required />
-        </div>
-        <div>
-          <label>Duration:</label>
-          <input type="number" name="duration" value={formData.duration} onChange={handleInputChange} required />
-        </div>
-        <div>
-          <label>Activation:</label>
-          <select name="activation" value={formData.activation} onChange={handleInputChange} required>
-            <option value="">Select Activation</option>
-            <option value="BonusAction">Bonus Action</option>
-            <option value="FullAction">Full Action</option>
-            <option value="TwoTurns">Two Turns</option>
-          </select>
-        </div>
-        <div>
-          <label>Required Stats:</label>
-          {Object.keys(formData.requiredStats || {}).map(stat => (
-            <div key={stat}>
-              <label>{stat}:</label>
-              <input
-                type="number"
-                name={`requiredStats.${stat}`}
-                value={formData.requiredStats?.[stat] || 0}
-                onChange={handleInputChange}
+
+        <div className="admin-form">
+          <form onSubmit={handleSubmit}>
+            <div className="form-group">
+              <label>Name:</label>
+              <input type="text" name="name" value={formData.name} onChange={handleInputChange} className="form-control" required />
+            </div>
+
+            <div className="form-group">
+              <label>Description:</label>
+              <textarea name="description" value={formData.description} onChange={handleInputChange} className="form-control" required />
+            </div>
+
+            <div className="form-group">
+              <label>Branch:</label>
+              <select name="branchId" value={formData.branchId} onChange={handleInputChange} className="form-control" required>
+                <option value="">Select Branch</option>
+                {branches.map(branch => (
+                  <option key={branch.id} value={branch.id}>
+                    {branch.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="form-group">
+              <label>Type:</label>
+              <select name="typeId" value={formData.typeId} onChange={handleInputChange} className="form-control" required>
+                <option value="">Select Type</option>
+                {types.map(type => (
+                  <option key={type.id} value={type.id}>
+                    {type.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="form-group">
+              <label>Base Power:</label>
+              <input type="number" name="basePower" value={formData.basePower} onChange={handleInputChange} className="form-control" required />
+            </div>
+
+            <div className="form-group">
+              <label>Duration:</label>
+              <input type="number" name="duration" value={formData.duration} onChange={handleInputChange} className="form-control" required />
+            </div>
+
+            <div className="form-group">
+              <label>Activation:</label>
+              <select name="activation" value={formData.activation} onChange={handleInputChange} className="form-control" required>
+                <option value="">Select Activation</option>
+                <option value="BonusAction">Bonus Action</option>
+                <option value="FullAction">Full Action</option>
+                <option value="TwoTurns">Two Turns</option>
+              </select>
+            </div>
+
+            <div className="form-group">
+              <label>Required Stats:</label>
+              {Object.keys(formData.requiredStats || {}).map(stat => (
+                <div key={stat} className="form-group">
+                  <label>{stat}:</label>
+                  <input
+                    type="number"
+                    name={`requiredStats.${stat}`}
+                    value={formData.requiredStats?.[stat] || 0}
+                    onChange={handleInputChange}
+                    className="form-control"
+                  />
+                </div>
+              ))}
+            </div>
+
+            <div className="form-group">
+              <label>Aether Cost:</label>
+              <input type="number" name="aetherCost" value={formData.aetherCost} onChange={handleInputChange} className="form-control" required />
+            </div>
+
+            <div className="form-group">
+              <label>Skill Point Cost:</label>
+              <input 
+                type="number" 
+                name="skillPointCost" 
+                value={formData.skillPointCost} 
+                onChange={handleInputChange} 
+                className="form-control"
+                min="1"
+                required 
               />
             </div>
-          ))}
-        </div>
-        <div>
-          <label>Aether Cost:</label>
-          <input type="number" name="aetherCost" value={formData.aetherCost} onChange={handleInputChange} required />
-        </div>
-        <div>
-          <label>Skill Point Cost:</label>
-          <input 
-            type="number" 
-            name="skillPointCost" 
-            value={formData.skillPointCost} 
-            onChange={handleInputChange} 
-            min="1"
-            required 
-          />
-        </div>
-        <div>
-          <label>Rank:</label>
-          <input type="number" name="rank" value={formData.rank} onChange={handleInputChange} required />
-        </div>
-        <div>
-          <label>Is Passive:</label>
-          <input type="checkbox" name="isPassive" checked={formData.isPassive} onChange={handleInputChange} />
-        </div>
-        <button type="submit">{selectedSkill ? 'Update Skill' : 'Create Skill'}</button>
-      </form>
 
-      <h3>Skills List</h3>
-      <table>
-        <thead>
-          <tr>
-            <th>Name</th>
-            <th>Branch</th>
-            <th>Type</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {skills.map(skill => (
-            <tr key={skill.id}>
-              <td>{skill.name}</td>
-              <td>{branches.find(b => b.id === skill.branchId)?.name || skill.branchId}</td>
-              <td>{types.find(t => t.id === skill.typeId)?.name || skill.typeId}</td>
-              <td>
-                <button onClick={() => handleEdit(skill)}>Edit</button>
-                <button onClick={() => handleDelete(skill.id)}>Delete</button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+            <div className="form-group">
+              <label>Rank:</label>
+              <input type="number" name="rank" value={formData.rank} onChange={handleInputChange} className="form-control" required />
+            </div>
+
+            <div className="form-group">
+              <label>
+                <input
+                  type="checkbox"
+                  name="isPassive"
+                  checked={formData.isPassive}
+                  onChange={handleInputChange}
+                />
+                Is Passive
+              </label>
+            </div>
+
+            <button type="submit" className="btn btn-primary">{selectedSkill ? 'Update Skill' : 'Create Skill'}</button>
+          </form>
+        </div>
+
+        <div className="admin-table">
+          <h3>Skills List</h3>
+          <table>
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Branch</th>
+                <th>Type</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {skills.map(skill => (
+                <tr key={skill.id}>
+                  <td>{skill.name}</td>
+                  <td>{branches.find(b => b.id === skill.branchId)?.name || skill.branchId}</td>
+                  <td>{types.find(t => t.id === skill.typeId)?.name || skill.typeId}</td>
+                  <td>
+                    <button onClick={() => handleEdit(skill)} className="btn btn-primary">Edit</button>
+                    <button onClick={() => handleDelete(skill.id)} className="btn btn-danger">Delete</button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
   );
 };
