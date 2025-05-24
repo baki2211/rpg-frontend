@@ -8,6 +8,23 @@ export interface Race {
   baseHp: number;
 }
 
+export interface Skill {
+  id: number;
+  name: string;
+  description: string;
+  skillPointCost: number;
+  branchId: number;
+  typeId: number;
+  rank: number;
+  isPassive: boolean;
+  branch: {
+    name: string;
+  };
+  type: {
+    name: string;
+  };
+}
+
 export interface Character {
   id: number;
   userId: number;
@@ -18,6 +35,8 @@ export interface Character {
   race: Race;
   isActive: boolean;
   imageUrl?: string;
+  skills: Skill[];
+  skillPoints: number;
 }
 
 export const useCharacters = () => {
@@ -33,8 +52,16 @@ export const useCharacters = () => {
 
   const fetchCharacters = async () => {
     try {
-      const response = await axios.get("http://localhost:5001/api/characters", { withCredentials: true });
-      setCharacters(response.data);
+      const response = await axios.get("http://localhost:5001/api/characters?include=skills,race", { 
+        withCredentials: true 
+      });
+      // Ensure skills array exists for each character and is properly initialized
+      const charactersWithSkills = response.data.map((char: Character) => ({
+        ...char,
+        skills: Array.isArray(char.skills) ? char.skills : [],
+        skillPoints: char.skillPoints || 0
+      }));
+      setCharacters(charactersWithSkills);
     } catch (error) {
       console.error("Failed to fetch characters:", error);
       setError("Failed to fetch characters");

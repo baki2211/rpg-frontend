@@ -1,0 +1,134 @@
+.skill-card {
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  transition: transform 0.2s ease;
+}
+
+.skill-card:hover {
+  transform: scale(1.02);
+}
+
+.skill-card-content {
+  padding: 1.5rem;
+}
+
+.skill-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1rem;
+}
+
+.skill-header h3 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #1a1a1a;
+  margin: 0;
+}
+
+.skill-rank {
+  padding: 0.25rem 0.75rem;
+  background-color: #e6f3ff;
+  color: #0066cc;
+  border-radius: 9999px;
+  font-size: 0.875rem;
+}
+
+.skill-description {
+  color: #4a4a4a;
+  margin-bottom: 1rem;
+  line-height: 1.5;
+}
+
+.skill-details {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.skill-detail {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.875rem;
+}
+
+.detail-label {
+  color: #666;
+}
+
+.detail-value {
+  font-weight: 500;
+  color: #1a1a1a;
+}
+
+.skill-button {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  font-weight: 500;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.skill-button.acquired {
+  background-color: #22c55e;
+  color: white;
+  opacity: 0.75;
+  cursor: default;
+}
+
+.skill-button.available {
+  background-color: #3b82f6;
+  color: white;
+}
+
+.skill-button.available:hover {
+  background-color: #2563eb;
+}
+
+.skill-button.available:active {
+  background-color: #1d4ed8;
+}
+
+.skill-button.unavailable {
+  background-color: #e5e7eb;
+  color: #6b7280;
+  cursor: not-allowed;
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .skill-card {
+    background-color: #1f2937;
+  }
+
+  .skill-header h3 {
+    color: #f3f4f6;
+  }
+
+  .skill-rank {
+    background-color: #1e3a8a;
+    color: #93c5fd;
+  }
+
+  .skill-description {
+    color: #d1d5db;
+  }
+
+  .detail-label {
+    color: #9ca3af;
+  }
+
+  .detail-value {
+    color: #f3f4f6;
+  }
+
+  .skill-button.unavailable {
+    background-color: #374151;
+    color: #9ca3af;
+  }
+} 

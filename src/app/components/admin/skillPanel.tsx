@@ -5,37 +5,71 @@ interface Skill {
   id: number;
   name: string;
   description: string;
-  branch: string;
-  type: string;
+  branchId: number;
+  typeId: number;
   basePower: number;
   duration: number;
   activation: string;
   requiredStats: Record<string, number>;
   aetherCost: number;
+  skillPointCost: number;
   rank: number;
   isPassive: boolean;
 }
 
+interface Branch {
+  id: number;
+  name: string;
+}
+
+interface Type {
+  id: number;
+  name: string;
+}
+
 const SkillDashboard: React.FC = () => {
   const [skills, setSkills] = useState<Skill[]>([]);
+  const [branches, setBranches] = useState<Branch[]>([]);
+  const [types, setTypes] = useState<Type[]>([]);
   const [selectedSkill, setSelectedSkill] = useState<Skill | null>(null);
   const [formData, setFormData] = useState<Partial<Skill>>({
     name: '',
     description: '',
-    branch: '',
-    type: '',
+    branchId: 1,
+    typeId: 1,
     basePower: 0,
     duration: 0,
     activation: '',
     requiredStats: { STR: 0, DEX: 0, RES: 0, MN: 0, CHA: 0 },
     aetherCost: 0,
+    skillPointCost: 1,
     rank: 1,
     isPassive: false
   });
 
   useEffect(() => {
     fetchSkills();
+    fetchBranches();
+    fetchTypes();
   }, []);
+
+  const fetchBranches = async () => {
+    try {
+      const response = await axios.get('http://localhost:5001/api/skill-branches');
+      setBranches(response.data);
+    } catch (error) {
+      console.error('Error fetching branches:', error);
+    }
+  };
+
+  const fetchTypes = async () => {
+    try {
+      const response = await axios.get('http://localhost:5001/api/skill-types');
+      setTypes(response.data);
+    } catch (error) {
+      console.error('Error fetching types:', error);
+    }
+  };
 
   const fetchSkills = async () => {
     try {
@@ -73,13 +107,14 @@ const SkillDashboard: React.FC = () => {
       setFormData({
         name: '',
         description: '',
-        branch: '',
-        type: '',
+        branchId: 1,
+        typeId: 1,
         basePower: 0,
         duration: 0,
         activation: '',
         requiredStats: { STR: 0, DEX: 0, RES: 0, MN: 0, CHA: 0 },
         aetherCost: 0,
+        skillPointCost: 1,
         rank: 1,
         isPassive: false
       });
@@ -117,22 +152,24 @@ const SkillDashboard: React.FC = () => {
         </div>
         <div>
           <label>Branch:</label>
-          <select name="branch" value={formData.branch} onChange={handleInputChange} required>
+          <select name="branchId" value={formData.branchId} onChange={handleInputChange} required>
             <option value="">Select Branch</option>
-            <option value="Pyromancy">Pyromancy</option>
-            <option value="Cryomancy">Cryomancy</option>
-            <option value="Chronomancy">Chronomancy</option>
+            {branches.map(branch => (
+              <option key={branch.id} value={branch.id}>
+                {branch.name}
+              </option>
+            ))}
           </select>
         </div>
         <div>
           <label>Type:</label>
-          <select name="type" value={formData.type} onChange={handleInputChange} required>
+          <select name="typeId" value={formData.typeId} onChange={handleInputChange} required>
             <option value="">Select Type</option>
-            <option value="Attack">Attack</option>
-            <option value="Defense">Defense</option>
-            <option value="Support">Support</option>
-            <option value="Mobility">Mobility</option>
-            <option value="Utility">Utility</option>
+            {types.map(type => (
+              <option key={type.id} value={type.id}>
+                {type.name}
+              </option>
+            ))}
           </select>
         </div>
         <div>
@@ -171,6 +208,17 @@ const SkillDashboard: React.FC = () => {
           <input type="number" name="aetherCost" value={formData.aetherCost} onChange={handleInputChange} required />
         </div>
         <div>
+          <label>Skill Point Cost:</label>
+          <input 
+            type="number" 
+            name="skillPointCost" 
+            value={formData.skillPointCost} 
+            onChange={handleInputChange} 
+            min="1"
+            required 
+          />
+        </div>
+        <div>
           <label>Rank:</label>
           <input type="number" name="rank" value={formData.rank} onChange={handleInputChange} required />
         </div>
@@ -195,8 +243,8 @@ const SkillDashboard: React.FC = () => {
           {skills.map(skill => (
             <tr key={skill.id}>
               <td>{skill.name}</td>
-              <td>{skill.branch}</td>
-              <td>{skill.type}</td>
+              <td>{branches.find(b => b.id === skill.branchId)?.name || skill.branchId}</td>
+              <td>{types.find(t => t.id === skill.typeId)?.name || skill.typeId}</td>
               <td>
                 <button onClick={() => handleEdit(skill)}>Edit</button>
                 <button onClick={() => handleDelete(skill.id)}>Delete</button>
