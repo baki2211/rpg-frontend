@@ -38,11 +38,16 @@ const ChatPage = () => {
         });
         if (!response.ok) throw new Error('Failed to fetch messages');
         const data = await response.json();
+        console.log('Fetched messages from database:', data);
         // Add formattedMessage to each message
-        const formatted = data.map((msg: { username: string; createdAt: string; message: string; skill?: Skill }) => ({
-          ...msg,
-          formattedMessage: `${new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - ${msg.username}`,
-        }));
+        const formatted = data.map((msg: { username: string; createdAt: string; message: string; skill?: Skill }) => {
+          console.log('Processing message:', msg);
+          return {
+            ...msg,
+            formattedMessage: `${new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - ${msg.username}`,
+          };
+        });
+        console.log('Formatted messages:', formatted);
         setMessages(formatted);
         scrollToBottom();
       } catch (error) {
