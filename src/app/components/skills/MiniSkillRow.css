@@ -1,0 +1,33 @@
+.mini-skill-row {
+  display: inline-flex;
+  align-items: center;
+  background-color: rgba(52, 152, 219, 0.1);
+  border-radius: 4px;
+  padding: 0.25rem 0.5rem;
+  margin: 0.25rem 0;
+  font-size: 0.875rem;
+}
+
+.mini-skill-info {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.mini-skill-name {
+  font-weight: bold;
+  color: #3498db;
+}
+
+.mini-skill-details {
+  display: flex;
+  gap: 0.25rem;
+}
+
+.mini-skill-branch,
+.mini-skill-type {
+  background: rgba(52, 152, 219, 0.2);
+  padding: 0.125rem 0.25rem;
+  border-radius: 2px;
+  font-size: 0.75rem;
+} 

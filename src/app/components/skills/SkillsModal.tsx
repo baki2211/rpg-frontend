@@ -1,77 +1,85 @@
 import React, { useState, useEffect } from 'react';
-import  Modal  from '@/app/components/common/Modal';
+import { useCharacters } from '@/app/hooks/useCharacter';
 import { SkillRow } from './SkillRow';
 import { Skill } from '@/app/hooks/useCharacter';
-import { useCharacters } from '@/app/hooks/useCharacter';
 import './SkillsModal.css';
 
 interface SkillsModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onLaunchSkill: (skillId: number) => void;
+  onSelectSkill: (skill: Skill) => void;
 }
 
-export const SkillsModal: React.FC<SkillsModalProps> = ({ isOpen, onClose, onLaunchSkill }) => {
+export const SkillsModal: React.FC<SkillsModalProps> = ({ isOpen, onClose, onSelectSkill }) => {
   const { characters } = useCharacters();
-  const [acquiredSkills, setAcquiredSkills] = useState<Skill[]>([]);
+  const [skills, setSkills] = useState<Skill[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const activeCharacter = characters.find(char => char.isActive);
 
   useEffect(() => {
-    const fetchAcquiredSkills = async () => {
+    const fetchSkills = async () => {
       if (!activeCharacter) return;
-      
+
       try {
-        const response = await fetch(`http://localhost:5001/api/character-skills/${activeCharacter.id}/acquired-skills?include=branch,type`, {
-          credentials: 'include'
-        });
-        
-        if (!response.ok) throw new Error('Failed to fetch acquired skills');
-        
-        const skills = await response.json();
-        setAcquiredSkills(skills);
+        const response = await fetch(
+          `http://localhost:5001/api/character-skills/${activeCharacter.id}/acquired-skills?include=branch,type`,
+          {
+            credentials: 'include',
+          }
+        );
+
+        if (!response.ok) {
+          throw new Error('Failed to fetch skills');
+        }
+
+        const data = await response.json();
+        setSkills(data);
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'An error occurred');
+        setError(err instanceof Error ? err.message : 'Failed to fetch skills');
       } finally {
         setLoading(false);
       }
     };
 
-    if (isOpen && activeCharacter) {
-      fetchAcquiredSkills();
+    if (isOpen) {
+      fetchSkills();
     }
   }, [isOpen, activeCharacter?.id]);
 
-  const handleLaunchSkill = (skillId: number) => {
-    onLaunchSkill(skillId);
-    onClose();
-  };
+  if (!isOpen) return null;
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title="Launch Skills">
-      <div className="skills-modal-content">
+    <div className="modal-overlay">
+      <div className="modal-content">
+        <div className="modal-header">
+          <h2>Your Skills</h2>
+          <button onClick={onClose} className="close-button">
+            ×
+          </button>
+        </div>
+
         {loading ? (
-          <div className="loading-spinner" />
+          <div className="loading">Loading skills...</div>
         ) : error ? (
-          <div className="error-message">{error}</div>
+          <div className="error">{error}</div>
         ) : !activeCharacter ? (
-          <div className="warning-message">No active character selected</div>
-        ) : acquiredSkills.length === 0 ? (
-          <div className="no-skills-message">No skills acquired yet</div>
+          <div className="no-skills">No active character selected.</div>
+        ) : skills.length === 0 ? (
+          <div className="no-skills">No skills acquired yet.</div>
         ) : (
           <div className="skills-list">
-            {acquiredSkills.map((skill) => (
+            {skills.map((skill) => (
               <SkillRow
                 key={skill.id}
                 skill={skill}
-                onLaunch={handleLaunchSkill}
+                onLaunch={() => onSelectSkill(skill)}
               />
             ))}
           </div>
         )}
       </div>
-    </Modal>
+    </div>
   );
 }; 

@@ -5,6 +5,8 @@ import { useAuth } from '../../../utils/AuthContext';
 import { useParams } from 'next/navigation';
 import { WebSocketService } from '../../../services/webSocketService';
 import { SkillsModal } from '@/app/components/skills/SkillsModal';
+import { MiniSkillRow } from '@/app/components/skills/MiniSkillRow';
+import { Skill } from '@/app/hooks/useCharacter';
 import './chat.css';
 
 const ChatPage = () => {
@@ -12,11 +14,12 @@ const ChatPage = () => {
   const params = useParams();
   const locationId = params?.locationId as string;
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const [messages, setMessages] = useState<{ username: string; createdAt: string; message: string; formattedMessage?: string }[]>([]);
+  const [messages, setMessages] = useState<{ username: string; createdAt: string; message: string; formattedMessage?: string; skill?: Skill }[]>([]);
   const [newMessage, setNewMessage] = useState('');
   const [charCount, setCharCount] = useState(0);
   const [isSkillsModalOpen, setIsSkillsModalOpen] = useState(false);
   const webSocketServiceRef = useRef<WebSocketService | null>(null);
+  const [selectedSkill, setSelectedSkill] = useState<Skill | null>(null);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -36,7 +39,7 @@ const ChatPage = () => {
         if (!response.ok) throw new Error('Failed to fetch messages');
         const data = await response.json();
         // Add formattedMessage to each message
-        const formatted = data.map((msg: { username: string; createdAt: string; message: string }) => ({
+        const formatted = data.map((msg: { username: string; createdAt: string; message: string; skill?: Skill }) => ({
           ...msg,
           formattedMessage: `${new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - ${msg.username}`,
         }));
@@ -54,11 +57,18 @@ const ChatPage = () => {
     webSocketServiceRef.current = new WebSocketService({
       url: wsUrl,
       onMessage: (message) => {
-        const typedMessage = message as unknown as { username: string; createdAt: string; message: string };
+        console.log('Received WebSocket message:', message);
+        const typedMessage = message as unknown as { 
+          username: string; 
+          createdAt: string; 
+          message: string;
+          skill?: Skill;
+        };
         const formattedMessage = {
           ...typedMessage,
           formattedMessage: `${new Date(typedMessage.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - ${typedMessage.username}`,
         };
+        console.log('Formatted message with skill:', formattedMessage);
         setMessages((prev) => [...prev, formattedMessage]);
         scrollToBottom();
       },
@@ -130,7 +140,28 @@ const ChatPage = () => {
   }, []);
 
   // Function to format the message after sanitization
-  const formatMessage = (message: string) => {
+  const formatMessage = (message: string, skill?: Skill) => {
+    console.log('Formatting message with skill:', { message, skill });
+    // Handle messages with skills
+    if (skill) {
+      return (
+        <div className="message-with-skill">
+          <MiniSkillRow skill={skill} />
+          <div className="message-text">
+            {message.split(/(«[^»]+»|"[^"]+")/).map((part, i) => {
+              if (part.startsWith('«') && part.endsWith('»')) {
+                return <span key={i} className="speech-text">{part}</span>;
+              } else if (part.startsWith('"') && part.endsWith('"')) {
+                return <span key={i} className="thought-text">{part}</span>;
+              }
+              return part;
+            })}
+          </div>
+        </div>
+      );
+    }
+
+    // Handle regular messages
     return message.split(/(«[^»]+»|"[^"]+")/).map((part, i) => {
       if (part.startsWith('«') && part.endsWith('»')) {
         return <span key={i} className="speech-text">{part}</span>;
@@ -141,46 +172,37 @@ const ChatPage = () => {
     });
   };
 
+  const handleSelectSkill = (skill: Skill) => {
+    setSelectedSkill(skill);
+    setIsSkillsModalOpen(false);
+  };
+
   const handleSendMessage = (e: React.FormEvent) => {
     e.preventDefault();
     if (!user || !newMessage.trim()) return;
 
     const sanitizedMessage = sanitizeMessage(newMessage);
-
+    console.log('Selected skill before sending:', selectedSkill);
+    
     const message = {
       locationId,
       userId: user.id,
       username: user.username,
       message: sanitizedMessage,
       createdAt: new Date().toISOString(),
-    } as unknown as JSON;
-
-    webSocketServiceRef.current?.sendMessage(message);
+      skill: selectedSkill ? {
+        id: selectedSkill.id,
+        name: selectedSkill.name,
+        branch: selectedSkill.branch,
+        type: selectedSkill.type
+      } : null
+    };
+    
+    console.log('Sending message with skill data:', message);
+    webSocketServiceRef.current?.sendMessage(message as unknown as JSON);
     setNewMessage('');
     setCharCount(0);
-  };
-
-  const handleLaunchSkill = async (skillId: number) => {
-    if (!user) return;
-
-    try {
-      const response = await fetch(`http://localhost:5001/api/chat/skills/${skillId}`, {
-        method: 'POST',
-        credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ locationId })
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to launch skill');
-      }
-
-      // The skill effect will be received through the WebSocket
-    } catch (error) {
-      console.error('Error launching skill:', error);
-    }
+    setSelectedSkill(null); // Reset selected skill after sending
   };
 
   return (
@@ -192,7 +214,7 @@ const ChatPage = () => {
               {msg.formattedMessage || `${msg.username} - ${new Date(msg.createdAt).toLocaleString()}`}
             </div>
             <div className="message-content">
-              {formatMessage(msg.message)}
+              {formatMessage(msg.message, msg.skill)}
             </div>
           </div>
         ))}
@@ -206,16 +228,16 @@ const ChatPage = () => {
             setNewMessage(e.target.value);
             setCharCount(e.target.value.length);
           }}
-          placeholder="Type a message..."
+          placeholder={selectedSkill ? `Using ${selectedSkill.name}...` : "Type a message..."}
           className="message-input"
           required
         />
         <button 
           type="button"
           onClick={() => setIsSkillsModalOpen(true)}
-          className="skills-button"
+          className={`skills-button ${selectedSkill ? 'active' : ''}`}
         >
-          Skills
+          {selectedSkill ? selectedSkill.name : 'Skills'}
         </button>
         <button 
           type="submit"
@@ -232,7 +254,7 @@ const ChatPage = () => {
       <SkillsModal
         isOpen={isSkillsModalOpen}
         onClose={() => setIsSkillsModalOpen(false)}
-        onLaunchSkill={handleLaunchSkill}
+        onSelectSkill={handleSelectSkill}
       />
     </div>
   );
