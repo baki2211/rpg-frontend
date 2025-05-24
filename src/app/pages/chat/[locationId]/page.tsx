@@ -4,6 +4,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../../../utils/AuthContext';
 import { useParams } from 'next/navigation';
 import { WebSocketService } from '../../../services/webSocketService';
+import { SkillsModal } from '@/app/components/skills/SkillsModal';
+import './chat.css';
 
 const ChatPage = () => {
   const { user } = useAuth();
@@ -13,6 +15,7 @@ const ChatPage = () => {
   const [messages, setMessages] = useState<{ username: string; createdAt: string; message: string; formattedMessage?: string }[]>([]);
   const [newMessage, setNewMessage] = useState('');
   const [charCount, setCharCount] = useState(0);
+  const [isSkillsModalOpen, setIsSkillsModalOpen] = useState(false);
   const webSocketServiceRef = useRef<WebSocketService | null>(null);
 
   const scrollToBottom = () => {
@@ -157,18 +160,45 @@ const ChatPage = () => {
     setCharCount(0);
   };
 
+  const handleLaunchSkill = async (skillId: number) => {
+    if (!user) return;
+
+    try {
+      const response = await fetch(`http://localhost:5001/api/chat/skills/${skillId}`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ locationId })
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to launch skill');
+      }
+
+      // The skill effect will be received through the WebSocket
+    } catch (error) {
+      console.error('Error launching skill:', error);
+    }
+  };
+
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100vh' }}>
-      <div style={{ flex: 1, overflowY: 'auto', padding: '1rem', backgroundColor: '#b7abab' }}>
+    <div className="chat-page">
+      <div className="chat-messages">
         {messages.map((msg, index) => (
-          <div key={index} style={{ marginBottom: '1rem' }}>
-            <strong>{msg.formattedMessage || `${msg.username} - ${new Date(msg.createdAt).toLocaleString()}`}</strong>
-            <p>{formatMessage(msg.message)}</p>
+          <div key={index} className="message">
+            <div className="message-header">
+              {msg.formattedMessage || `${msg.username} - ${new Date(msg.createdAt).toLocaleString()}`}
+            </div>
+            <div className="message-content">
+              {formatMessage(msg.message)}
+            </div>
           </div>
         ))}
         <div ref={messagesEndRef} />
       </div>
-      <form onSubmit={handleSendMessage} style={{ display: 'flex', padding: '1rem', borderTop: '1px solid #ccc' }}>
+      <form onSubmit={handleSendMessage} className="chat-input-form">
         <input
           type="text"
           value={newMessage}
@@ -177,14 +207,33 @@ const ChatPage = () => {
             setCharCount(e.target.value.length);
           }}
           placeholder="Type a message..."
-          style={{ flex: 1, marginRight: '1rem' }}
+          className="message-input"
           required
         />
-        <button type="submit">Send</button>
+        <button 
+          type="button"
+          onClick={() => setIsSkillsModalOpen(true)}
+          className="skills-button"
+        >
+          Skills
+        </button>
+        <button 
+          type="submit"
+          className="send-button"
+          disabled={!newMessage.trim()}
+        >
+          Send
+        </button>
       </form>
-      <div style={{ textAlign: 'right', padding: '0.5rem', color: 'gray' }}>
+      <div className="char-count">
         {charCount} characters
       </div>
+
+      <SkillsModal
+        isOpen={isSkillsModalOpen}
+        onClose={() => setIsSkillsModalOpen(false)}
+        onLaunchSkill={handleLaunchSkill}
+      />
     </div>
   );
 };

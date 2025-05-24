@@ -1,0 +1,70 @@
+.skill-row {
+  display: flex;
+  align-items: center;
+  padding: 1rem;
+  background: rgba(0, 0, 0, 0.6);
+  border-radius: 4px;
+  margin-bottom: 0.5rem;
+  transition: background-color 0.2s ease;
+}
+
+.skill-row:hover {
+  background: rgba(0, 0, 0, 0.8);
+}
+
+.skill-info {
+  flex: 0 0 200px;
+  padding-right: 1rem;
+}
+
+.skill-name {
+  color: #fff;
+  font-size: 1.1rem;
+  margin: 0 0 0.5rem 0;
+}
+
+.skill-details {
+  display: flex;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+}
+
+.skill-branch,
+.skill-type {
+  color: #888;
+  background: rgba(255, 255, 255, 0.1);
+  padding: 0.2rem 0.5rem;
+  border-radius: 3px;
+}
+
+.skill-description {
+  flex: 1;
+  color: #ccc;
+  font-size: 0.9rem;
+  padding: 0 1rem;
+}
+
+.skill-actions {
+  flex: 0 0 100px;
+  text-align: right;
+}
+
+.launch-skill-button {
+  background: #2ecc71;
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background-color 0.2s ease;
+}
+
+.launch-skill-button:hover {
+  background: #27ae60;
+}
+
+.launch-skill-button:disabled {
+  background: #95a5a6;
+  cursor: not-allowed;
+} 
