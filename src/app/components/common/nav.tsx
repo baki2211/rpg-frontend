@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import Link from 'next/link';
 import { useAuth } from "../../utils/AuthContext";
 import LogoutButton from "../buttons/logoutButton";
 
@@ -17,32 +16,27 @@ const NavMenu: React.FC = () => {
   }
 
   return (
-    <nav className="navbar">
-      <Link href="/" className="navbar-brand">
-        🏰 Arcane Realms
-      </Link>
-      
-      <div className="navbar-links">
-        {!isAuthenticated && (
-          <>
-            <a href="/pages/register" className="navbar-link">Register</a>
-            <a href="/pages/login" className="navbar-link">Login</a>
-          </>
-        )}
-        {isAuthenticated && (
-          <>
-            <a href="/pages/dashboard" className="navbar-link">Dashboard</a>
-            <a href="/pages/characters" className="navbar-link">Characters</a>
-            <a href="/pages/skills" className="navbar-link">Skills</a>
-            <a href="/pages/map" className="navbar-link">Map</a>
-            <a href="/pages/sessions" className="navbar-link">Sessions</a>
-            {user?.role === 'admin' && (
-              <a href="/pages/admin/dashboard" className="navbar-link admin">Admin Dashboard</a>
-            )}
-            <LogoutButton />
-          </>
-        )}
-      </div>
+    <nav style={{ padding: "1rem", borderBottom: "1px solid #ddd" }}>
+      {!isAuthenticated && (
+        <>
+          <a href="/pages/register" style={{ marginRight: "1rem" }}>Register</a>
+          <a href="/pages/login" style={{ marginRight: "1rem" }}>Login</a>
+        </>
+      )}
+      {isAuthenticated && (
+        <>
+          <a href="/pages/dashboard" style={{ marginRight: "1rem" }}>Dashboard</a>
+          <a href="/pages/characters" style={{ marginRight: "1rem" }}>Characters</a>
+          <a href="/pages/protected" style={{ marginRight: "1rem" }}>Protected</a>
+          <a href="/pages/sessions" style={{ marginRight: "1rem" }}>Sessions</a>
+          <a href="/pages/skills" style={{ marginRight: "1rem" }}>Skills</a>
+          <a href="/pages/map" style={{ marginRight: "1rem" }}>Map</a>
+          {user?.role === 'admin' && (
+            <a href="/pages/admin/dashboard" style={{ marginRight: "1rem" }}>Admin Dashboard</a>
+          )}
+          <LogoutButton />
+        </>
+      )}
     </nav>
   );
 };

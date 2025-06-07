@@ -29,46 +29,27 @@ const CharacterCard: React.FC<CharacterCardProps> = ({
   onDelete
 }) => {  
   return (
-    <div className="character-card">
+    <div style={{ border: '1px solid #ccc', padding: '1rem', borderRadius: '8px', maxWidth: '300px', backgroundColor: '#f9f9f9', margin: '1rem' }}>
       <Image 
         src={`http://localhost:5001${character.imageUrl ?? '/uploads/placeholder.jpg'}`} 
         alt={'Character Image'} 
         width={150}
         height={150}
-        style={{ objectFit: 'cover', borderRadius: '12px', marginBottom: '1rem', border: '2px solid rgba(255, 255, 255, 0.2)' }}
+        style={{ objectFit: 'cover', borderRadius: '4px' }}
       />
       <h3>{character.name} {character.surname}</h3>
       <p><strong>Race:</strong> {character.race.name}</p>
       <p><strong>Gender:</strong> {character.gender}</p>
-      <p>
-        <strong>Status:</strong> 
-        <span style={{ 
-          marginLeft: '0.5rem',
-          padding: '0.25rem 0.5rem',
-          borderRadius: '12px',
-          fontSize: '0.8rem',
-          fontWeight: '600',
-          backgroundColor: character.isActive ? '#4ecdc4' : 'rgba(255, 255, 255, 0.2)',
-          color: 'white'
-        }}>
-          {character.isActive ? '✓ Active' : 'Inactive'}
-        </span>
-      </p>
+      <p><strong>Active:</strong> {character.isActive ? 'Yes' : 'No'}</p>
       {isCharacterPanel && (
-        <div style={{ marginTop: '1rem', display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+        <div>
           <button 
             onClick={() => onActivate(character.id, character.userId)}
             disabled={character.isActive}
-            className={character.isActive ? 'btn btn-secondary' : 'btn btn-success'}
-          >
-            {character.isActive ? '🏛️ Active' : '⚡ Activate'}
+            >
+          {character.isActive ? 'Active' : 'Activate'}
           </button>
-          <button 
-            onClick={() => onDelete(character.id)}
-            className="btn btn-danger"
-          >
-            🗑️ Delete
-          </button>
+          <button onClick={() => onDelete(character.id)}>Delete</button>
         </div>
       )}
     </div>

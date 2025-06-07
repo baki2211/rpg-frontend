@@ -43,40 +43,44 @@ const UserCard: React.FC<UserCardProps> = ({ username, location, isCurrentUser }
   };
 
   return (
-    <div className={`user-card ${isCurrentUser ? 'current-user' : ''}`}>
+    <div style={{
+      display: 'flex',
+      alignItems: 'center',
+      padding: '0.75rem',
+      marginBottom: '0.5rem',
+      backgroundColor: '#f8f9fa',
+      borderRadius: '8px',
+      borderLeft: isCurrentUser ? '4px solid rgb(0, 0, 1)' : '4px solid transparent'
+    }}>
       <div style={{
         width: '40px',
         height: '40px',
         borderRadius: '50%',
-        background: 'linear-gradient(135deg, #667eea, #764ba2)',
+        backgroundColor: '#ddd',
         marginRight: '1rem',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        color: 'white',
-        fontWeight: '600',
-        fontSize: '1.1rem'
+        overflow: 'hidden'
       }}>
-        {username.charAt(0).toUpperCase()}
+        <span style={{ fontSize: '18px', color: '#666' }}>
+          {username.charAt(0).toUpperCase()}
+        </span>
       </div>
-      <div style={{ flex: 1 }}>
-        <div style={{ 
-          fontWeight: isCurrentUser ? '600' : '500',
-          color: 'white',
-          marginBottom: '0.25rem'
-        }}>
+      <div>
+        <div style={{ fontWeight: isCurrentUser ? '600' : '500' }}>
           {username}{isCurrentUser && ' (You)'}
         </div>
         <div 
           style={{ 
             fontSize: '0.75rem', 
-            color: 'rgba(255, 255, 255, 0.7)',
+            color: '#6c757d',
             cursor: 'pointer',
             textDecoration: 'underline'
           }}
           onClick={handleLocationClick}
         >
-          📍 {location}
+          {location}
         </div>
       </div>
     </div>
@@ -87,23 +91,27 @@ const OnlineUsers: React.FC = () => {
   const { onlineUsers, currentUser } = usePresence();
 
   return (
-    <div className="online-users">
-      <h3>🌐 Online Users ({onlineUsers.length})</h3>
-      <div style={{ maxHeight: '400px', overflowY: 'auto' }}>
-        {onlineUsers.length === 0 ? (
-          <div className="card" style={{ textAlign: 'center' }}>
-            <p style={{ color: 'rgba(255, 255, 255, 0.7)' }}>No users online</p>
-          </div>
-        ) : (
-          onlineUsers.map((user) => (
-            <UserCard
-              key={user.username}
-              username={user.username}
-              location={user.location}
-              isCurrentUser={user.username === currentUser?.username}
-            />
-          ))
-        )}
+    <div>
+      <h3>Online Users ({onlineUsers.length})</h3>
+      <div style={{ maxHeight: '500px', overflowY: 'auto' }}>
+        <div style={{
+          border: '1px solid #e3e6f0',
+          borderRadius: '0 0 8px 8px',
+          padding: '0.5rem'
+        }}>
+          {onlineUsers.length === 0 ? (
+            <div style={{ padding: '1rem', textAlign: 'center' }}>No users online</div>
+          ) : (
+            onlineUsers.map((user) => (
+              <UserCard
+                key={user.username}
+                username={user.username}
+                location={user.location}
+                isCurrentUser={user.username === currentUser?.username}
+              />
+            ))
+          )}
+        </div>
       </div>
     </div>
   );
