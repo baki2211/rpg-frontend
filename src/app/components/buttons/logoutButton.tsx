@@ -33,7 +33,14 @@ const LogoutButton: React.FC = () => {
     }
   };
 
-  return <button onClick={handleLogout}>Logout</button>;
+  return (
+    <button 
+      onClick={handleLogout}
+      className="btn btn-secondary"
+    >
+      🚪 Logout
+    </button>
+  );
 };
 
 export default LogoutButton;
