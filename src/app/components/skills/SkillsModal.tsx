@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useCharacters } from '@/app/hooks/useCharacter';
 import { SkillRow } from './SkillRow';
 import { Skill } from '@/app/hooks/useCharacter';
 import { useChatUsers, ChatUser } from '@/app/hooks/useChatUsers';
+import { useAuth } from '@/app/utils/AuthContext';
 import './SkillsModal.css';
 
 interface SkillWithTarget extends Skill {
@@ -20,6 +21,7 @@ interface SkillsModalProps {
 
 export const SkillsModal: React.FC<SkillsModalProps> = ({ isOpen, onClose, onSelectSkill, onUnselectSkill, selectedSkill: externalSelectedSkill, locationId }) => {
   const { characters } = useCharacters();
+  const { user } = useAuth();
   const [skills, setSkills] = useState<Skill[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -30,6 +32,12 @@ export const SkillsModal: React.FC<SkillsModalProps> = ({ isOpen, onClose, onSel
   const { users: chatUsers, loading: usersLoading } = useChatUsers(locationId || '');
 
   const activeCharacter = characters.find(char => char.isActive);
+
+  // Filter out current user from target list for "other" target skills
+  const availableTargets = useMemo(() => {
+    if (!user) return chatUsers;
+    return chatUsers.filter(chatUser => chatUser.username !== user.username);
+  }, [chatUsers, user]);
 
   useEffect(() => {
     const fetchSkills = async () => {
@@ -148,21 +156,21 @@ export const SkillsModal: React.FC<SkillsModalProps> = ({ isOpen, onClose, onSel
                 
                 {usersLoading ? (
                   <div className="loading">Loading players...</div>
-                ) : chatUsers.length === 0 ? (
-                  <div className="no-targets">No other players found in this chat.</div>
+                ) : availableTargets.length === 0 ? (
+                  <div className="no-targets">No other players available to target in this chat.</div>
                 ) : (
                   <div className="target-list">
                     <h4>Select Target:</h4>
-                    {chatUsers.map((user) => (
+                    {availableTargets.map((targetUser) => (
                       <div 
-                        key={user.userId}
-                        className={`target-option ${selectedTarget?.userId === user.userId ? 'selected' : ''}`}
-                        onClick={() => setSelectedTarget(user)}
+                        key={targetUser.userId}
+                        className={`target-option ${selectedTarget?.userId === targetUser.userId ? 'selected' : ''}`}
+                        onClick={() => setSelectedTarget(targetUser)}
                       >
                         <span className="target-name">
-                          {user.characterName || user.username}
+                          {targetUser.characterName || targetUser.username}
                         </span>
-                        <span className="target-username">({user.username})</span>
+                        <span className="target-username">({targetUser.username})</span>
                       </div>
                     ))}
                   </div>
