@@ -79,18 +79,41 @@ body {
 
 /* Page Container */
 .page-container {
-  max-width: 1200px;
+  max-width: 1400px;
   margin: 0 auto;
-  padding: 2rem;
+  padding: 2rem 1rem;
   min-height: calc(100vh - 80px);
+}
+
+/* Dashboard specific styling for more space */
+.dashboard-page .page-container {
+  max-width: 95vw;
+  padding: 1.5rem 0.5rem;
 }
 
 /* Dashboard Grid */
 .dashboard-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 2rem;
-  margin-top: 2rem;
+  grid-template-columns: 1fr 2fr 1fr;
+  gap: 1.5rem;
+  margin-top: 1.5rem;
+  align-items: start;
+  width: 100%;
+}
+
+/* Responsive layout for smaller screens */
+@media (max-width: 1200px) {
+  .dashboard-grid {
+    grid-template-columns: 1fr 1.5fr 1fr;
+    gap: 1rem;
+  }
+}
+
+@media (max-width: 900px) {
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
 }
 
 .dashboard-section {
@@ -170,6 +193,52 @@ body {
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   gap: 1.5rem;
   margin-top: 2rem;
+}
+
+/* Dashboard Session Container */
+.session-dashboard-container {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  padding: 1rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  width: 100%;
+  overflow-x: auto;
+}
+
+.session-dashboard-container .session-container {
+  background: transparent;
+  padding: 0;
+  margin: 0;
+  width: 100%;
+}
+
+.session-dashboard-container .session-header {
+  display: none; /* Hide the header since we have it in the dashboard section */
+}
+
+.session-dashboard-container .sessions-table {
+  margin-top: 0;
+  width: 100%;
+  min-width: 600px; /* Ensure table has minimum width for readability */
+}
+
+.session-dashboard-container .table-container {
+  width: 100%;
+  overflow-x: auto;
+}
+
+/* Adjust action buttons for dashboard view */
+.session-dashboard-container .action-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+  justify-content: center;
+}
+
+.session-dashboard-container .action-button {
+  font-size: 0.8rem;
+  padding: 0.4rem 0.8rem;
+  min-width: auto;
 }
 
 /* Button Styles */
@@ -364,7 +433,11 @@ a:hover {
   }
   
   .page-container {
-    padding: 1rem;
+    padding: 1rem 0.5rem;
+  }
+  
+  .dashboard-page .page-container {
+    padding: 1rem 0.25rem;
   }
   
   .dashboard-grid {
@@ -382,5 +455,16 @@ a:hover {
   
   .page-header h2 {
     font-size: 1.5rem;
+  }
+
+  /* Mobile session table adjustments */
+  .session-dashboard-container .sessions-table {
+    min-width: 500px;
+    font-size: 0.85rem;
+  }
+
+  .session-dashboard-container .action-button {
+    font-size: 0.75rem;
+    padding: 0.3rem 0.6rem;
   }
 }

@@ -5,6 +5,7 @@ import axios from 'axios';
 import { useRouter } from 'next/navigation';
 import CharacterCard from '../character/characterCard';
 import OnlineUsers from '../common/OnlineUsers';
+import SessionList from '../sessions/SessionList';
 import { useCharacters } from '../../hooks/useCharacter';
 
 const Dashboard = () => {
@@ -49,11 +50,12 @@ const Dashboard = () => {
   const activeCharacters = characters.filter(char => char.isActive);
 
   return (
-    <div className="page-container">
-      <div className="page-header">
-        <h1>Welcome back, {userData.username}!</h1>
-        <p>Manage your characters, explore the world, and connect with other adventurers</p>
-      </div>
+    <div className="dashboard-page">
+      <div className="page-container">
+        <div className="page-header">
+          <h1>Welcome back, {userData.username}!</h1>
+          <p>Manage your characters, explore the world, and connect with other adventurers</p>
+        </div>
 
       <div className="dashboard-grid">
         {/* User Info & Active Characters */}
@@ -83,16 +85,11 @@ const Dashboard = () => {
           )}
         </div>
 
-        {/* Current Games */}
+        {/* Current Games - Now showing actual session table */}
         <div className="dashboard-section">
-          <h3>🎮 Current Games</h3>
-          <div className="card">
-            <p style={{ color: 'rgba(255, 255, 255, 0.8)', marginBottom: '1rem' }}>
-              Session management and active games coming soon...
-            </p>
-            <a href="/pages/sessions" className="btn btn-secondary">
-              View Sessions
-            </a>
+          <h3>🎮 Active Sessions</h3>
+          <div className="session-dashboard-container">
+            <SessionList />
           </div>
         </div>
 
@@ -101,6 +98,7 @@ const Dashboard = () => {
           <OnlineUsers />
         </div>
       </div>
+    </div>
     </div>
   );
 };
