@@ -39,42 +39,67 @@ const Dashboard = () => {
   }, [router]);
 
   if (!userData) {
-    return <p>{message || 'Loading your dashboard...'}</p>;
+    return (
+      <div className="page-container">
+        <div className="loading">{message || 'Loading your dashboard...'}</div>
+      </div>
+    );
   }
 
   const activeCharacters = characters.filter(char => char.isActive);
 
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '1rem', padding: '2rem' }}>
-      {/* User Info & Active Characters */}
-      <div>
-        <h3>Active Characters</h3>
-        {activeCharacters.length > 0 ? (
-          <div>
-            {activeCharacters.map((character) => (
-              <CharacterCard 
-                key={character.id} 
-                character={character} 
-                isCharacterPanel={false}
-                onActivate={activateCharacter}
-                onDelete={deleteCharacter}
-              />
-            ))}
+    <div className="page-container">
+      <div className="page-header">
+        <h1>Welcome back, {userData.username}!</h1>
+        <p>Manage your characters, explore the world, and connect with other adventurers</p>
+      </div>
+
+      <div className="dashboard-grid">
+        {/* User Info & Active Characters */}
+        <div className="dashboard-section">
+          <h3>🏛️ Active Characters</h3>
+          {activeCharacters.length > 0 ? (
+            <div>
+              {activeCharacters.map((character) => (
+                <CharacterCard 
+                  key={character.id} 
+                  character={character} 
+                  isCharacterPanel={false}
+                  onActivate={activateCharacter}
+                  onDelete={deleteCharacter}
+                />
+              ))}
+            </div>
+          ) : (
+            <div className="card">
+              <p style={{ color: 'rgba(255, 255, 255, 0.8)', marginBottom: '1rem' }}>
+                No active character found. Create or activate one to start your adventure!
+              </p>
+              <a href="/pages/characters" className="btn btn-primary">
+                Manage Characters
+              </a>
+            </div>
+          )}
+        </div>
+
+        {/* Current Games */}
+        <div className="dashboard-section">
+          <h3>🎮 Current Games</h3>
+          <div className="card">
+            <p style={{ color: 'rgba(255, 255, 255, 0.8)', marginBottom: '1rem' }}>
+              Session management and active games coming soon...
+            </p>
+            <a href="/pages/sessions" className="btn btn-secondary">
+              View Sessions
+            </a>
           </div>
-        ) : (
-          <p>No Active character, activate one <a href="/pages/characters" style={{ marginRight: "1rem" }}>here</a></p>
-        )}
-      </div>
+        </div>
 
-      {/* Current Games */}
-      <div>
-        <h3>Current Games</h3>
-        <p>Feature coming soon...</p>
-      </div>
-
-      {/* Online Users */}
-      <div>
-        <OnlineUsers />
+        {/* Online Users */}
+        <div className="dashboard-section">
+          <OnlineUsers />
+        </div>
       </div>
     </div>
   );
