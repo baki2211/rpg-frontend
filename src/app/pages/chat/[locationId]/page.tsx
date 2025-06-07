@@ -7,6 +7,7 @@ import { WebSocketService } from '../../../services/webSocketService';
 import { SkillsModal } from '@/app/components/skills/SkillsModal';
 import { MiniSkillRow } from '@/app/components/skills/MiniSkillRow';
 import { Skill } from '@/app/hooks/useCharacter';
+import { ChatUser } from '@/app/hooks/useChatUsers';
 import './chat.css';
 
 const ChatPage = () => {
@@ -19,7 +20,7 @@ const ChatPage = () => {
   const [charCount, setCharCount] = useState(0);
   const [isSkillsModalOpen, setIsSkillsModalOpen] = useState(false);
   const webSocketServiceRef = useRef<WebSocketService | null>(null);
-  const [selectedSkill, setSelectedSkill] = useState<Skill | null>(null);
+  const [selectedSkill, setSelectedSkill] = useState<(Skill & { selectedTarget?: ChatUser }) | null>(null);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -177,8 +178,13 @@ const ChatPage = () => {
     });
   };
 
-  const handleSelectSkill = (skill: Skill) => {
+  const handleSelectSkill = (skill: Skill & { selectedTarget?: ChatUser }) => {
     setSelectedSkill(skill);
+    setIsSkillsModalOpen(false);
+  };
+
+  const handleUnselectSkill = () => {
+    setSelectedSkill(null);
     setIsSkillsModalOpen(false);
   };
 
@@ -199,7 +205,9 @@ const ChatPage = () => {
         id: selectedSkill.id,
         name: selectedSkill.name,
         branch: selectedSkill.branch,
-        type: selectedSkill.type
+        type: selectedSkill.type,
+        target: selectedSkill.target,
+        selectedTarget: selectedSkill.selectedTarget
       } : null
     };
     
@@ -233,7 +241,11 @@ const ChatPage = () => {
             setNewMessage(e.target.value);
             setCharCount(e.target.value.length);
           }}
-          placeholder={selectedSkill ? `Using ${selectedSkill.name}...` : "Type a message..."}
+          placeholder={selectedSkill ? (
+            selectedSkill.selectedTarget ? 
+              `Using ${selectedSkill.name} on ${selectedSkill.selectedTarget.characterName || selectedSkill.selectedTarget.username}...` : 
+              `Using ${selectedSkill.name}...`
+          ) : "Type a message..."}
           className="message-input"
           required
         />
@@ -260,6 +272,9 @@ const ChatPage = () => {
         isOpen={isSkillsModalOpen}
         onClose={() => setIsSkillsModalOpen(false)}
         onSelectSkill={handleSelectSkill}
+        onUnselectSkill={handleUnselectSkill}
+        selectedSkill={selectedSkill || undefined}
+        locationId={locationId}
       />
     </div>
   );

@@ -5,9 +5,11 @@ import './SkillRow.css';
 interface SkillRowProps {
   skill: Skill;
   onLaunch: (skillId: number) => void;
+  onUnselect?: (skillId: number) => void;
+  isSelected?: boolean;
 }
 
-export const SkillRow: React.FC<SkillRowProps> = ({ skill, onLaunch }) => {
+export const SkillRow: React.FC<SkillRowProps> = ({ skill, onLaunch, onUnselect, isSelected = false }) => {
   return (
     <div className="skill-row">
       <div className="skill-info">
@@ -21,12 +23,24 @@ export const SkillRow: React.FC<SkillRowProps> = ({ skill, onLaunch }) => {
         <p>{skill.description}</p>
       </div>
       <div className="skill-actions">
-        <button 
-          className="launch-skill-button"
-          onClick={() => onLaunch(skill.id)}
-        >
-          Launch
-        </button>
+        {isSelected ? (
+          <div className="selected-skill-actions">
+            <span className="selected-indicator">Selected</span>
+            <button 
+              className="unselect-skill-button"
+              onClick={() => onUnselect?.(skill.id)}
+            >
+              Unselect
+            </button>
+          </div>
+        ) : (
+          <button 
+            className="select-skill-button"
+            onClick={() => onLaunch(skill.id)}
+          >
+            Select
+          </button>
+        )}
       </div>
     </div>
   );

@@ -45,16 +45,55 @@
 }
 
 .admin-card {
-  background: white;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  padding: 1.5rem;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 20px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(10px);
+  padding: 2rem;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
 .admin-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+  transform: translateY(-5px);
+  box-shadow: 0 30px 60px rgba(0, 0, 0, 0.15);
+}
+
+.admin-card h3 {
+  color: #2c3e50;
+  font-size: 1.4rem;
+  font-weight: 700;
+  margin-bottom: 1.5rem;
+  border-bottom: 3px solid #667eea;
+  padding-bottom: 0.5rem;
+}
+
+.admin-card ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.admin-card li {
+  margin-bottom: 0.75rem;
+}
+
+.admin-card a {
+  display: block;
+  padding: 0.75rem 1rem;
+  color: #495057;
+  text-decoration: none;
+  border-radius: 12px;
+  background: rgba(102, 126, 234, 0.05);
+  border: 2px solid transparent;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.admin-card a:hover {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  transform: translateX(5px);
+  border-color: #667eea;
 }
 
 .admin-form {
@@ -402,6 +441,163 @@
 }
 
 /* Dark mode support */
+/* Role Panel Styles */
+.roles-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+  gap: 2rem;
+  margin-top: 2rem;
+}
+
+.role-table-container {
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 20px;
+  padding: 2rem;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(10px);
+}
+
+.role-table-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #2c3e50;
+  margin-bottom: 1.5rem;
+  text-align: center;
+  padding-bottom: 1rem;
+  border-bottom: 3px solid;
+}
+
+.role-table-container:nth-child(1) .role-table-title {
+  border-bottom-color: #e74c3c; /* Admin - Red */
+  color: #e74c3c;
+}
+
+.role-table-container:nth-child(2) .role-table-title {
+  border-bottom-color: #f39c12; /* Master - Orange */
+  color: #f39c12;
+}
+
+.role-table-container:nth-child(3) .role-table-title {
+  border-bottom-color: #3498db; /* Staffer - Blue */
+  color: #3498db;
+}
+
+.role-table-container:nth-child(4) .role-table-title {
+  border-bottom-color: #27ae60; /* User - Green */
+  color: #27ae60;
+}
+
+.no-users {
+  text-align: center;
+  padding: 2rem;
+  color: #7f8c8d;
+  font-style: italic;
+  background: #f8f9fa;
+  border-radius: 12px;
+  border: 2px dashed #dee2e6;
+}
+
+.role-actions {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.role-select {
+  padding: 0.5rem 0.75rem;
+  border: 2px solid #e9ecef;
+  border-radius: 8px;
+  background: white;
+  color: #495057;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.role-select:hover {
+  border-color: #667eea;
+}
+
+.role-select:focus {
+  outline: none;
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.btn-demote {
+  background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+  color: white;
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-demote:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(231, 76, 60, 0.3);
+}
+
+.btn-demote.disabled,
+.btn-demote:disabled {
+  background: #95a5a6;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.admin-warning {
+  background: rgba(243, 156, 18, 0.1);
+  border: 2px solid rgba(243, 156, 18, 0.3);
+  color: #f39c12;
+  padding: 1rem;
+  border-radius: 8px;
+  margin-top: 1rem;
+  font-weight: 600;
+  text-align: center;
+}
+
+.alert {
+  padding: 1rem 1.5rem;
+  border-radius: 12px;
+  margin-bottom: 2rem;
+  font-weight: 600;
+}
+
+.alert-error {
+  background: rgba(231, 76, 60, 0.1);
+  color: #e74c3c;
+  border: 2px solid rgba(231, 76, 60, 0.2);
+}
+
+.alert-success {
+  background: rgba(39, 174, 96, 0.1);
+  color: #27ae60;
+  border: 2px solid rgba(39, 174, 96, 0.2);
+}
+
+@media (max-width: 768px) {
+  .roles-grid {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+  
+  .role-table-container {
+    padding: 1.5rem;
+  }
+  
+  .role-actions {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  
+  .role-select {
+    width: 100%;
+  }
+}
+
 @media (prefers-color-scheme: dark) {
   .admin-panel {
     background: linear-gradient(135deg, #2d3748 0%, #4a5568 100%);
@@ -452,5 +648,54 @@
 
   .admin-table tr:hover {
     background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+  }
+
+  .role-table-container {
+    background: rgba(45, 55, 72, 0.95);
+  }
+
+  .role-table-title {
+    color: #e2e8f0;
+  }
+
+  .no-users {
+    background: rgba(74, 85, 104, 0.5);
+    color: #a0aec0;
+    border-color: #4a5568;
+  }
+
+  .role-select {
+    background: rgba(74, 85, 104, 0.8);
+    border-color: #4a5568;
+    color: #e2e8f0;
+  }
+
+  .alert-error {
+    background: rgba(231, 76, 60, 0.2);
+    border-color: rgba(231, 76, 60, 0.3);
+  }
+
+  .alert-success {
+    background: rgba(39, 174, 96, 0.2);
+    border-color: rgba(39, 174, 96, 0.3);
+  }
+
+  .admin-card {
+    background: rgba(45, 55, 72, 0.95);
+  }
+
+  .admin-card h3 {
+    color: #e2e8f0;
+    border-bottom-color: #667eea;
+  }
+
+  .admin-card a {
+    color: #e2e8f0;
+    background: rgba(102, 126, 234, 0.1);
+  }
+
+  .admin-card a:hover {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
   }
 } 

@@ -17,6 +17,7 @@ export interface Skill {
   typeId: number;
   rank: number;
   isPassive: boolean;
+  target: 'self' | 'other' | 'none';
   branch: {
     name: string;
   };
