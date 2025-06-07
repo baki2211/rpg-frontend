@@ -12,6 +12,7 @@ interface Skill {
   duration: number;
   activation: string;
   requiredStats: Record<string, number>;
+  scalingStats: string[];  // Array of up to 3 scaling stats
   aetherCost: number;
   skillPointCost: number;
   rank: number;
@@ -42,6 +43,7 @@ const SkillDashboard: React.FC = () => {
     duration: 0,
     activation: '',
     requiredStats: { STR: 0, DEX: 0, RES: 0, MN: 0, CHA: 0 },
+    scalingStats: [],  // Initialize empty array for scaling stats
     aetherCost: 0,
     skillPointCost: 1,
     rank: 1,
@@ -81,6 +83,15 @@ const SkillDashboard: React.FC = () => {
     }
   };
 
+  // Add validation function for scaling stats
+  const validateScalingStats = (newStats: string[], index: number, value: string): boolean => {
+    // If the value is empty (deselecting), it's always valid
+    if (!value) return true;
+    
+    // Check if the value already exists in other positions
+    return !newStats.some((stat, i) => i !== index && stat === value);
+  };
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;
     if (type === 'checkbox') {
@@ -91,6 +102,21 @@ const SkillDashboard: React.FC = () => {
         ...formData,
         requiredStats: { ...formData.requiredStats, [stat]: Number(value) }
       });
+    } else if (name.startsWith('scalingStats.')) {
+      const index = parseInt(name.split('.')[1]);
+      const newScalingStats = [...(formData.scalingStats || [])];
+      
+      // Validate before updating
+      if (validateScalingStats(newScalingStats, index, value)) {
+        newScalingStats[index] = value;
+        setFormData({
+          ...formData,
+          scalingStats: newScalingStats
+        });
+      } else {
+        // Show error message for duplicate stat
+        alert('This stat is already selected. Please choose a different stat.');
+      }
     } else {
       setFormData({ ...formData, [name]: value });
     }
@@ -114,6 +140,7 @@ const SkillDashboard: React.FC = () => {
         duration: 0,
         activation: '',
         requiredStats: { STR: 0, DEX: 0, RES: 0, MN: 0, CHA: 0 },
+        scalingStats: [],
         aetherCost: 0,
         skillPointCost: 1,
         rank: 1,
@@ -214,6 +241,29 @@ const SkillDashboard: React.FC = () => {
                     onChange={handleInputChange}
                     className="form-control"
                   />
+                </div>
+              ))}
+            </div>
+
+            <div className="form-group">
+              <label>Scaling Stats:</label>
+              {[0, 1, 2].map((index) => (
+                <div key={index} className="form-group">
+                  <label>Scaling Stat {index + 1}:</label>
+                  <select
+                    name={`scalingStats.${index}`}
+                    value={formData.scalingStats?.[index] || ''}
+                    onChange={handleInputChange}
+                    className="form-control"
+                  >
+                    <option value="">Select Stat</option>
+                    <option value="FOC">Focus (FOC)</option>
+                    <option value="CON">Control (CON)</option>
+                    <option value="RES">Resilience (RES)</option>
+                    <option value="INS">Instinct (INS)</option>
+                    <option value="PRE">Presence (PRE)</option>
+                    <option value="FOR">Force (FOR)</option>
+                  </select>
                 </div>
               ))}
             </div>
