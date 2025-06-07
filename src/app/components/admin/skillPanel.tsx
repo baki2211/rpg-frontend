@@ -15,6 +15,7 @@ interface Skill {
   scalingStats: string[];  // Array of up to 3 scaling stats
   aetherCost: number;
   skillPointCost: number;
+  target: string;  // 'self', 'other', 'none'
   rank: number;
   isPassive: boolean;
 }
@@ -46,6 +47,7 @@ const SkillDashboard: React.FC = () => {
     scalingStats: [],  // Initialize empty array for scaling stats
     aetherCost: 0,
     skillPointCost: 1,
+    target: 'other',  // Default target
     rank: 1,
     isPassive: false
   });
@@ -143,6 +145,7 @@ const SkillDashboard: React.FC = () => {
         scalingStats: [],
         aetherCost: 0,
         skillPointCost: 1,
+        target: 'other',
         rank: 1,
         isPassive: false
       });
@@ -174,16 +177,18 @@ const SkillDashboard: React.FC = () => {
         </div>
 
         <div className="admin-form">
+          <h2 className="form-full-width">{selectedSkill ? 'Edit Skill' : 'Create New Skill'}</h2>
           <form onSubmit={handleSubmit}>
+            <div className="form-grid">
             <div className="form-group">
-              <label>Name:</label>
-              <input type="text" name="name" value={formData.name} onChange={handleInputChange} className="form-control" required />
+              <label>Skill Name:</label>
+              <input type="text" name="name" value={formData.name} onChange={handleInputChange} className="form-control" required placeholder="Enter skill name..." />
             </div>
 
-            <div className="form-group">
-              <label>Description:</label>
-              <textarea name="description" value={formData.description} onChange={handleInputChange} className="form-control" required />
-            </div>
+              <div className="form-group form-full-width">
+                <label>Description:</label>
+                <textarea name="description" value={formData.description} onChange={handleInputChange} className="form-control" required placeholder="Describe the skill effects and mechanics..." />
+              </div>
 
             <div className="form-group">
               <label>Branch:</label>
@@ -210,6 +215,15 @@ const SkillDashboard: React.FC = () => {
             </div>
 
             <div className="form-group">
+              <label>Target:</label>
+              <select name="target" value={formData.target} onChange={handleInputChange} className="form-control" required>
+                <option value="other">Other (targets enemies/others)</option>
+                <option value="self">Self (targets user)</option>
+                <option value="none">None (area effects, no target)</option>
+              </select>
+            </div>
+
+            <div className="form-group">
               <label>Base Power:</label>
               <input type="number" name="basePower" value={formData.basePower} onChange={handleInputChange} className="form-control" required />
             </div>
@@ -229,44 +243,50 @@ const SkillDashboard: React.FC = () => {
               </select>
             </div>
 
-            <div className="form-group">
-              <label>Required Stats:</label>
-              {Object.keys(formData.requiredStats || {}).map(stat => (
-                <div key={stat} className="form-group">
-                  <label>{stat}:</label>
-                  <input
-                    type="number"
-                    name={`requiredStats.${stat}`}
-                    value={formData.requiredStats?.[stat] || 0}
-                    onChange={handleInputChange}
-                    className="form-control"
-                  />
+              <div className="form-group form-full-width">
+                <label>Required Stats:</label>
+                <div className="required-stats-grid">
+                  {Object.keys(formData.requiredStats || {}).map(stat => (
+                    <div key={stat} className="form-group">
+                      <label>{stat}:</label>
+                      <input
+                        type="number"
+                        name={`requiredStats.${stat}`}
+                        value={formData.requiredStats?.[stat] || 0}
+                        onChange={handleInputChange}
+                        className="form-control"
+                        min="0"
+                        placeholder="0"
+                      />
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </div>
+              </div>
 
-            <div className="form-group">
-              <label>Scaling Stats:</label>
-              {[0, 1, 2].map((index) => (
-                <div key={index} className="form-group">
-                  <label>Scaling Stat {index + 1}:</label>
-                  <select
-                    name={`scalingStats.${index}`}
-                    value={formData.scalingStats?.[index] || ''}
-                    onChange={handleInputChange}
-                    className="form-control"
-                  >
-                    <option value="">Select Stat</option>
-                    <option value="FOC">Focus (FOC)</option>
-                    <option value="CON">Control (CON)</option>
-                    <option value="RES">Resilience (RES)</option>
-                    <option value="INS">Instinct (INS)</option>
-                    <option value="PRE">Presence (PRE)</option>
-                    <option value="FOR">Force (FOR)</option>
-                  </select>
+              <div className="form-group form-full-width">
+                <label>Scaling Stats:</label>
+                <div className="scaling-stats-grid">
+                  {[0, 1, 2].map((index) => (
+                    <div key={index} className="form-group">
+                      <label>Stat {index + 1}:</label>
+                      <select
+                        name={`scalingStats.${index}`}
+                        value={formData.scalingStats?.[index] || ''}
+                        onChange={handleInputChange}
+                        className="form-control"
+                      >
+                        <option value="">Select Stat</option>
+                        <option value="FOC">Focus (FOC)</option>
+                        <option value="CON">Control (CON)</option>
+                        <option value="RES">Resilience (RES)</option>
+                        <option value="INS">Instinct (INS)</option>
+                        <option value="PRE">Presence (PRE)</option>
+                        <option value="FOR">Force (FOR)</option>
+                      </select>
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </div>
+              </div>
 
             <div className="form-group">
               <label>Aether Cost:</label>
@@ -291,42 +311,65 @@ const SkillDashboard: React.FC = () => {
               <input type="number" name="rank" value={formData.rank} onChange={handleInputChange} className="form-control" required />
             </div>
 
-            <div className="form-group">
-              <label>
-                <input
-                  type="checkbox"
-                  name="isPassive"
-                  checked={formData.isPassive}
-                  onChange={handleInputChange}
-                />
-                Is Passive
-              </label>
-            </div>
+              <div className="form-group form-full-width">
+                <label>
+                  <input
+                    type="checkbox"
+                    name="isPassive"
+                    checked={formData.isPassive}
+                    onChange={handleInputChange}
+                  />
+                  Is Passive Skill
+                </label>
+              </div>
 
-            <button type="submit" className="btn btn-primary">{selectedSkill ? 'Update Skill' : 'Create Skill'}</button>
+            </div>
+            
+            <div className="form-full-width">
+              <button type="submit" className="btn btn-primary">
+                {selectedSkill ? '✓ Update Skill' : '+ Create Skill'}
+              </button>
+            </div>
           </form>
         </div>
 
         <div className="admin-table">
-          <h3>Skills List</h3>
-          <table>
+          <table className="admin-table">
             <thead>
               <tr>
-                <th>Name</th>
+                <th>Skill Name</th>
                 <th>Branch</th>
                 <th>Type</th>
+                <th>Target</th>
+                <th>Base Power</th>
+                <th>Cost</th>
                 <th>Actions</th>
               </tr>
             </thead>
             <tbody>
               {skills.map(skill => (
                 <tr key={skill.id}>
-                  <td>{skill.name}</td>
+                  <td><strong>{skill.name}</strong></td>
                   <td>{branches.find(b => b.id === skill.branchId)?.name || skill.branchId}</td>
                   <td>{types.find(t => t.id === skill.typeId)?.name || skill.typeId}</td>
                   <td>
-                    <button onClick={() => handleEdit(skill)} className="btn btn-primary">Edit</button>
-                    <button onClick={() => handleDelete(skill.id)} className="btn btn-danger">Delete</button>
+                    <span style={{
+                      padding: '0.25rem 0.75rem',
+                      borderRadius: '12px',
+                      fontSize: '0.8rem',
+                      fontWeight: '600',
+                      textTransform: 'uppercase',
+                      backgroundColor: skill.target === 'self' ? '#4ecdc4' : skill.target === 'other' ? '#ff6b6b' : '#667eea',
+                      color: 'white'
+                    }}>
+                      {skill.target}
+                    </span>
+                  </td>
+                  <td><strong>{skill.basePower}</strong></td>
+                  <td>{skill.skillPointCost} SP</td>
+                  <td>
+                    <button onClick={() => handleEdit(skill)} className="btn btn-success">✏️ Edit</button>
+                    <button onClick={() => handleDelete(skill.id)} className="btn btn-danger">🗑️ Delete</button>
                   </td>
                 </tr>
               ))}
