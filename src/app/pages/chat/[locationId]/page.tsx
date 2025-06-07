@@ -11,6 +11,31 @@ import { Skill } from '@/app/hooks/useCharacter';
 import { ChatUser } from '@/app/hooks/useChatUsers';
 import './chat.css';
 
+interface SkillEngineLogMessage {
+  type: 'skill_engine_log';
+  locationId: string;
+  log: {
+    id: string;
+    timestamp: string;
+    type: 'skill_use' | 'clash' | 'damage' | 'effect';
+    actor: string;
+    target?: string;
+    skill?: string;
+    damage?: number;
+    effects?: string[];
+    details: string;
+  };
+}
+
+interface ChatMessage {
+  username: string;
+  createdAt: string;
+  message: string;
+  skill?: Skill;
+}
+
+
+
 const ChatPage = () => {
   const { user } = useAuth();
   const params = useParams();
@@ -83,11 +108,31 @@ const ChatPage = () => {
       url: wsUrl,
       onMessage: (message) => {
         console.log('Received WebSocket message:', message);
-        const typedMessage = message as unknown as { 
-          username: string; 
-          createdAt: string; 
-          message: string;
-          skill?: Skill;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const messageData = message as any;
+        
+        // Handle skill engine logs for masters
+        if (messageData && typeof messageData === 'object' && messageData.type === 'skill_engine_log') {
+          console.log('Processing skill engine log for master');
+          const skillLogMessage: SkillEngineLogMessage = messageData;
+          handleSkillEngineLog(skillLogMessage);
+          return;
+        }
+        
+        // Handle regular chat messages - validate required fields
+        if (!messageData || typeof messageData !== 'object' || 
+            typeof messageData.username !== 'string' || 
+            typeof messageData.createdAt !== 'string' || 
+            messageData.message === undefined) {
+          console.warn('Invalid chat message received:', messageData);
+          return;
+        }
+        
+        const typedMessage: ChatMessage = {
+          username: messageData.username,
+          createdAt: messageData.createdAt,
+          message: messageData.message,
+          skill: messageData.skill
         };
         const formattedMessage = {
           ...typedMessage,
@@ -168,6 +213,13 @@ const ChatPage = () => {
   // Function to format the message after sanitization
   const formatMessage = (message: string, skill?: Skill) => {
     console.log('Formatting message with skill:', { message, skill });
+    
+    // Guard against undefined message
+    if (!message || typeof message !== 'string') {
+      console.warn('formatMessage called with invalid message:', message);
+      return 'Invalid message';
+    }
+    
     // Handle messages with skills
     if (skill) {
       return (
@@ -206,6 +258,17 @@ const ChatPage = () => {
   const handleUnselectSkill = () => {
     setSelectedSkill(null);
     setIsSkillsModalOpen(false);
+  };
+
+  // Handle incoming skill engine logs from WebSocket
+  const handleSkillEngineLog = (logData: SkillEngineLogMessage) => {
+    if (isMaster && logData.type === 'skill_engine_log') {
+      const formattedLog = {
+        ...logData.log,
+        timestamp: new Date(logData.log.timestamp)
+      };
+      setSkillEngineLogs(prev => [...prev, formattedLog]);
+    }
   };
 
   // Master Panel handlers

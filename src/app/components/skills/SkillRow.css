@@ -95,4 +95,63 @@
 
 .unselect-skill-button:hover {
   background: #c0392b;
+}
+
+/* Mini Skill Row Styles */
+.mini-skill-row {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  background: rgba(52, 152, 219, 0.1);
+  border: 1px solid rgba(52, 152, 219, 0.3);
+  border-radius: 6px;
+  margin-bottom: 0.5rem;
+}
+
+.mini-skill-row .skill-info {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex: none;
+  padding: 0;
+}
+
+.mini-skill-row .skill-name {
+  color: #3498db;
+  font-weight: 600;
+  font-size: 1rem;
+  margin: 0;
+}
+
+.mini-skill-row .skill-branch {
+  color: #7fb3d3;
+  font-size: 0.85rem;
+}
+
+.skill-target {
+  color: #f39c12;
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+.skill-output {
+  display: flex;
+  gap: 1rem;
+  padding: 0.5rem;
+  background: rgba(46, 204, 113, 0.1);
+  border-radius: 4px;
+  border-left: 3px solid #2ecc71;
+}
+
+.output-value {
+  color: #2ecc71;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.roll-result {
+  color: #e67e22;
+  font-weight: 600;
+  font-size: 0.9rem;
 } 

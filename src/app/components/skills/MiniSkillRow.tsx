@@ -1,25 +1,33 @@
 import React from 'react';
 import { Skill } from '@/app/hooks/useCharacter';
-import './MiniSkillRow.css';
+import './SkillRow.css';
 
 interface MiniSkillRowProps {
-  skill: Skill;
+  skill: Skill & { 
+    selectedTarget?: { characterName?: string; username: string };
+    output?: number;
+    roll?: string;
+  };
 }
 
 export const MiniSkillRow: React.FC<MiniSkillRowProps> = ({ skill }) => {
-  // Handle both nested and flat skill data structures
-  const branchName = typeof skill.branch === 'string' ? skill.branch : skill.branch?.name || '';
-  const typeName = typeof skill.type === 'string' ? skill.type : skill.type?.name || '';
-
   return (
     <div className="mini-skill-row">
-      <div className="mini-skill-info">
-        <span className="mini-skill-name">{skill.name}</span>
-        <div className="mini-skill-details">
-          <span className="mini-skill-branch">{branchName}</span>
-          <span className="mini-skill-type">{typeName}</span>
-        </div>
+      <div className="skill-info">
+        <span className="skill-name">{skill.name}</span>
+        <span className="skill-branch">({skill.branch?.name})</span>
+        {skill.selectedTarget && (
+          <span className="skill-target">
+            → {skill.selectedTarget.characterName || skill.selectedTarget.username}
+          </span>
+        )}
       </div>
+      {(skill.output || skill.roll) && (
+        <div className="skill-output">
+          {skill.output && <span className="output-value">Output: {skill.output}</span>}
+          {skill.roll && <span className="roll-result">Roll: {skill.roll}</span>}
+        </div>
+      )}
     </div>
   );
 }; 
