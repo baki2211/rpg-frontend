@@ -1,89 +1,157 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import './SessionList.css';
+
+interface Participant {
+  id: string;
+  characterName: string;
+  joinedAt: string;
+}
+
+interface Location {
+  id: string;
+  name: string;
+}
 
 interface Session {
   id: string;
   name: string;
   locationId: string;
+  location?: Location;
   createdAt: string;
+  status: 'open' | 'closed' | 'frozen';
+  isActive: boolean;
   participantCount: number;
-  participants?: number[];
+  participants?: Participant[];
 }
 
 const SessionList = () => {
   const [sessions, setSessions] = useState<Session[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const router = useRouter();
 
   useEffect(() => {
-    const fetchSessions = async () => {
-      try {
-        setLoading(true);
-        
-        // Use the standard endpoint for getting all sessions
-        const response = await fetch('http://localhost:5001/api/sessions/active', {
-          credentials: 'include',
-          headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-          }, 
-        }).catch((error) => {
-          throw new Error('Network error: ' + error.message);
-        });
-
-        // Check if the response is JSON
-        const contentType = response.headers.get('content-type');
-        if (!contentType || !contentType.includes('application/json')) {
-          throw new Error(`Invalid response format: ${contentType}`);
-        }
-        
-        if (!response.ok) {
-          const errorData = await response.json();
-          console.error('Server error response:', errorData);
-          throw new Error(errorData.error || 'Failed to fetch sessions');
-        }
-        
-        const data = await response.json();
-        console.log('Sessions data:', data);
-        setSessions(data);
-        setError(null);
-      } catch (error) {
-        console.error('Error fetching sessions:', error);
-        setError(error instanceof Error ? error.message : 'An unknown error occurred');
-        setSessions([]);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchSessions();
   }, []);
 
-  const handleSessionClick = (sessionId: string) => {
-    router.push(`/chat/${sessionId}`);
+  const fetchSessions = async () => {
+    try {
+      setLoading(true);
+      
+      const response = await fetch('http://localhost:5001/api/sessions/active', {
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        }, 
+      });
+
+      const contentType = response.headers.get('content-type');
+      if (!contentType || !contentType.includes('application/json')) {
+        throw new Error(`Invalid response format: ${contentType}`);
+      }
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error('Server error response:', errorData);
+        throw new Error(errorData.error || 'Failed to fetch sessions');
+      }
+      
+      const data = await response.json();
+      console.log('Sessions data:', data);
+      setSessions(data);
+      setError(null);
+    } catch (error) {
+      console.error('Error fetching sessions:', error);
+      setError(error instanceof Error ? error.message : 'An unknown error occurred');
+      setSessions([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleGoHere = (locationId: string) => {
+    // Use window.location.href for reliable navigation
+    window.location.href = `/pages/chat/${locationId}`;
+  };
+
+  const handleToggleFreeze = async (sessionId: string, currentStatus: string) => {
+    try {
+      const newStatus = currentStatus === 'frozen' ? 'open' : 'frozen';
+      const response = await fetch(`http://localhost:5001/api/sessions/${sessionId}/status`, {
+        method: 'PUT',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ status: newStatus }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to update session status');
+      }
+
+      // Refresh sessions list
+      fetchSessions();
+    } catch (error) {
+      console.error('Error updating session status:', error);
+      alert('Failed to update session status');
+    }
+  };
+
+  const handleToggleActive = async (sessionId: string, currentIsActive: boolean) => {
+    try {
+      // If closing (currentIsActive is true), set status to 'closed'
+      // If opening (currentIsActive is false), set status to 'open'
+      const newStatus = currentIsActive ? 'closed' : 'open';
+      
+      console.log(`🔄 Updating session ${sessionId} from ${currentIsActive ? 'active' : 'inactive'} to status: ${newStatus}`);
+      
+      const response = await fetch(`http://localhost:5001/api/sessions/${sessionId}/status`, {
+        method: 'PUT',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ status: newStatus }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to update session status');
+      }
+
+      const updatedSession = await response.json();
+      console.log('✅ Session updated successfully:', updatedSession);
+      
+      // Refresh sessions list
+      console.log('🔄 Refreshing sessions list...');
+      await fetchSessions();
+    } catch (error) {
+      console.error('❌ Error updating session status:', error);
+      alert('Failed to update session status');
+    }
   };
 
   if (loading) {
     return (
-      <div className="p-4 flex justify-center items-center">
-        <div className="animate-pulse text-gray-600">Loading sessions...</div>
+      <div className="session-container">
+        <div className="loading-container">
+          <div className="loading-spinner"></div>
+          <p>Loading sessions...</p>
+        </div>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="p-4">
-        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
-          <p>Error: {error}</p>
-          <button 
-            onClick={() => window.location.reload()} 
-            className="mt-2 text-sm text-red-600 hover:text-red-800 underline"
-          >
-            Try again
+      <div className="session-container">
+        <div className="error-container">
+          <h3>❌ Error Loading Sessions</h3>
+          <p>{error}</p>
+          <button onClick={fetchSessions} className="retry-button">
+            🔄 Try Again
           </button>
         </div>
       </div>
@@ -91,40 +159,99 @@ const SessionList = () => {
   }
 
   return (
-    <div className="p-4">
-      <h2 className="text-xl font-bold mb-4">Active Chat Sessions</h2>
-      <div className="space-y-2">
-        {sessions.map((session) => (
-          <div
-            key={session.id}
-            onClick={() => handleSessionClick(session.id)}
-            className="p-4 border rounded-lg cursor-pointer hover:bg-gray-50 transition-colors"
-          >
-            <div className="flex justify-between items-center">
-              <div>
-                <h3 className="font-semibold">{session.name}</h3>
-                <p className="text-sm text-gray-500">
-                  Created: {new Date(session.createdAt).toLocaleString()}
-                </p>
-                <p className="text-xs text-gray-400">
-                  Location ID: {session.locationId}
-                </p>
-              </div>
-              <div className="text-sm text-gray-500">
-                {session.participantCount} participants
-              </div>
-            </div>
-          </div>
-        ))}
-        {sessions.length === 0 && (
-          <div className="text-center p-8 bg-gray-50 rounded-lg">
-            <p className="text-gray-500">No active sessions found.</p>
-            <p className="text-sm text-gray-400 mt-2">
-              Active sessions will appear here once they are created.
-            </p>
-          </div>
-        )}
+    <div className="session-container">
+      <div className="session-header">
+        <h2>🎮 Session Management</h2>
+        <p>Manage active gaming sessions and participants</p>
       </div>
+
+      {sessions.length === 0 ? (
+        <div className="no-sessions">
+          <div className="no-sessions-icon">🏰</div>
+          <h3>No Active Sessions</h3>
+          <p>Active sessions will appear here once they are created.</p>
+          <p className="no-sessions-subtitle">Visit different locations to start or join conversations!</p>
+        </div>
+      ) : (
+        <div className="table-container">
+          <table className="sessions-table">
+            <thead>
+              <tr>
+                <th>Location</th>
+                <th>Participants</th>
+                <th>Created At</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {sessions.map((session) => (
+                <tr key={session.id} className={`session-row ${session.status}`}>
+                  <td className="location-cell">
+                    <div className="location-info">
+                      <span className="location-name">
+                        {session.location?.name || `Location #${session.locationId}`}
+                      </span>
+                      <span className="session-name">{session.name}</span>
+                    </div>
+                  </td>
+                  <td className="participants-cell">
+                    <div className="participants-info">
+                      <span className="participant-count">👥 {session.participantCount}</span>
+                      {session.participants && session.participants.length > 0 && (
+                        <div className="participant-names">
+                          {session.participants.slice(0, 3).map((participant, index) => (
+                            <span key={index} className="participant-name">
+                              {participant.characterName}
+                            </span>
+                          ))}
+                          {session.participants.length > 3 && (
+                            <span className="more-participants">
+                              +{session.participants.length - 3} more
+                            </span>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  </td>
+                  <td className="created-cell">
+                    <div className="date-info">
+                      <span className="date">{new Date(session.createdAt).toLocaleDateString()}</span>
+                      <span className="time">{new Date(session.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                    </div>
+                  </td>
+                  <td className="actions-cell">
+                    <div className="action-buttons">
+                      <button
+                        onClick={() => handleToggleFreeze(session.id, session.status)}
+                        className={`action-button freeze-button ${session.status === 'frozen' ? 'frozen' : ''}`}
+                        title={session.status === 'frozen' ? 'Unfreeze session' : 'Freeze session'}
+                      >
+                        {session.status === 'frozen' ? '🔥 Unfreeze' : '❄️ Freeze'}
+                      </button>
+                      
+                      <button
+                        onClick={() => handleToggleActive(session.id, session.isActive)}
+                        className={`action-button active-button ${session.isActive ? 'active' : 'inactive'}`}
+                        title={session.isActive ? 'Close session' : 'Open session'}
+                      >
+                        {session.isActive ? '🔒 Close' : '🔓 Open'}
+                      </button>
+                      
+                      <button
+                        onClick={() => handleGoHere(session.locationId)}
+                        className="action-button go-button"
+                        title="Go to this location"
+                      >
+                        🚀 Go Here
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
     </div>
   );
 };

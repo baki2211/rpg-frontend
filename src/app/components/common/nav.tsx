@@ -36,6 +36,7 @@ const NavMenu: React.FC = () => {
             <a href="/pages/skills" className="navbar-link">Skills</a>
             <a href="/pages/map" className="navbar-link">Map</a>
             <a href="/pages/sessions" className="navbar-link">Sessions</a>
+            <a href="/pages/logs" className="navbar-link">Logs</a>
             {user?.role === 'admin' && (
               <a href="/pages/admin/dashboard" className="navbar-link admin">Admin Dashboard</a>
             )}

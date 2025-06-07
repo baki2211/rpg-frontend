@@ -1,0 +1,308 @@
+.log-container {
+  padding: 2rem;
+  background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+  border-radius: 20px;
+  color: white;
+  min-height: 500px;
+}
+
+.log-header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.log-header h2 {
+  font-size: 2rem;
+  margin-bottom: 0.5rem;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+}
+
+.log-header p {
+  opacity: 0.9;
+  font-size: 1.1rem;
+}
+
+/* Loading State */
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 4rem;
+  text-align: center;
+}
+
+.loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid rgba(255,255,255,0.3);
+  border-top: 4px solid white;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 15px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Error State */
+.error-container {
+  text-align: center;
+  padding: 2rem;
+}
+
+.error-container h3 {
+  margin-bottom: 1rem;
+  font-size: 1.5rem;
+}
+
+.error-container p {
+  margin-bottom: 1.5rem;
+  opacity: 0.9;
+}
+
+.retry-button {
+  padding: 10px 20px;
+  background: rgba(255,255,255,0.2);
+  color: white;
+  border: 1px solid rgba(255,255,255,0.3);
+  border-radius: 25px;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+}
+
+.retry-button:hover {
+  background: rgba(255,255,255,0.3);
+  transform: translateY(-2px);
+}
+
+/* No Logs State */
+.no-logs {
+  text-align: center;
+  padding: 3rem;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 15px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(10px);
+}
+
+.no-logs-icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+}
+
+.no-logs h3 {
+  margin-bottom: 0.5rem;
+  font-size: 1.5rem;
+}
+
+.no-logs p {
+  opacity: 0.8;
+  margin-bottom: 0.5rem;
+}
+
+.no-logs-subtitle {
+  opacity: 0.6;
+  font-size: 0.9rem;
+}
+
+/* Table Styles */
+.table-container {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border-radius: 15px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  overflow: hidden;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+.logs-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.95rem;
+}
+
+.logs-table thead {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.logs-table th {
+  padding: 1rem;
+  text-align: left;
+  font-weight: 600;
+  font-size: 1rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: white;
+  border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+}
+
+.logs-table tbody tr {
+  transition: all 0.3s ease;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.logs-table tbody tr:hover {
+  background: rgba(255, 255, 255, 0.1);
+  transform: scale(1.01);
+}
+
+.logs-table td {
+  padding: 1rem;
+  vertical-align: top;
+}
+
+/* Session Cell */
+.session-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.session-name {
+  font-weight: 600;
+  font-size: 1.1rem;
+  color: white;
+}
+
+.session-dates {
+  opacity: 0.7;
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+/* Location Cell */
+.location-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.location-name {
+  font-weight: 600;
+  font-size: 1rem;
+  color: white;
+}
+
+/* Participants Cell */
+.participants-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.participant-count {
+  font-weight: 600;
+  font-size: 1rem;
+}
+
+.participant-preview {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.participant-name {
+  font-size: 0.85rem;
+  opacity: 0.8;
+  background: rgba(255, 255, 255, 0.1);
+  padding: 0.25rem 0.5rem;
+  border-radius: 12px;
+  display: inline-block;
+  margin-right: 0.5rem;
+  margin-bottom: 0.25rem;
+}
+
+.more-participants {
+  font-size: 0.8rem;
+  opacity: 0.6;
+  font-style: italic;
+}
+
+/* Duration Cell */
+.duration-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  text-align: center;
+}
+
+.duration {
+  font-weight: 600;
+  font-size: 1.1rem;
+  color: rgba(255, 215, 0, 1);
+}
+
+.duration-label {
+  opacity: 0.7;
+  font-size: 0.8rem;
+}
+
+/* Actions Cell */
+.action-button {
+  padding: 0.6rem 1.2rem;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 20px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+  white-space: nowrap;
+}
+
+.action-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.log-button {
+  background: rgba(255, 193, 7, 0.3);
+}
+
+.log-button:hover {
+  background: rgba(255, 193, 7, 0.5);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .log-container {
+    padding: 1rem;
+  }
+  
+  .logs-table {
+    font-size: 0.8rem;
+  }
+  
+  .logs-table th,
+  .logs-table td {
+    padding: 0.75rem 0.5rem;
+  }
+  
+  .action-button {
+    font-size: 0.8rem;
+    padding: 0.5rem 1rem;
+  }
+  
+  .session-name {
+    font-size: 1rem;
+  }
+  
+  .session-dates {
+    font-size: 0.8rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .table-container {
+    overflow-x: auto;
+  }
+  
+  .logs-table {
+    min-width: 700px;
+  }
+} 
