@@ -58,6 +58,9 @@ const ChatPage = () => {
 
     fetchMessages();
 
+    // Set up interval to periodically check for restored messages (when session is unfrozen)
+    const messageCheckInterval = setInterval(fetchMessages, 10000); // Check every 10 seconds
+
     // Initialize WebSocket connection
     const wsUrl = `ws://localhost:5001/ws/chat?locationId=${locationId}`;
     webSocketServiceRef.current = new WebSocketService({
@@ -101,6 +104,7 @@ const ChatPage = () => {
     // Cleanup on unmount
     return () => {
       webSocketServiceRef.current?.close();
+      clearInterval(messageCheckInterval);
       hasAttemptedFirstConnect = false;
     };
   }, [locationId]);

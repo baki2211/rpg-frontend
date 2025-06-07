@@ -79,6 +79,10 @@ const SessionList = () => {
   const handleToggleFreeze = async (sessionId: string, currentStatus: string) => {
     try {
       const newStatus = currentStatus === 'frozen' ? 'open' : 'frozen';
+      const action = newStatus === 'frozen' ? 'Freezing' : 'Unfreezing';
+      
+      console.log(`🧊 ${action} session ${sessionId}...`);
+      
       const response = await fetch(`http://localhost:5001/api/sessions/${sessionId}/status`, {
         method: 'PUT',
         credentials: 'include',
@@ -89,14 +93,24 @@ const SessionList = () => {
       });
 
       if (!response.ok) {
-        throw new Error('Failed to update session status');
+        throw new Error(`Failed to ${action.toLowerCase()} session`);
+      }
+
+      const result = await response.json();
+      console.log(`✅ Session ${action.toLowerCase()} successful:`, result);
+      
+      // Show user feedback
+      if (newStatus === 'frozen') {
+        alert('🧊 Session frozen! Chat state has been saved and cleared.');
+      } else {
+        alert('🔥 Session unfrozen! Chat state has been restored.');
       }
 
       // Refresh sessions list
-      fetchSessions();
+      await fetchSessions();
     } catch (error) {
-      console.error('Error updating session status:', error);
-      alert('Failed to update session status');
+      console.error(`❌ Error ${currentStatus === 'frozen' ? 'unfreezing' : 'freezing'} session:`, error);
+      alert(`Failed to ${currentStatus === 'frozen' ? 'unfreeze' : 'freeze'} session`);
     }
   };
 
