@@ -60,6 +60,26 @@
   box-shadow: 0 0 5px rgba(52, 152, 219, 0.5);
 }
 
+.master-button {
+  padding: 0.5rem 0.75rem;
+  background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 1.2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.master-button:hover {
+  background: linear-gradient(135deg, #7c3aed, #6d28d9);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(139, 92, 246, 0.4);
+}
+
 .send-button {
   padding: 0.5rem 1rem;
   background-color: #2ecc71;

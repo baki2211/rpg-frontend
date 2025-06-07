@@ -6,6 +6,7 @@ import { useParams } from 'next/navigation';
 import { WebSocketService } from '../../../services/webSocketService';
 import { SkillsModal } from '@/app/components/skills/SkillsModal';
 import { MiniSkillRow } from '@/app/components/skills/MiniSkillRow';
+import { MasterPanel } from '@/app/components/master/MasterPanel';
 import { Skill } from '@/app/hooks/useCharacter';
 import { ChatUser } from '@/app/hooks/useChatUsers';
 import './chat.css';
@@ -19,8 +20,23 @@ const ChatPage = () => {
   const [newMessage, setNewMessage] = useState('');
   const [charCount, setCharCount] = useState(0);
   const [isSkillsModalOpen, setIsSkillsModalOpen] = useState(false);
+  const [isMasterPanelOpen, setIsMasterPanelOpen] = useState(false);
+  const [skillEngineLogs, setSkillEngineLogs] = useState<Array<{
+    id: string;
+    timestamp: Date;
+    type: 'skill_use' | 'clash' | 'damage' | 'effect';
+    actor: string;
+    target?: string;
+    skill?: string;
+    damage?: number;
+    effects?: string[];
+    details: string;
+  }>>([]);
   const webSocketServiceRef = useRef<WebSocketService | null>(null);
   const [selectedSkill, setSelectedSkill] = useState<(Skill & { selectedTarget?: ChatUser }) | null>(null);
+
+  // Check if user has master permissions
+  const isMaster = user?.role === 'master' || user?.role === 'admin';
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -192,6 +208,45 @@ const ChatPage = () => {
     setIsSkillsModalOpen(false);
   };
 
+  // Master Panel handlers
+  const handleApplyDamage = (characterId: string, damage: number) => {
+    const newLog = {
+      id: Date.now().toString(),
+      timestamp: new Date(),
+      type: 'damage' as const,
+      actor: 'Master',
+      target: characterId,
+      damage,
+      details: `Applied ${damage} damage to character`
+    };
+    setSkillEngineLogs(prev => [...prev, newLog]);
+  };
+
+  const handleApplyHealing = (characterId: string, healing: number) => {
+    const newLog = {
+      id: Date.now().toString(),
+      timestamp: new Date(),
+      type: 'effect' as const,
+      actor: 'Master',
+      target: characterId,
+      details: `Applied ${healing} healing to character`
+    };
+    setSkillEngineLogs(prev => [...prev, newLog]);
+  };
+
+  const handleApplyStatus = (characterId: string, status: { id: string; name: string; type: string; duration: number; effects: Record<string, number> }) => {
+    const newLog = {
+      id: Date.now().toString(),
+      timestamp: new Date(),
+      type: 'effect' as const,
+      actor: 'Master',
+      target: characterId,
+      effects: [status.name],
+      details: `Applied ${status.name} status effect for ${status.duration} turns`
+    };
+    setSkillEngineLogs(prev => [...prev, newLog]);
+  };
+
   const handleSendMessage = (e: React.FormEvent) => {
     e.preventDefault();
     if (!user || !newMessage.trim()) return;
@@ -260,6 +315,16 @@ const ChatPage = () => {
         >
           {selectedSkill ? selectedSkill.name : 'Skills'}
         </button>
+        {isMaster && (
+          <button 
+            type="button"
+            onClick={() => setIsMasterPanelOpen(true)}
+            className="master-button"
+            title="Master Panel"
+          >
+            🎭
+          </button>
+        )}
         <button 
           type="submit"
           className="send-button"
@@ -280,6 +345,18 @@ const ChatPage = () => {
         selectedSkill={selectedSkill || undefined}
         locationId={locationId}
       />
+
+      {isMaster && (
+        <MasterPanel
+          isOpen={isMasterPanelOpen}
+          onClose={() => setIsMasterPanelOpen(false)}
+          locationId={locationId}
+          skillEngineLogs={skillEngineLogs}
+          onApplyDamage={handleApplyDamage}
+          onApplyHealing={handleApplyHealing}
+          onApplyStatus={handleApplyStatus}
+        />
+      )}
     </div>
   );
 };
