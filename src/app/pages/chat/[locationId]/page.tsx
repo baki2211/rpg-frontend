@@ -9,6 +9,7 @@ import { MiniSkillRow } from '@/app/components/skills/MiniSkillRow';
 import { MasterPanel } from '@/app/components/master/MasterPanel';
 import { Skill } from '@/app/hooks/useCharacter';
 import { ChatUser, useChatUsers } from '@/app/hooks/useChatUsers';
+import { useToast } from '@/app/contexts/ToastContext';
 import './chat.css';
 
 interface SkillEngineLogMessage {
@@ -36,6 +37,7 @@ interface ChatMessage {
 
 const ChatPage = () => {
   const { user } = useAuth();
+  const { showError, showSuccess, showInfo } = useToast();
   const params = useParams();
   const locationId = params?.locationId as string;
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -82,20 +84,17 @@ const ChatPage = () => {
         });
         if (!response.ok) throw new Error('Failed to fetch messages');
         const data = await response.json();
-        console.log('Fetched messages from database:', data);
         // Add formattedMessage to each message
         const formatted = data.map((msg: { username: string; createdAt: string; message: string; skill?: Skill }) => {
-          console.log('Processing message:', msg);
           return {
             ...msg,
             formattedMessage: `${new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - ${msg.username}`,
           };
         });
-        console.log('Formatted messages:', formatted);
         setMessages(formatted);
         scrollToBottom();
-      } catch (error) {
-        console.error('Failed to fetch messages:', error);
+      } catch {
+        showError('Failed to load chat messages');
       }
     };
 
@@ -109,13 +108,11 @@ const ChatPage = () => {
     webSocketServiceRef.current = new WebSocketService({
       url: wsUrl,
       onMessage: (message) => {
-        console.log('Received WebSocket message:', message);
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const messageData = message as any;
         
         // Handle skill engine logs for masters
         if (messageData && typeof messageData === 'object' && messageData.type === 'skill_engine_log') {
-          console.log('Processing skill engine log for master');
           const skillLogMessage: SkillEngineLogMessage = messageData;
           handleSkillEngineLog(skillLogMessage);
           return;
@@ -126,7 +123,6 @@ const ChatPage = () => {
             typeof messageData.username !== 'string' || 
             typeof messageData.createdAt !== 'string' || 
             messageData.message === undefined) {
-          console.warn('Invalid chat message received:', messageData);
           return;
         }
         
@@ -140,27 +136,27 @@ const ChatPage = () => {
           ...typedMessage,
           formattedMessage: `${new Date(typedMessage.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - ${typedMessage.username}`,
         };
-        console.log('Formatted message with skill:', formattedMessage);
         setMessages((prev) => [...prev, formattedMessage]);
         scrollToBottom();
       },
       onError: (error) => {
         if (!hasAttemptedFirstConnect) {
           hasAttemptedFirstConnect = true;
-          console.warn('Initial WebSocket connection failed. Retrying silently...');
           return; 
         }
         if (error instanceof Event) {
-          console.warn('WebSocket connection error (might be expected during reconnect):', error.type);
+          showError('Chat connection interrupted, attempting to reconnect...');
         } else {
-          console.error('WebSocket error:', JSON.stringify(error));
+          showError('Chat connection error');
         }
       },
       onClose: (event) => {
-        console.warn('WebSocket connection closed:', event);
+        if (event.code !== 1000) { // Normal closure
+          showInfo('Chat disconnected');
+        }
       },
-      onOpen: (event) => {
-        console.log('WebSocket connection opened:', event);
+      onOpen: () => {
+        showSuccess('Connected to chat');
       },
     });
 
@@ -170,7 +166,7 @@ const ChatPage = () => {
       clearInterval(messageCheckInterval);
       hasAttemptedFirstConnect = false;
     };
-  }, [locationId]);
+  }, [locationId, showError, showSuccess, showInfo]);
 
   const sanitizeMessage = (message: string) => {
     // First, handle our special formatting

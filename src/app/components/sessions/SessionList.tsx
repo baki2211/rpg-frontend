@@ -59,7 +59,6 @@ const SessionList = () => {
       }
       
       const data = await response.json();
-      console.log('Sessions data:', data);
       setSessions(data);
       setError(null);
     } catch (error) {
@@ -80,8 +79,6 @@ const SessionList = () => {
     try {
       const newStatus = currentStatus === 'frozen' ? 'open' : 'frozen';
       const action = newStatus === 'frozen' ? 'Freezing' : 'Unfreezing';
-      
-      console.log(`🧊 ${action} session ${sessionId}...`);
       
       const response = await fetch(`http://localhost:5001/api/sessions/${sessionId}/status`, {
         method: 'PUT',

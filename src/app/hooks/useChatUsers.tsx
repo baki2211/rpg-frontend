@@ -22,7 +22,6 @@ export const useChatUsers = (locationId: string) => {
   const refreshUsers = () => {
     if (wsRef.current?.readyState === WebSocket.OPEN) {
       setRefreshing(true);
-      console.log('🔄 Manual refresh requested');
       
       // Send refresh character request first
       wsRef.current.send(JSON.stringify({ type: 'refreshCharacter' }));
@@ -31,14 +30,12 @@ export const useChatUsers = (locationId: string) => {
       setTimeout(() => {
         if (wsRef.current?.readyState === WebSocket.OPEN) {
           wsRef.current.send(JSON.stringify({ type: 'getOnlineUsers' }));
-          console.log('🔄 Manual refresh - requested user list (1st)');
         }
       }, 300);
       
       setTimeout(() => {
         if (wsRef.current?.readyState === WebSocket.OPEN) {
           wsRef.current.send(JSON.stringify({ type: 'getOnlineUsers' }));
-          console.log('🔄 Manual refresh - requested user list (2nd)');
         }
       }, 1500);
       
@@ -79,11 +76,8 @@ export const useChatUsers = (locationId: string) => {
         expectedLocation = `Chat: ${location.name}`;
       }
     } catch (error) {
-      console.log('Could not fetch location for filtering:', error);
+      console.error('Could not fetch location for filtering:', error);
     }
-    
-    console.log('🔍 Filtering users for location:', expectedLocation);
-    console.log('👥 All users received:', allUsers);
     
     const locationUsers = allUsers
       .filter((user: { 
@@ -93,13 +87,7 @@ export const useChatUsers = (locationId: string) => {
         username: string; 
         characterName?: string;
       }) => {
-        const isMatch = user.location === expectedLocation || user.location === `Chat ${expectedLocationId}`;
-        if (isMatch) {
-          console.log('✅ Found matching user:', user.username, 'in location:', user.location);
-        } else {
-          console.log('❌ User not in location:', user.username, 'is in:', user.location);
-        }
-        return isMatch;
+        return user.location === expectedLocation || user.location === `Chat ${expectedLocationId}`;
       })
       .map((user: { 
         location: string; 
@@ -117,28 +105,23 @@ export const useChatUsers = (locationId: string) => {
         array.findIndex((u: ChatUser) => u.username === user.username) === index
       );
     
-    console.log('✨ Final filtered location users:', locationUsers);
     return locationUsers;
   };
 
   // Effect to manage WebSocket connection (runs when currentUser changes)
   useEffect(() => {
     if (!currentUser || !mountedRef.current) return;
-
-    console.log(`🔌 Setting up presence WebSocket for user: ${currentUser.id}`);
     
     const connectWebSocket = () => {
       const wsUrl = `ws://localhost:5001/ws/presence?userId=${currentUser.id}&username=${encodeURIComponent(currentUser.username)}`;
       const ws = new WebSocket(wsUrl) as ExtendedWebSocket;
 
       ws.onopen = () => {
-        console.log(`✅ Presence WebSocket connected for user ${currentUser.id}`);
         wsRef.current = ws;
         
         // Send initial location update after connection is confirmed
         if (locationId && mountedRef.current) {
           setTimeout(() => {
-            console.log(`📍 Sending initial location update for ${locationId} after connection`);
             sendLocationUpdate(locationId);
           }, 200);
         }
@@ -159,24 +142,20 @@ export const useChatUsers = (locationId: string) => {
         
         try {
           const data = JSON.parse(event.data);
-          console.log(`📨 Received presence message: ${data.type}`, data);
           
           if (data.type === 'onlineUsers' && Array.isArray(data.users)) {
             const filteredUsers = await filterUsersByLocation(data.users, locationId);
             setUsers(filteredUsers);
             setLoading(false);
             setRefreshing(false); // Reset refreshing state when we get new data
-          } else if (data.type === 'pong') {
-            console.log('🏓 Received pong from presence server');
           }
+          // Silently handle pong responses without logging
         } catch (error) {
           console.error('Error parsing presence message:', error);
         }
       };
 
       ws.onclose = (event) => {
-        console.log(`❌ Presence WebSocket closed for user ${currentUser.id}:`, event.code, event.reason);
-        
         // Clear ping interval
         if (ws.pingInterval) {
           clearInterval(ws.pingInterval);
@@ -186,7 +165,6 @@ export const useChatUsers = (locationId: string) => {
         
         // Reconnect if the component is still mounted and close wasn't intentional
         if (mountedRef.current && event.code !== 1000) {
-          console.log('🔄 Attempting to reconnect presence WebSocket...');
           setTimeout(() => {
             if (mountedRef.current) {
               connectWebSocket();
@@ -196,7 +174,7 @@ export const useChatUsers = (locationId: string) => {
       };
 
       ws.onerror = (error) => {
-        console.error(`💥 Presence WebSocket error for user ${currentUser.id}:`, error);
+        console.error(`Presence WebSocket error for user ${currentUser.id}:`, error);
       };
       
       // Set loading to false after timeout even if no data received
@@ -210,7 +188,6 @@ export const useChatUsers = (locationId: string) => {
     connectWebSocket();
 
     return () => {
-      console.log(`🧹 Cleaning up presence WebSocket for user ${currentUser.id}`);
       if (wsRef.current) {
         // Clear ping interval
         if (wsRef.current.pingInterval) {
@@ -225,13 +202,10 @@ export const useChatUsers = (locationId: string) => {
   // Helper function to send location updates
   const sendLocationUpdate = async (locId: string) => {
     if (!wsRef.current || wsRef.current.readyState !== WebSocket.OPEN) {
-      console.log('⚠️ Cannot send location update - WebSocket not ready');
       return;
     }
 
     try {
-      console.log(`🎯 Sending location update for locationId: ${locId}`);
-      
       // Get location name
       const response = await fetch('http://localhost:5001/api/maps/main', {
         credentials: 'include'
@@ -241,8 +215,6 @@ export const useChatUsers = (locationId: string) => {
         loc.id === parseInt(locId)
       );
       const chatLocation = location ? `Chat: ${location.name}` : `Chat ${locId}`;
-      
-      console.log(`📍 Updating presence location to: ${chatLocation}`);
       
       // Send location update
       wsRef.current.send(JSON.stringify({ type: 'updateLocation', location: chatLocation }));
@@ -254,22 +226,19 @@ export const useChatUsers = (locationId: string) => {
       setTimeout(() => {
         if (wsRef.current?.readyState === WebSocket.OPEN) {
           wsRef.current.send(JSON.stringify({ type: 'getOnlineUsers' }));
-          console.log('🔄 Requested fresh user list (1st)');
         }
       }, 500);
       
       setTimeout(() => {
         if (wsRef.current?.readyState === WebSocket.OPEN) {
           wsRef.current.send(JSON.stringify({ type: 'getOnlineUsers' }));
-          console.log('🔄 Requested fresh user list (2nd)');
         }
       }, 2000);
       
     } catch (error) {
-      console.log('Could not fetch location name, using fallback:', error);
+      console.error('Could not fetch location name, using fallback:', error);
       const fallbackLocation = `Chat ${locId}`;
       
-      console.log(`📍 Sending fallback location update: ${fallbackLocation}`);
       wsRef.current.send(JSON.stringify({ type: 'updateLocation', location: fallbackLocation }));
       wsRef.current.send(JSON.stringify({ type: 'refreshCharacter' }));
       
@@ -284,21 +253,16 @@ export const useChatUsers = (locationId: string) => {
   // Separate effect to handle location changes without recreating the connection
   useEffect(() => {
     if (!locationId || !currentUser || !mountedRef.current) return;
-
-    console.log(`🗺️ Location changed to: ${locationId}, WebSocket ready: ${wsRef.current?.readyState === WebSocket.OPEN}`);
     
     // If WebSocket is ready, send update immediately
     if (wsRef.current?.readyState === WebSocket.OPEN) {
       sendLocationUpdate(locationId);
     } else {
       // If WebSocket not ready, wait and retry
-      console.log('⏳ WebSocket not ready for location update, waiting...');
-      
       const waitForConnection = () => {
         if (wsRef.current?.readyState === WebSocket.OPEN && mountedRef.current) {
           sendLocationUpdate(locationId);
         } else if (mountedRef.current) {
-          console.log('⏳ Still waiting for WebSocket connection...');
           setTimeout(waitForConnection, 500);
         }
       };

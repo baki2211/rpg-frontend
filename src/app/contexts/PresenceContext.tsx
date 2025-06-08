@@ -72,7 +72,6 @@ export const PresenceProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     wsRef.current = ws;
 
     ws.onopen = async () => {
-      console.log('Presence WebSocket connected');
       const location = await getLocationFromPath(pathname);
       ws.send(JSON.stringify({ type: 'updateLocation', location }));
       // Request initial online users list
@@ -82,9 +81,7 @@ export const PresenceProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     ws.onmessage = (event) => {
       try {
         const data = JSON.parse(event.data);
-        console.log('Presence WebSocket message received:', data);
         if (data.type === 'onlineUsers') {
-          console.log('Updating online users:', data.users);
           setOnlineUsers(data.users || []);
         }
       } catch (error) {
@@ -93,7 +90,6 @@ export const PresenceProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     };
 
     ws.onclose = () => {
-      console.log('Presence WebSocket closed');
       wsRef.current = null;
     };
 
@@ -122,7 +118,6 @@ export const PresenceProvider: React.FC<{ children: React.ReactNode }> = ({ chil
           // Set up a fallback to request online users if we don't get them within 2 seconds
           setTimeout(() => {
             if (onlineUsers.length === 0 && wsRef.current?.readyState === WebSocket.OPEN) {
-              console.log('Requesting online users fallback');
               wsRef.current.send(JSON.stringify({ type: 'getOnlineUsers' }));
             }
           }, 2000);
@@ -148,7 +143,6 @@ export const PresenceProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       if (!ws || ws.readyState !== WebSocket.OPEN || !currentUser) return;
 
       const location = await getLocationFromPath(pathname);
-      console.log('Updating location to:', location);
       ws.send(JSON.stringify({ type: 'updateLocation', location }));
     };
 

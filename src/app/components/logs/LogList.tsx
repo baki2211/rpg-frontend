@@ -69,7 +69,6 @@ const LogList = () => {
       }
       
       const data = await response.json();
-      console.log('Closed sessions data:', data);
       setSessions(data);
       setError(null);
     } catch (error) {

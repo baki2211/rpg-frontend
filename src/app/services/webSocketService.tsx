@@ -53,7 +53,6 @@ export class WebSocketService extends EventEmitter {
 
   private connect() {
     if (this.isConnecting) {
-      console.log('WebSocket connection already in progress, skipping...');
       return;
     }
 
@@ -75,7 +74,6 @@ export class WebSocketService extends EventEmitter {
       }, 5000); // 5 second timeout
 
       this.socket.onopen = (event) => {
-        console.log('WebSocket connection established');
         if (this.connectionTimeout) {
           clearTimeout(this.connectionTimeout);
           this.connectionTimeout = null;
