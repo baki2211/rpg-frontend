@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
+import { useAuth } from '../../utils/AuthContext';
 import './SessionList.css';
 
 interface Participant {
@@ -14,6 +15,13 @@ interface Location {
   name: string;
 }
 
+interface Event {
+  id: number;
+  title: string;
+  type: string;
+  status: string;
+}
+
 interface Session {
   id: string;
   name: string;
@@ -22,14 +30,21 @@ interface Session {
   createdAt: string;
   status: 'open' | 'closed' | 'frozen';
   isActive: boolean;
+  isEvent: boolean;
+  eventId?: number;
+  event?: Event;
   participantCount: number;
   participants?: Participant[];
 }
 
 const SessionList = () => {
+  const { user } = useAuth();
   const [sessions, setSessions] = useState<Session[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // Check if user has master permissions
+  const isMaster = user?.role === 'master' || user?.role === 'admin';
 
   useEffect(() => {
     fetchSessions();
@@ -76,6 +91,11 @@ const SessionList = () => {
   };
 
   const handleToggleFreeze = async (sessionId: string, currentStatus: string) => {
+    if (!isMaster) {
+      alert('Only masters and admins can freeze/unfreeze sessions');
+      return;
+    }
+
     try {
       const newStatus = currentStatus === 'frozen' ? 'open' : 'frozen';
       const action = newStatus === 'frozen' ? 'Freezing' : 'Unfreezing';
@@ -112,6 +132,11 @@ const SessionList = () => {
   };
 
   const handleToggleActive = async (sessionId: string, currentIsActive: boolean) => {
+    if (!isMaster) {
+      alert('Only masters and admins can close/open sessions');
+      return;
+    }
+
     try {
       // If closing (currentIsActive is true), set status to 'closed'
       // If opening (currentIsActive is false), set status to 'open'
@@ -174,6 +199,12 @@ const SessionList = () => {
       <div className="session-header">
         <h2>🎮 Session Management</h2>
         <p>Manage active gaming sessions and participants</p>
+        {!isMaster && (
+          <div className="role-notice">
+            <span className="role-badge">👤 User</span>
+            <span>Limited to &ldquo;Go Here&rdquo; action only</span>
+          </div>
+        )}
       </div>
 
       {sessions.length === 0 ? (
@@ -189,6 +220,7 @@ const SessionList = () => {
             <thead>
               <tr>
                 <th>Location</th>
+                <th>Type</th>
                 <th>Participants</th>
                 <th>Created At</th>
                 <th>Actions</th>
@@ -196,13 +228,33 @@ const SessionList = () => {
             </thead>
             <tbody>
               {sessions.map((session) => (
-                <tr key={session.id} className={`session-row ${session.status}`}>
+                <tr key={session.id} className={`session-row ${session.status} ${session.isEvent ? 'event-session' : 'free-session'}`}>
                   <td className="location-cell">
                     <div className="location-info">
                       <span className="location-name">
                         {session.location?.name || `Location #${session.locationId}`}
                       </span>
                       <span className="session-name">{session.name}</span>
+                    </div>
+                  </td>
+                  <td className="type-cell">
+                    <div className="session-type">
+                      {session.isEvent ? (
+                        <div className="event-badge">
+                          <span className="event-icon">📅</span>
+                          <div className="event-info">
+                            <span className="event-type">Event</span>
+                            {session.event && (
+                              <span className="event-title">{session.event.title}</span>
+                            )}
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="free-role-badge">
+                          <span className="free-role-icon">🎭</span>
+                          <span className="free-role-type">Free Role</span>
+                        </div>
+                      )}
                     </div>
                   </td>
                   <td className="participants-cell">
@@ -232,21 +284,25 @@ const SessionList = () => {
                   </td>
                   <td className="actions-cell">
                     <div className="action-buttons">
-                      <button
-                        onClick={() => handleToggleFreeze(session.id, session.status)}
-                        className={`action-button freeze-button ${session.status === 'frozen' ? 'frozen' : ''}`}
-                        title={session.status === 'frozen' ? 'Unfreeze session' : 'Freeze session'}
-                      >
-                        {session.status === 'frozen' ? '🔥 Unfreeze' : '❄️ Freeze'}
-                      </button>
-                      
-                      <button
-                        onClick={() => handleToggleActive(session.id, session.isActive)}
-                        className={`action-button active-button ${session.isActive ? 'active' : 'inactive'}`}
-                        title={session.isActive ? 'Close session' : 'Open session'}
-                      >
-                        {session.isActive ? '🔒 Close' : '🔓 Open'}
-                      </button>
+                      {isMaster && (
+                        <>
+                          <button
+                            onClick={() => handleToggleFreeze(session.id, session.status)}
+                            className={`action-button freeze-button ${session.status === 'frozen' ? 'frozen' : ''}`}
+                            title={session.status === 'frozen' ? 'Unfreeze session' : 'Freeze session'}
+                          >
+                            {session.status === 'frozen' ? '🔥 Unfreeze' : '❄️ Freeze'}
+                          </button>
+                          
+                          <button
+                            onClick={() => handleToggleActive(session.id, session.isActive)}
+                            className={`action-button active-button ${session.isActive ? 'active' : 'inactive'}`}
+                            title={session.isActive ? 'Close session' : 'Open session'}
+                          >
+                            {session.isActive ? '🔒 Close' : '🔓 Open'}
+                          </button>
+                        </>
+                      )}
                       
                       <button
                         onClick={() => handleGoHere(session.locationId)}

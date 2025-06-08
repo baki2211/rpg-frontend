@@ -47,17 +47,6 @@ const ChatPage = () => {
   const [isSkillsModalOpen, setIsSkillsModalOpen] = useState(false);
   const [isMasterPanelOpen, setIsMasterPanelOpen] = useState(false);
   const [isPresencePanelOpen, setIsPresencePanelOpen] = useState(false);
-  const [skillEngineLogs, setSkillEngineLogs] = useState<Array<{
-    id: string;
-    timestamp: Date;
-    type: 'skill_use' | 'clash' | 'damage' | 'effect';
-    actor: string;
-    target?: string;
-    skill?: string;
-    damage?: number;
-    effects?: string[];
-    details: string;
-  }>>([]);
   const webSocketServiceRef = useRef<WebSocketService | null>(null);
   const [selectedSkill, setSelectedSkill] = useState<(Skill & { selectedTarget?: ChatUser }) | null>(null);
 
@@ -66,6 +55,70 @@ const ChatPage = () => {
 
   // Check if user has master permissions
   const isMaster = user?.role === 'master' || user?.role === 'admin';
+
+  // Track active combat round
+  const [activeRound, setActiveRound] = useState<{ id: number; roundNumber: number } | null>(null);
+
+  // Check for active combat round
+  useEffect(() => {
+    const fetchActiveRound = async () => {
+      if (!locationId) return;
+      
+      try {
+        const response = await fetch(`http://localhost:5001/api/combat/rounds/active/${locationId}`, {
+          credentials: 'include',
+        });
+        if (response.ok) {
+          const data = await response.json();
+          setActiveRound(data.round);
+        } else {
+          setActiveRound(null);
+        }
+      } catch (error) {
+        console.error('Error fetching active round:', error);
+        setActiveRound(null);
+      }
+    };
+
+    fetchActiveRound();
+    // Check periodically for active rounds
+    const interval = setInterval(fetchActiveRound, 10000); // Check every 10 seconds
+    return () => clearInterval(interval);
+  }, [locationId]);
+
+  // Submit skill to combat round
+  const handleSubmitSkillToCombat = async (skill: Skill & { selectedTarget?: ChatUser }, round: { id: number; roundNumber: number }) => {
+    try {
+      // Find target character ID if needed
+      let targetId = null;
+      if (skill.target === 'other' && skill.selectedTarget) {
+        targetId = skill.selectedTarget.userId;
+      }
+
+      const response = await fetch(`http://localhost:5001/api/combat/rounds/${round.id}/actions`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({
+          skillId: skill.id,
+          targetId
+        })
+      });
+
+      if (response.ok) {
+        console.log('Skill submitted to combat round successfully');
+        showSuccess(`${skill.name} submitted to combat round ${round.roundNumber}!`);
+      } else {
+        const errorData = await response.json();
+        showError(`Failed to submit to combat: ${errorData.error || 'Unknown error'}`);
+      }
+    } catch (error) {
+      console.error('Error submitting skill to combat:', error);
+      showError('Failed to submit skill to combat round');
+    }
+  };
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -261,51 +314,23 @@ const ChatPage = () => {
   // Handle incoming skill engine logs from WebSocket
   const handleSkillEngineLog = (logData: SkillEngineLogMessage) => {
     if (isMaster && logData.type === 'skill_engine_log') {
-      const formattedLog = {
-        ...logData.log,
-        timestamp: new Date(logData.log.timestamp)
-      };
-      setSkillEngineLogs(prev => [...prev, formattedLog]);
+      // Master panel now fetches logs directly from API
+      // This WebSocket message could trigger a refresh if needed
+      console.log('Skill engine log received:', logData.log);
     }
   };
 
   // Master Panel handlers
   const handleApplyDamage = (characterId: string, damage: number) => {
-    const newLog = {
-      id: Date.now().toString(),
-      timestamp: new Date(),
-      type: 'damage' as const,
-      actor: 'Master',
-      target: characterId,
-      damage,
-      details: `Applied ${damage} damage to character`
-    };
-    setSkillEngineLogs(prev => [...prev, newLog]);
+    console.log(`Applied ${damage} damage to character ${characterId}`);
   };
 
   const handleApplyHealing = (characterId: string, healing: number) => {
-    const newLog = {
-      id: Date.now().toString(),
-      timestamp: new Date(),
-      type: 'effect' as const,
-      actor: 'Master',
-      target: characterId,
-      details: `Applied ${healing} healing to character`
-    };
-    setSkillEngineLogs(prev => [...prev, newLog]);
+    console.log(`Applied ${healing} healing to character ${characterId}`);
   };
 
   const handleApplyStatus = (characterId: string, status: { id: string; name: string; type: string; duration: number; effects: Record<string, number> }) => {
-    const newLog = {
-      id: Date.now().toString(),
-      timestamp: new Date(),
-      type: 'effect' as const,
-      actor: 'Master',
-      target: characterId,
-      effects: [status.name],
-      details: `Applied ${status.name} status effect for ${status.duration} turns`
-    };
-    setSkillEngineLogs(prev => [...prev, newLog]);
+    console.log(`Applied ${status.name} status effect to character ${characterId} for ${status.duration} turns`);
   };
 
   const handleSendMessage = (e: React.FormEvent) => {
@@ -333,6 +358,12 @@ const ChatPage = () => {
     
     console.log('Sending message with skill data:', message);
     webSocketServiceRef.current?.sendMessage(message as unknown as JSON);
+    
+    // If there's an active round and a skill is selected, submit to combat as well
+    if (selectedSkill && activeRound) {
+      handleSubmitSkillToCombat(selectedSkill, activeRound);
+    }
+    
     setNewMessage('');
     setCharCount(0);
     setSelectedSkill(null); // Reset selected skill after sending
@@ -468,7 +499,6 @@ const ChatPage = () => {
           isOpen={isMasterPanelOpen}
           onClose={() => setIsMasterPanelOpen(false)}
           locationId={locationId}
-          skillEngineLogs={skillEngineLogs}
           onApplyDamage={handleApplyDamage}
           onApplyHealing={handleApplyHealing}
           onApplyStatus={handleApplyStatus}

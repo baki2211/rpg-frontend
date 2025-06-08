@@ -17,6 +17,13 @@ interface CombatRound {
   status: string;
 }
 
+interface ActiveEvent {
+  id: number;
+  title: string;
+  type: string;
+  status: string;
+}
+
 interface SkillsModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -36,8 +43,7 @@ export const SkillsModal: React.FC<SkillsModalProps> = ({ isOpen, onClose, onSel
   const [selectedTarget, setSelectedTarget] = useState<ChatUser | null>(null);
   const [showTargetSelection, setShowTargetSelection] = useState(false);
   const [activeRound, setActiveRound] = useState<CombatRound | null>(null);
-  const [submitMode, setSubmitMode] = useState<'chat' | 'combat'>('chat');
-  const [isSubmittingToCombat, setIsSubmittingToCombat] = useState(false);
+  const [activeEvent, setActiveEvent] = useState<ActiveEvent | null>(null);
   
   const { users: chatUsers, loading: usersLoading } = useChatUsers(locationId || '');
 
@@ -48,6 +54,16 @@ export const SkillsModal: React.FC<SkillsModalProps> = ({ isOpen, onClose, onSel
     if (!user) return chatUsers;
     return chatUsers.filter(chatUser => chatUser.username !== user.username);
   }, [chatUsers, user]);
+
+  // Filter skills based on event status - only allow non-"other" skills when no event is active
+  const availableSkills = useMemo(() => {
+    if (!activeEvent) {
+      // Outside of events, only allow "self" and "none" target skills
+      return skills.filter(skill => skill.target !== 'other');
+    }
+    // During events, all skills are available
+    return skills;
+  }, [skills, activeEvent]);
 
   useEffect(() => {
     const fetchSkills = async () => {
@@ -100,7 +116,34 @@ export const SkillsModal: React.FC<SkillsModalProps> = ({ isOpen, onClose, onSel
     }
   }, [isOpen, locationId]);
 
+  // Check for active event
+  useEffect(() => {
+    const fetchActiveEvent = async () => {
+      if (!locationId) return;
+      
+      try {
+        const response = await axios.get(`http://localhost:5001/api/events/active/${locationId}`, {
+          withCredentials: true
+        });
+        setActiveEvent(response.data.event);
+      } catch (error) {
+        console.error('Error fetching active event:', error);
+        setActiveEvent(null);
+      }
+    };
+
+    if (isOpen && locationId) {
+      fetchActiveEvent();
+    }
+  }, [isOpen, locationId]);
+
   const handleSkillClick = (skill: Skill) => {
+    // Check if skill is restricted outside of events
+    if (!activeEvent && skill.target === 'other') {
+      alert('Skills that target others can only be used during active events. Please wait for an event to start.');
+      return;
+    }
+
     setCurrentlySelectedSkill(skill);
     setSelectedTarget(null);
     
@@ -128,58 +171,6 @@ export const SkillsModal: React.FC<SkillsModalProps> = ({ isOpen, onClose, onSel
     setShowTargetSelection(false);
   };
 
-  const handleUseSelectedSkill = () => {
-    if (currentlySelectedSkill) {
-      if (currentlySelectedSkill.target === 'other' && !selectedTarget) {
-        setShowTargetSelection(true);
-      } else {
-        onSelectSkill({
-          ...currentlySelectedSkill,
-          selectedTarget: selectedTarget || undefined
-        });
-        handleClearSelection();
-      }
-    }
-  };
-
-  const handleSubmitToCombat = async () => {
-    if (!currentlySelectedSkill || !activeRound) return;
-    
-    setIsSubmittingToCombat(true);
-    try {
-      // Find target character ID if needed
-      let targetId = null;
-      if (currentlySelectedSkill.target === 'other' && selectedTarget) {
-        // For now, we'll use the userId as characterId - this might need adjustment
-        // based on your character/user relationship
-        targetId = selectedTarget.userId;
-      }
-
-      const response = await axios.post(`http://localhost:5001/api/combat/rounds/${activeRound.id}/actions`, {
-        skillId: currentlySelectedSkill.id,
-        targetId
-      }, {
-        withCredentials: true
-      });
-
-      if (response.data.success) {
-        alert('Action submitted to combat round successfully!');
-        onClose();
-      }
-    } catch (error: unknown) {
-      console.error('Error submitting to combat:', error);
-      const errorMessage = error instanceof Error && 'response' in error && 
-        typeof error.response === 'object' && error.response !== null &&
-        'data' in error.response && typeof error.response.data === 'object' &&
-        error.response.data !== null && 'error' in error.response.data
-        ? String(error.response.data.error)
-        : 'Failed to submit action to combat round';
-      alert(errorMessage);
-    } finally {
-      setIsSubmittingToCombat(false);
-    }
-  };
-
   if (!isOpen) return null;
 
   return (
@@ -200,24 +191,10 @@ export const SkillsModal: React.FC<SkillsModalProps> = ({ isOpen, onClose, onSel
         </div>
 
         {activeRound && !currentlySelectedSkill && (
-          <div className="combat-mode-selector">
-            <div className="combat-notice">
+          <div className="combat-notice">
+            <div className="combat-info">
               <span className="combat-icon">⚔️</span>
-              <span>Combat Round {activeRound.roundNumber} is active!</span>
-            </div>
-            <div className="mode-buttons">
-              <button 
-                className={`mode-button ${submitMode === 'chat' ? 'active' : ''}`}
-                onClick={() => setSubmitMode('chat')}
-              >
-                Use in Chat
-              </button>
-              <button 
-                className={`mode-button ${submitMode === 'combat' ? 'active' : ''}`}
-                onClick={() => setSubmitMode('combat')}
-              >
-                Submit to Combat
-              </button>
+              <span>Combat Round {activeRound.roundNumber} is active! Selected skills will be submitted to combat when you send your message.</span>
             </div>
           </div>
         )}
@@ -281,15 +258,7 @@ export const SkillsModal: React.FC<SkillsModalProps> = ({ isOpen, onClose, onSel
                 ← Back to Skills
               </button>
               
-              {submitMode === 'combat' && activeRound ? (
-                <button 
-                  onClick={handleSubmitToCombat}
-                  disabled={isSubmittingToCombat || (currentlySelectedSkill.target === 'other' && !selectedTarget)}
-                  className="combat-submit-button"
-                >
-                  {isSubmittingToCombat ? 'Submitting...' : '⚔️ Submit to Combat'}
-                </button>
-              ) : currentlySelectedSkill.target === 'other' ? (
+              {currentlySelectedSkill.target === 'other' ? (
                 <button 
                   onClick={handleTargetSelection}
                   disabled={!selectedTarget}
@@ -299,7 +268,13 @@ export const SkillsModal: React.FC<SkillsModalProps> = ({ isOpen, onClose, onSel
                 </button>
               ) : (
                 <button 
-                  onClick={handleUseSelectedSkill}
+                  onClick={() => {
+                    onSelectSkill({
+                      ...currentlySelectedSkill,
+                      selectedTarget: selectedTarget || undefined
+                    });
+                    handleClearSelection();
+                  }}
                   className="confirm-button"
                 >
                   Use Skill
@@ -309,7 +284,7 @@ export const SkillsModal: React.FC<SkillsModalProps> = ({ isOpen, onClose, onSel
           </div>
         ) : (
           <div className="skills-list">
-            {skills.map((skill) => (
+            {availableSkills.map((skill) => (
               <SkillRow
                 key={skill.id}
                 skill={skill}
@@ -318,6 +293,17 @@ export const SkillsModal: React.FC<SkillsModalProps> = ({ isOpen, onClose, onSel
                 isSelected={externalSelectedSkill?.id === skill.id}
               />
             ))}
+            
+            {!activeEvent && skills.length > availableSkills.length && (
+              <div className="restricted-skills-notice">
+                <div className="notice-icon">🚫</div>
+                <div className="notice-text">
+                  <strong>Some skills are restricted</strong>
+                  <p>Skills that target others are only available during active events.</p>
+                  <p>Restricted skills: {skills.length - availableSkills.length}</p>
+                </div>
+              </div>
+            )}
           </div>
         )}
       </div>

@@ -328,16 +328,24 @@
 }
 
 .combat-notice {
+  background: linear-gradient(135deg, #ff6b6b, #ee5a5a);
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.combat-info {
   display: flex;
   align-items: center;
-  gap: 8px;
-  margin-bottom: 12px;
-  color: #8b5cf6;
-  font-weight: 600;
+  gap: 0.75rem;
+  color: white;
+  font-weight: 500;
 }
 
 .combat-icon {
-  font-size: 1.2rem;
+  font-size: 1.25rem;
+  flex-shrink: 0;
 }
 
 .mode-buttons {
@@ -389,8 +397,47 @@
 }
 
 .combat-submit-button:disabled {
-  background: rgba(107, 114, 128, 0.5);
+  background: #6c757d;
   cursor: not-allowed;
-  transform: none;
-  box-shadow: none;
+  opacity: 0.6;
+}
+
+/* Restricted Skills Notice */
+.restricted-skills-notice {
+  background: #fff3cd;
+  border: 1px solid #ffeaa7;
+  border-radius: 8px;
+  padding: 1rem;
+  margin-top: 1rem;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+}
+
+.notice-icon {
+  font-size: 1.5rem;
+  margin-top: 0.125rem;
+}
+
+.notice-text {
+  flex: 1;
+}
+
+.notice-text strong {
+  color: #856404;
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+}
+
+.notice-text p {
+  margin: 0.25rem 0;
+  color: #856404;
+  font-size: 0.875rem;
+  line-height: 1.4;
+}
+
+.notice-text p:last-child {
+  font-weight: 600;
+  margin-top: 0.5rem;
 } 

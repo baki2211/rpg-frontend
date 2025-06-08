@@ -22,6 +22,28 @@
   font-size: 1.1rem;
 }
 
+/* Role Notice */
+.role-notice {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-top: 1rem;
+  padding: 0.5rem 1rem;
+  background: rgba(255, 193, 7, 0.2);
+  border: 1px solid rgba(255, 193, 7, 0.4);
+  border-radius: 20px;
+  font-size: 0.9rem;
+}
+
+.role-badge {
+  background: rgba(255, 193, 7, 0.3);
+  padding: 0.25rem 0.5rem;
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: 0.8rem;
+}
+
 /* Loading State */
 .loading-container {
   display: flex;
@@ -162,6 +184,76 @@
 
 .session-row.closed {
   background: rgba(255, 99, 99, 0.1);
+}
+
+.session-row.event-session {
+  border-left: 4px solid #4ade80;
+}
+
+.session-row.free-session {
+  border-left: 4px solid #667eea;
+}
+
+/* Type Cell */
+.session-type {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+.event-badge {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: rgba(74, 222, 128, 0.2);
+  border: 1px solid rgba(74, 222, 128, 0.4);
+  padding: 0.5rem 0.75rem;
+  border-radius: 15px;
+  color: white;
+}
+
+.event-icon {
+  font-size: 1.1rem;
+}
+
+.event-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+
+.event-type {
+  font-weight: 600;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.event-title {
+  font-size: 0.8rem;
+  opacity: 0.9;
+}
+
+.free-role-badge {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: rgba(102, 126, 234, 0.2);
+  border: 1px solid rgba(102, 126, 234, 0.4);
+  padding: 0.5rem 0.75rem;
+  border-radius: 15px;
+  color: white;
+}
+
+.free-role-icon {
+  font-size: 1.1rem;
+}
+
+.free-role-type {
+  font-weight: 600;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 /* Location Cell */

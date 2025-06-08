@@ -44,6 +44,9 @@ interface Event {
     cancelledRounds: number;
     totalActions: number;
   };
+  session?: {
+    status: 'frozen' | 'open';
+  };
 }
 
 interface CombatAction {
@@ -77,7 +80,6 @@ interface MasterPanelProps {
   isOpen: boolean;
   onClose: () => void;
   locationId: string;
-  skillEngineLogs?: SkillEngineLog[];
   onApplyDamage?: (characterId: string, damage: number) => void;
   onApplyHealing?: (characterId: string, healing: number) => void;
   onApplyStatus?: (characterId: string, status: StatusEffect) => void;
@@ -87,7 +89,6 @@ export const MasterPanel: React.FC<MasterPanelProps> = ({
   isOpen,
   onClose,
   locationId,
-  skillEngineLogs = [],
   onApplyDamage,
   onApplyHealing,
   onApplyStatus
@@ -101,6 +102,7 @@ export const MasterPanel: React.FC<MasterPanelProps> = ({
   const [healingAmount, setHealingAmount] = useState<number>(0);
   const [selectedStatus, setSelectedStatus] = useState<string>('');
   const [statusDuration, setStatusDuration] = useState<number>(1);
+  const [engineLogs, setEngineLogs] = useState<SkillEngineLog[]>([]);
 
   // Combat state
   const [activeRound, setActiveRound] = useState<CombatRound | null>(null);
@@ -114,6 +116,8 @@ export const MasterPanel: React.FC<MasterPanelProps> = ({
   const [recentEvents, setRecentEvents] = useState<Event[]>([]);
   const [isCreatingEvent, setIsCreatingEvent] = useState(false);
   const [isClosingEvent, setIsClosingEvent] = useState(false);
+  const [isFreezingEvent, setIsFreezingEvent] = useState(false);
+  const [isUnfreezingEvent, setIsUnfreezingEvent] = useState(false);
   const [eventForm, setEventForm] = useState({
     title: '',
     type: 'lore' as 'lore' | 'duel' | 'quest',
@@ -123,47 +127,44 @@ export const MasterPanel: React.FC<MasterPanelProps> = ({
   // Check if user has master permissions
   const isMaster = user?.role === 'master' || user?.role === 'admin';
 
-  // Test function to generate sample logs
-  const generateTestLogs = () => {
-    const sampleLogs = [
-      {
-        id: `test-${Date.now()}-1`,
-        timestamp: new Date(),
-        type: 'skill_use' as const,
-        actor: 'Player A',
-        target: 'Player B',
-        skill: 'Firebolt',
-        damage: 35,
-        effects: ['Final Output: 35', 'Base Power: 20', 'Roll Quality: Critical', 'Skill Uses: 5', 'Branch Uses: 15'],
-        details: 'Player A used Firebolt (other target) and achieved 35 output with a critical roll'
-      },
-      {
-        id: `test-${Date.now()}-2`,
-        timestamp: new Date(Date.now() - 30000),
-        type: 'skill_use' as const,
-        actor: 'Player B',
-        target: 'Self',
-        skill: 'Shield',
-        damage: 28,
-        effects: ['Final Output: 28', 'Base Power: 15', 'Roll Quality: Standard', 'Skill Uses: 12', 'Branch Uses: 8'],
-        details: 'Player B used Shield (self target) and achieved 28 output with a standard roll'
-      },
-      {
-        id: `test-${Date.now()}-3`,
-        timestamp: new Date(Date.now() - 60000),
-        type: 'damage' as const,
-        actor: 'Master',
-        target: 'Player C',
-        damage: 15,
-        effects: ['Direct damage applied'],
-        details: 'Master applied 15 damage to Player C'
+  // Fetch engine logs
+  const fetchEngineLogs = async () => {
+    try {
+      const response = await axios.get(`http://localhost:5001/api/engine-logs/location/${locationId}`, {
+        withCredentials: true
+      });
+      if (response.data.success) {
+        setEngineLogs(response.data.logs.map((log: {
+          id: string;
+          type: 'skill_use' | 'clash' | 'damage' | 'effect';
+          actor: string;
+          target?: string;
+          skill?: string;
+          damage?: number;
+          effects?: string[];
+          details: string;
+          createdAt: string;
+        }) => ({
+          ...log,
+          timestamp: new Date(log.createdAt)
+        })));
       }
-    ];
-
-    // Log sample data for demonstration purposes
-    console.log('Sample logs generated:', sampleLogs);
-    console.log('Current skill engine logs:', skillEngineLogs.length);
+    } catch (error) {
+      console.error('Error fetching engine logs:', error);
+      // Don't show error to user for empty logs - this is expected when no skills have been used
+      setEngineLogs([]);
+    }
   };
+
+  // Load engine logs when the logs tab is active
+  useEffect(() => {
+    if (activeTab === 'logs' && isOpen) {
+      fetchEngineLogs();
+      // Set up interval to refresh logs periodically
+      const interval = setInterval(fetchEngineLogs, 10000); // Refresh every 10 seconds
+      return () => clearInterval(interval);
+    }
+  }, [activeTab, isOpen, locationId]);
 
   // Combat functions
   const fetchActiveRound = async () => {
@@ -192,10 +193,16 @@ export const MasterPanel: React.FC<MasterPanelProps> = ({
   };
 
   const createNewRound = async () => {
+    if (!activeEvent) {
+      alert('You must have an active event to create combat rounds');
+      return;
+    }
+
     setIsCreatingRound(true);
     try {
       const response = await axios.post('http://localhost:5001/api/combat/rounds', {
         locationId: parseInt(locationId)
+        // Note: eventId is automatically detected by the backend from active events
       }, {
         withCredentials: true
       });
@@ -356,6 +363,48 @@ export const MasterPanel: React.FC<MasterPanelProps> = ({
       alert('Failed to close event');
     } finally {
       setIsClosingEvent(false);
+    }
+  };
+
+  const freezeEvent = async () => {
+    if (!activeEvent) return;
+    
+    setIsFreezingEvent(true);
+    try {
+      const response = await axios.post(`http://localhost:5001/api/events/${activeEvent.id}/freeze`, {}, {
+        withCredentials: true
+      });
+      
+      if (response.data.success) {
+        await fetchActiveEvent();
+        alert('🧊 Event frozen! Session state has been saved and cleared.');
+      }
+    } catch (error) {
+      console.error('Error freezing event:', error);
+      alert('Failed to freeze event');
+    } finally {
+      setIsFreezingEvent(false);
+    }
+  };
+
+  const unfreezeEvent = async () => {
+    if (!activeEvent) return;
+    
+    setIsUnfreezingEvent(true);
+    try {
+      const response = await axios.post(`http://localhost:5001/api/events/${activeEvent.id}/unfreeze`, {}, {
+        withCredentials: true
+      });
+      
+      if (response.data.success) {
+        await fetchActiveEvent();
+        alert('🔥 Event unfrozen! Session state has been restored.');
+      }
+    } catch (error) {
+      console.error('Error unfreezing event:', error);
+      alert('Failed to unfreeze event');
+    } finally {
+      setIsUnfreezingEvent(false);
     }
   };
 
@@ -525,26 +574,26 @@ export const MasterPanel: React.FC<MasterPanelProps> = ({
             <div className="logs-header">
               <h3>Skill Engine Logs</h3>
               <div className="logs-header-right">
-                <button 
-                  onClick={generateTestLogs}
-                  className="test-logs-button"
-                  title="Generate test logs for development"
-                >
-                  🧪 Test Logs
-                </button>
-                <div className="logs-count">{skillEngineLogs.length} events</div>
+                <div className="logs-count">{engineLogs.length} events</div>
               </div>
             </div>
             <div className="logs-container">
-              {skillEngineLogs.length === 0 ? (
+              {engineLogs.length === 0 ? (
                 <div className="no-logs">
                   <div className="no-logs-icon">📋</div>
-                  <div>No skill activity yet</div>
-                  <div className="no-logs-hint">Skills used in chat will appear here</div>
+                  <div>No engine activity yet</div>
+                  <div className="no-logs-hint">
+                    Engine logs appear when:
+                    <ul>
+                      <li>• Players use skills in chat</li>
+                      <li>• Combat rounds are initiated and resolved</li>
+                      <li>• Skills clash during combat</li>
+                    </ul>
+                  </div>
                 </div>
               ) : (
                 <div className="logs-list">
-                  {skillEngineLogs
+                  {engineLogs
                     .slice()
                     .reverse() // Show newest first
                     .map((log) => (
@@ -811,17 +860,29 @@ export const MasterPanel: React.FC<MasterPanelProps> = ({
               </div>
             ) : (
               <div className="no-active-round">
-                <div className="no-round-message">
-                  <h4>No Active Combat Round</h4>
-                  <p>Create a new round to begin structured combat</p>
-                </div>
-                <button 
-                  onClick={createNewRound}
-                  disabled={isCreatingRound}
-                  className="create-round-button"
-                >
-                  {isCreatingRound ? 'Creating...' : '⚔️ Start New Round'}
-                </button>
+                {activeEvent ? (
+                  <>
+                    <div className="no-round-message">
+                      <h4>No Active Combat Round</h4>
+                      <p>Create a new round for the current event: <strong>{activeEvent.title}</strong></p>
+                    </div>
+                    <button 
+                      onClick={createNewRound}
+                      disabled={isCreatingRound}
+                      className="create-round-button"
+                    >
+                      {isCreatingRound ? 'Creating...' : '⚔️ Start New Round'}
+                    </button>
+                  </>
+                ) : (
+                  <div className="no-round-message">
+                    <h4>No Active Event</h4>
+                    <p>Combat rounds can only be created during active events. Start an event in the Events tab first.</p>
+                    <div className="event-hint">
+                      💡 Go to the <strong>Events</strong> tab to create a new event before starting combat rounds.
+                    </div>
+                  </div>
+                )}
               </div>
             )}
 
@@ -863,12 +924,31 @@ export const MasterPanel: React.FC<MasterPanelProps> = ({
                 <div className="event-header">
                   <h4>{activeEvent.title} - {activeEvent.type.toUpperCase()}</h4>
                   <div className="event-actions">
+                    {activeEvent.session?.status === 'frozen' ? (
+                      <button 
+                        onClick={unfreezeEvent}
+                        disabled={isUnfreezingEvent}
+                        className="unfreeze-event-button"
+                        title="Unfreeze event and session"
+                      >
+                        {isUnfreezingEvent ? 'Unfreezing...' : '🔥 Unfreeze'}
+                      </button>
+                    ) : (
+                      <button 
+                        onClick={freezeEvent}
+                        disabled={isFreezingEvent}
+                        className="freeze-event-button"
+                        title="Freeze event and session"
+                      >
+                        {isFreezingEvent ? 'Freezing...' : '❄️ Freeze'}
+                      </button>
+                    )}
                     <button 
                       onClick={closeEvent}
                       disabled={isClosingEvent}
                       className="close-event-button"
                     >
-                      {isClosingEvent ? 'Closing...' : 'Close Event'}
+                      {isClosingEvent ? 'Closing...' : '🔒 Close Event'}
                     </button>
                   </div>
                 </div>
