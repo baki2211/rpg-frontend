@@ -133,8 +133,9 @@ export const MasterPanel: React.FC<MasterPanelProps> = ({
       const response = await axios.get(`http://localhost:5001/api/engine-logs/location/${locationId}`, {
         withCredentials: true
       });
+      
       if (response.data.success) {
-        setEngineLogs(response.data.logs.map((log: {
+        const logs = response.data.logs.map((log: {
           id: string;
           type: 'skill_use' | 'clash' | 'damage' | 'effect';
           actor: string;
@@ -147,10 +148,13 @@ export const MasterPanel: React.FC<MasterPanelProps> = ({
         }) => ({
           ...log,
           timestamp: new Date(log.createdAt)
-        })));
+        }));
+        setEngineLogs(logs);
+      } else {
+        setEngineLogs([]);
       }
     } catch (error) {
-      console.error('Error fetching engine logs:', error);
+      console.error('🔍 MASTER PANEL: Error fetching engine logs:', error);
       // Don't show error to user for empty logs - this is expected when no skills have been used
       setEngineLogs([]);
     }
@@ -201,17 +205,18 @@ export const MasterPanel: React.FC<MasterPanelProps> = ({
     setIsCreatingRound(true);
     try {
       const response = await axios.post('http://localhost:5001/api/combat/rounds', {
-        locationId: parseInt(locationId)
-        // Note: eventId is automatically detected by the backend from active events
+        locationId: parseInt(locationId),
+        eventId: activeEvent.id  // Pass the event ID explicitly
       }, {
         withCredentials: true
       });
       
       if (response.data.success) {
+        console.log(`⚔️ MASTER PANEL: Created round for event ${activeEvent.title}`);
         await fetchActiveRound();
       }
     } catch (error) {
-      console.error('Error creating round:', error);
+      console.error('⚔️ MASTER PANEL: Error creating round:', error);
       alert('Failed to create combat round');
     } finally {
       setIsCreatingRound(false);
@@ -228,12 +233,17 @@ export const MasterPanel: React.FC<MasterPanelProps> = ({
       });
       
       if (response.data.success) {
+        console.log(`⚔️ MASTER PANEL: Resolved round ${activeRound.roundNumber}`);
         setActiveRound(null);
         setRoundActions([]);
         await fetchResolvedRounds();
+        // Trigger a refresh of engine logs to pick up new logs
+        if (activeTab === 'logs') {
+          await fetchEngineLogs();
+        }
       }
     } catch (error) {
-      console.error('Error resolving round:', error);
+      console.error('⚔️ MASTER PANEL: Error resolving round:', error);
       alert('Failed to resolve combat round');
     } finally {
       setIsResolvingRound(false);
@@ -607,35 +617,71 @@ export const MasterPanel: React.FC<MasterPanelProps> = ({
                         </div>
                       </div>
                       <div className="log-content">
-                        <div className="log-main-line">
-                          <span className="log-actor">{log.actor}</span>
-                          {log.skill && (
-                            <span className="log-action">
-                              used <span className="log-skill">{log.skill}</span>
-                            </span>
-                          )}
-                          {log.target && log.target !== log.actor && (
-                            <span className="log-target">on {log.target}</span>
-                          )}
-                        </div>
-                        
-                        {log.effects && log.effects.length > 0 && (
-                          <div className="log-effects">
-                            {log.effects.map((effect, index) => (
-                              <span key={index} className="effect-tag">
-                                {effect}
-                              </span>
-                            ))}
+                        {log.type === 'clash' ? (
+                          <div className="clash-content">
+                            <div className="log-main-line">
+                              <span className="log-actor">{log.actor}</span>
+                              <span className="clash-vs">⚔️ VS ⚔️</span>
+                              <span className="log-actor">{log.target}</span>
+                            </div>
+                            
+                            {log.skill && (
+                              <div className="log-action">
+                                <strong>Skills:</strong> {log.skill}
+                              </div>
+                            )}
+                            
+                            {log.effects && log.effects.length > 0 && (
+                              <div className="log-effects">
+                                {log.effects.map((effect, index) => (
+                                  <span key={index} className="effect-tag">
+                                    {effect}
+                                  </span>
+                                ))}
+                              </div>
+                            )}
+                            
+                            {log.damage && log.damage > 0 && (
+                              <div className="log-damage">
+                                <span className="damage-label">Damage Dealt:</span> {log.damage}
+                              </div>
+                            )}
+                            
+                            <div className="log-details">{log.details}</div>
+                          </div>
+                        ) : (
+                          <div className="regular-content">
+                            <div className="log-main-line">
+                              <span className="log-actor">{log.actor}</span>
+                              {log.skill && (
+                                <span className="log-action">
+                                  used <span className="log-skill">{log.skill}</span>
+                                </span>
+                              )}
+                              {log.target && log.target !== log.actor && (
+                                <span className="log-target">on {log.target}</span>
+                              )}
+                            </div>
+                            
+                            {log.effects && log.effects.length > 0 && (
+                              <div className="log-effects">
+                                {log.effects.map((effect, index) => (
+                                  <span key={index} className="effect-tag">
+                                    {effect}
+                                  </span>
+                                ))}
+                              </div>
+                            )}
+                            
+                            {log.damage && (
+                              <div className="log-damage">
+                                <span className="damage-label">Result:</span> {log.damage}
+                              </div>
+                            )}
+                            
+                            <div className="log-details">{log.details}</div>
                           </div>
                         )}
-                        
-                        {log.damage && (
-                          <div className="log-damage">
-                            <span className="damage-label">Result:</span> {log.damage}
-                          </div>
-                        )}
-                        
-                        <div className="log-details">{log.details}</div>
                       </div>
                     </div>
                   ))}

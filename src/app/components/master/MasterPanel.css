@@ -201,11 +201,13 @@
 }
 
 .log-entry.skill_use {
-  border-left: 4px solid #06b6d4;
+  border-left: 4px solid #4ecdc4;
+  background: linear-gradient(135deg, #f0fffe, #e6fffc);
 }
 
 .log-entry.clash {
-  border-left: 4px solid #f59e0b;
+  border-left: 4px solid #ff6b6b;
+  background: linear-gradient(135deg, #fff5f5, #ffeaea);
 }
 
 .log-entry.damage {
@@ -213,7 +215,8 @@
 }
 
 .log-entry.effect {
-  border-left: 4px solid #8b5cf6;
+  border-left: 4px solid #667eea;
+  background: linear-gradient(135deg, #f7f8fc, #eef1ff);
 }
 
 .log-header {
@@ -246,8 +249,9 @@
 }
 
 .log-type-badge.clash {
-  background: rgba(245, 158, 11, 0.2);
-  color: #f59e0b;
+  background: linear-gradient(135deg, #ff6b6b, #ee5a5a);
+  color: white;
+  font-weight: bold;
 }
 
 .log-type-badge.damage {
@@ -1203,4 +1207,44 @@
 
 .event-hint strong {
   color: #93c5fd;
+}
+
+.clash-participants {
+  display: flex;
+  justify-content: space-between;
+  margin: 0.5rem 0;
+  padding: 0.5rem;
+  background: rgba(255, 255, 255, 0.7);
+  border-radius: 4px;
+}
+
+.clash-vs {
+  display: flex;
+  align-items: center;
+  font-weight: bold;
+  color: #ff6b6b;
+  margin: 0 1rem;
+}
+
+.clash-winner {
+  padding: 0.25rem 0.5rem;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: bold;
+  text-transform: uppercase;
+}
+
+.clash-winner.winner {
+  background: #4ade80;
+  color: white;
+}
+
+.clash-winner.loser {
+  background: #f87171;
+  color: white;
+}
+
+.clash-winner.tie {
+  background: #fbbf24;
+  color: white;
 } 
