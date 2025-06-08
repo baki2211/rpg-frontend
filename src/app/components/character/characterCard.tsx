@@ -64,7 +64,16 @@ const CharacterCard: React.FC<CharacterCardProps> = ({
             {character.isActive ? '🏛️ Active' : '⚡ Activate'}
           </button>
           <button 
-            onClick={() => onDelete(character.id)}
+            onClick={async () => {
+              const confirmed = window.confirm(`Are you sure you want to delete ${character.name} ${character.surname}? This action cannot be undone.`);
+              if (confirmed) {
+                try {
+                  await onDelete(character.id);
+                } catch (error) {
+                  console.error('Delete failed:', error);
+                }
+              }
+            }}
             className="btn btn-danger"
           >
             🗑️ Delete

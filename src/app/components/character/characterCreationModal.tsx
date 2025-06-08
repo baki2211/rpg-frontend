@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+import './characterCreationModal.css';
 
 interface User {
   id: number;
@@ -100,7 +101,9 @@ const CharacterCreationModalPanel: React.FC<CharacterCreationModalPanelProps> = 
   };
 
   const handleStatChange = (stat: keyof typeof characterData.stats, value: number) => {
-    const newStats = { ...characterData.stats, [stat]: value };
+    // Handle NaN values by defaulting to 0
+    const cleanValue = isNaN(value) ? 0 : value;
+    const newStats = { ...characterData.stats, [stat]: cleanValue };
     const newTotal = Object.values(newStats).reduce((sum, val) => sum + val, 0);
     if (newTotal > totalPoints) {
       setErrorMessage(`You have only ${remainingPoints} points remaining.`);
@@ -153,129 +156,161 @@ const CharacterCreationModalPanel: React.FC<CharacterCreationModalPanelProps> = 
   };
   
   return (
-    <div style={{ padding: '1rem' }}>
-      <h2>Character Management</h2>
-      {errorMessage && <p style={{ color: 'red' }}>{errorMessage}</p>}
-      {successMessage && <p style={{ color: 'green' }}>{successMessage}</p>}
+    <div className="character-creation-modal">
+      <div className="character-creation-header">
+        <h2>Create Your Character</h2>
+        <p className="character-creation-subtitle">Design your unique hero for the adventure ahead</p>
+      </div>
 
-      {/* Create Character Form */}
-      <form onSubmit={handleCharacterSubmit}>
-        <h3>Create New Character</h3>
-        <div>
-          <label>Name:</label>
-          <input
-            type="text"
-            value={characterData.name}
-            onChange={(e) => setCharacterData({ ...characterData, name: e.target.value })}
-            required
-          />
+      {errorMessage && (
+        <div className="character-alert error">{errorMessage}</div>
+      )}
+      {successMessage && (
+        <div className="character-alert success">{successMessage}</div>
+      )}
+
+      <form onSubmit={handleCharacterSubmit} className="character-creation-form">
+        <div className="character-form-section">
+          <h3>Basic Information</h3>
+          <div className="character-form-grid">
+            <div className="character-form-group">
+              <label>First Name</label>
+              <input
+                type="text"
+                value={characterData.name}
+                onChange={(e) => setCharacterData({ ...characterData, name: e.target.value })}
+                className="character-form-control"
+                placeholder="Enter first name..."
+                required
+              />
+            </div>
+
+            <div className="character-form-group">
+              <label>Surname</label>
+              <input
+                type="text"
+                value={characterData.surname}
+                onChange={(e) => setCharacterData({ ...characterData, surname: e.target.value })}
+                className="character-form-control"
+                placeholder="Enter surname..."
+                required
+              />
+            </div>
+
+            <div className="character-form-group">
+              <label>Age</label>
+              <input
+                type="number"
+                value={characterData.age || ''}
+                onChange={(e) => {
+                  const value = e.target.value === '' ? 0 : parseInt(e.target.value, 10);
+                  setCharacterData({ ...characterData, age: isNaN(value) ? 0 : value });
+                }}
+                className="character-form-control"
+                placeholder="Enter age..."
+                min="16"
+                max="100"
+                required
+              />
+            </div>
+
+            <div className="character-form-group">
+              <label>Gender</label>
+              <select
+                value={characterData.gender}
+                onChange={(e) => setCharacterData({ ...characterData, gender: e.target.value })}
+                className="character-form-control"
+                required
+              >
+                <option value="">Select Gender</option>
+                <option value="male">Male</option>
+                <option value="female">Female</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
+
+            <div className="character-form-group">
+              <label>Race</label>
+              <select
+                value={characterData.raceId || ''}
+                onChange={(e) => {
+                  const value = e.target.value === '' ? null : parseInt(e.target.value, 10);
+                  setCharacterData({ ...characterData, raceId: isNaN(value!) ? null : value });
+                }}
+                className="character-form-control"
+                required
+              >
+                <option value="">Select Race</option>
+                {races.length > 0 ? (
+                  races.map((race) => (
+                    <option key={race.id} value={race.id}>
+                      {race.name}
+                    </option>
+                  ))
+                ) : (
+                  <option value="">No races available</option>
+                )}
+              </select>
+            </div>
+
+            <div className="character-form-group full-width">
+              <label>Character Portrait</label>
+              <div className="character-file-input">
+                <label className="character-file-label">
+                  <input 
+                    type="file" 
+                    accept="image/*" 
+                    onChange={(e) => {
+                      if (e.target.files && e.target.files[0]) {
+                        setImageFile(e.target.files[0]);
+                      }
+                    }} 
+                  />
+                  {imageFile ? `Selected: ${imageFile.name}` : 'Click to upload character image (optional)'}
+                </label>
+              </div>
+            </div>
+          </div>
         </div>
-        <div>
-          <label>Surname:</label>
-          <input
-            type="text"
-            value={characterData.surname}
-            onChange={(e) => setCharacterData({ ...characterData, surname: e.target.value })}
-            required
-          />
+
+        <div className="character-form-section">
+          <div className="stats-section">
+            <div className="stats-header">
+              <h3 className="stats-title">Allocate Stat Points</h3>
+              <div className={`points-remaining ${remainingPoints < 0 ? 'warning' : ''}`}>
+                Remaining: {remainingPoints}
+              </div>
+            </div>
+
+            <div className="stats-grid">
+              {Object.entries(characterData.stats).map(([statKey, statValue]) => (
+                <div key={statKey} className="stat-item">
+                  <div className="stat-label">{statKey}</div>
+                  <input
+                    type="number"
+                    value={statValue || ''}
+                    onChange={(e) => {
+                      const value = e.target.value === '' ? 0 : parseInt(e.target.value, 10);
+                      handleStatChange(statKey as keyof typeof characterData.stats, value);
+                    }}
+                    className="stat-input"
+                    min="0"
+                    max="20"
+                    required
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
-        <div>
-          <label>Character Image:</label>
-          <input type="file" accept="image/*" onChange={(e) => {
-            if (e.target.files && e.target.files[0]) {
-              setImageFile(e.target.files[0]);
-            }
-          }} />
-        </div>
-        <div>
-          <label>Age:</label>
-          <input
-            type="number"
-            value={characterData.age}
-            onChange={(e) => setCharacterData({ ...characterData, age: parseInt(e.target.value, 10) })}
-            required
-          />
-        </div>
-        <div>
-          <label>Gender:</label>
-          <select
-            value={characterData.gender}
-            onChange={(e) => setCharacterData({ ...characterData, gender: e.target.value })}
-            required
-          >
-            <option value="">Select Gender</option>
-            <option value="male">Male</option>
-            <option value="female">Female</option>
-            <option value="other">Other</option>
-          </select>
-        </div>
-        <div>
-          <label>Race:</label>
-          <select
-            value={characterData.raceId || ''}
-            onChange={(e) => setCharacterData({ ...characterData, raceId: parseInt(e.target.value, 10) })}
-            required
-          >
-            <option value="">Select Race</option>
-    {races.length > 0 ? (
-      races.map((race) => (
-        <option key={race.id} value={race.id}>
-          {race.name}
-        </option>
-      ))
-    ) : (
-      <option value="">No races available</option>
-            )}
-          </select>
-        </div>
-        <div>
-          <h4>Allocate Stat Points (Remaining: {remainingPoints})</h4>
-          <label>STR:</label>
-          <input
-            type="number"
-            value={characterData.stats.STR}
-            onChange={(e) => handleStatChange('STR', parseInt(e.target.value, 10))}
-            min="0"
-            required
-          />
-          <br />
-          <label>DEX:</label>
-          <input
-            type="number"
-            value={characterData.stats.DEX}
-            onChange={(e) => handleStatChange('DEX', parseInt(e.target.value, 10))}
-            min="0"
-            required
-          />
-          <br />
-          <label>RES:</label>
-          <input
-            type="number"
-            value={characterData.stats.RES}
-            onChange={(e) => handleStatChange('RES', parseInt(e.target.value, 10))}
-            min="0"
-            required
-          />
-          <br />
-          <label>MN:</label>
-          <input
-            type="number"
-            value={characterData.stats.MN}
-            onChange={(e) => handleStatChange('MN', parseInt(e.target.value, 10))}
-            min="0"
-            required
-          />
-          <br />
-          <label>CHA:</label>
-          <input
-            type="number"
-            value={characterData.stats.CHA}
-            onChange={(e) => handleStatChange('CHA', parseInt(e.target.value, 10))}
-            min="0"
-            required
-          />
-        </div>
-        <button type="submit">Create Character</button>
+
+        <button 
+          type="submit" 
+          className="character-submit-button"
+          disabled={remainingPoints < 0 || allocatedPoints === 0}
+        >
+          ✨ Create Character
+        </button>
       </form>
     </div>
   );

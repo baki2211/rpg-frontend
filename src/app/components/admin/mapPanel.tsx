@@ -5,6 +5,7 @@ import axios from 'axios';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '../../utils/AuthContext';
 import { Map, Location } from '../../../types/types';
+import './admin.css';
 
 const AdminMapPanel = () => {
   const router = useRouter();
@@ -20,25 +21,23 @@ const AdminMapPanel = () => {
     xCoordinate: 0,
     yCoordinate: 0,
   });
-  const [selectedLocation, setSelectedLocation] = useState<Location | null>(null); // For editing a location
+  const [selectedLocation, setSelectedLocation] = useState<Location | null>(null);
   const [errorMessage, setErrorMessage] = useState('');
 
   useEffect(() => {
     if (user && user.role !== 'admin') {
-      router.push('/pages/dashboard'); // Redirect non-admins to the dashboard
+      router.push('/pages/dashboard');
     }
     fetchMapsAndLocations();
   }, [user, router]);
 
   const fetchMapsAndLocations = async () => {
     try {
-      // Fetch all maps
       const response = await axios.get('http://localhost:5001/api/maps', {
         withCredentials: true,
       });
       setMaps(response.data);
 
-      // Fetch the main map
       const mainMapResponse = await axios.get('http://localhost:5001/api/maps/main', {
         withCredentials: true,
       });
@@ -68,6 +67,7 @@ const AdminMapPanel = () => {
       });
       setMap(null);
       setMapName('');
+      setErrorMessage('');
       fetchMapsAndLocations();
     } catch (error) {
       console.error('Failed to upload map:', error);
@@ -83,6 +83,7 @@ const AdminMapPanel = () => {
     try {
       await axios.put(`http://localhost:5001/api/maps/${mapId}/main`, {}, { withCredentials: true });
       fetchMapsAndLocations();
+      setErrorMessage('');
     } catch (error) {
       console.error('Failed to set main map:', error);
       setErrorMessage('Failed to update main map');
@@ -99,19 +100,18 @@ const AdminMapPanel = () => {
       const mainMapId = mainMapResponse.data.id;
 
       if (selectedLocation) {
-        // Update existing location
         await axios.put(`http://localhost:5001/api/locations/${selectedLocation.id}`, selectedLocation, {
           withCredentials: true,
         });
         setSelectedLocation(null);
       } else {
-        // Add a new location
         await axios.post(`http://localhost:5001/api/locations/${mainMapId}/new`, locationData, {
           withCredentials: true,
         });
         setLocationData({ name: '', description: '', xCoordinate: 0, yCoordinate: 0 });
       }
 
+      setErrorMessage('');
       fetchMapsAndLocations();
     } catch (error) {
       console.error('Failed to save location:', error);
@@ -120,226 +120,308 @@ const AdminMapPanel = () => {
   };
 
   const handleDeleteLocation = async (locationId: number) => {
-    try {
-      await axios.delete(`http://localhost:5001/api/locations/${locationId}`, {
-        withCredentials: true,
-      });
-      fetchMapsAndLocations();
-    } catch (error) {
-      console.error('Failed to delete location:', error);
-      setErrorMessage('Failed to delete location');
+    if (window.confirm('Are you sure you want to delete this location?')) {
+      try {
+        await axios.delete(`http://localhost:5001/api/locations/${locationId}`, {
+          withCredentials: true,
+        });
+        fetchMapsAndLocations();
+        setErrorMessage('');
+      } catch (error) {
+        console.error('Failed to delete location:', error);
+        setErrorMessage('Failed to delete location');
+      }
     }
   };
 
   const handleDeleteMap = async (mapId: number) => {
     const confirm = window.confirm('Are you sure you want to delete this map? This action cannot be undone.');
     if (!confirm) return;
-  
+
     try {
       await axios.delete(`http://localhost:5001/api/maps/${mapId}`, {
         withCredentials: true,
       });
       fetchMapsAndLocations();
+      setErrorMessage('');
     } catch (error) {
       console.error('Failed to delete map:', error);
+      setErrorMessage('Failed to delete map');
     }
   };
 
   if (!user) {
-    return <div>Loading...</div>;
+    return (
+      <div className="admin-panel">
+        <div className="admin-container">
+          <div className="loading">Loading...</div>
+        </div>
+      </div>
+    );
   }
 
   return (
-    <div style={{ display: 'flex', padding: '2rem' }}>
-    {/* Left: Main panel */}
-    <div style={{ flex: 1, marginRight: '2rem' }}>
-    <div style={{ padding: '2rem' }}>
-      <h1>Admin Map Management</h1>
-
-      {errorMessage && <p style={{ color: 'red' }}>{errorMessage}</p>}
-
-      {/* Upload Map */}
-      <form onSubmit={handleMapUpload} encType="multipart/form-data">
-        <h2>Upload Map</h2>
-        <div>
-          <label>Map Name:</label>
-          <input
-            type="text"
-            value={mapName}
-            onChange={(e) => setMapName(e.target.value)}
-            required
-          />
+    <div className="admin-panel">
+      <div className="admin-container">
+        <div className="admin-header">
+          <h1>Map & Location Management</h1>
+          {errorMessage && <div className="error-message">{errorMessage}</div>}
         </div>
-        <input
-          type="file"
-          accept="image/*"
-          onChange={(e) => setMap(e.target.files?.[0] || null)}
-        />
-        <button type="submit">Upload Map</button>
-      </form>
 
-      {/* List of Maps */}
-      <h2>Uploaded Maps</h2>
-      {maps.map((map) => (
-  <div key={map.id} style={{ marginBottom: '1rem' }}>
-    <span>{map.name}</span>
-    <button
-      onClick={() => handleSetMainMap(map.id)}
-      disabled={map.isMainMap}
-      style={{ marginLeft: '1rem' }}
-    >
-      {map.isMainMap ? 'Main Map' : 'Set as Main'}
-    </button>
-    <button
-      onClick={() => handleDeleteMap(map.id)}
-      disabled={map.isMainMap || maps.length <= 1}
-      style={{
-        marginLeft: '1rem',
-        color: 'white',
-        backgroundColor: map.isMainMap || maps.length <= 1 ? 'gray' : 'red',
-        border: 'none',
-        padding: '0.3rem 0.6rem',
-        cursor: map.isMainMap || maps.length <= 1 ? 'not-allowed' : 'pointer',
-      }}
-    >
-      Delete
-    </button>
-    <button
-      onClick={() => setSelectedMapForPreview(map)}
-      style={{ marginLeft: '1rem' }}
-    >
-      Preview
-    </button>
-  </div>
-))}
+        {/* Map Upload Section */}
+        <div className="admin-form">
+          <h2 className="form-full-width">Upload New Map</h2>
+          <form onSubmit={handleMapUpload} encType="multipart/form-data">
+            <div className="form-grid">
+              <div className="form-group">
+                <label>Map Name:</label>
+                <input
+                  type="text"
+                  value={mapName}
+                  onChange={(e) => setMapName(e.target.value)}
+                  className="form-control"
+                  required
+                  placeholder="Enter map name..."
+                />
+              </div>
+              
+              <div className="form-group">
+                <label>Map Image:</label>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => setMap(e.target.files?.[0] || null)}
+                  className="form-control"
+                  required
+                />
+              </div>
+            </div>
+            
+            <div className="form-full-width">
+              <button type="submit" className="btn btn-primary">
+                📁 Upload Map
+              </button>
+            </div>
+          </form>
+        </div>
 
+        {/* Maps Management Section */}
+        <div className="admin-section">
+          <h3>Uploaded Maps ({maps.length})</h3>
+          <div className="maps-grid">
+            {maps.map((mapItem) => (
+              <div key={mapItem.id} className="map-card">
+                <div className="map-card-header">
+                  <h4>{mapItem.name}</h4>
+                  {mapItem.isMainMap && <span className="main-map-badge">Main Map</span>}
+                </div>
+                
+                <div className="map-card-actions">
+                  <button
+                    onClick={() => handleSetMainMap(mapItem.id)}
+                    disabled={mapItem.isMainMap}
+                    className={`btn ${mapItem.isMainMap ? 'btn-secondary' : 'btn-primary'}`}
+                  >
+                    {mapItem.isMainMap ? '⭐ Main Map' : '🔄 Set as Main'}
+                  </button>
+                  
+                  <button
+                    onClick={() => setSelectedMapForPreview(mapItem)}
+                    className="btn btn-info"
+                  >
+                    👁️ Preview
+                  </button>
+                  
+                  <button
+                    onClick={() => handleDeleteMap(mapItem.id)}
+                    disabled={mapItem.isMainMap || maps.length <= 1}
+                    className="btn btn-danger"
+                  >
+                    🗑️ Delete
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+          
+          {maps.length === 0 && (
+            <div className="no-data">
+              <p>No maps uploaded yet. Upload your first map above!</p>
+            </div>
+          )}
+        </div>
 
-      {/* Manage Locations */}
-      <h2>Manage Locations</h2>
-      <form onSubmit={handleLocationSubmit}>
-        <div>
-          <label>Name:</label>
-          <input
-            type="text"
-            value={selectedLocation ? selectedLocation.name : locationData.name}
-            onChange={(e) =>
-              selectedLocation
-                ? setSelectedLocation({ ...selectedLocation, name: e.target.value })
-                : setLocationData({ ...locationData, name: e.target.value })
-            }
-            required
-          />
-        </div>
-        <div>
-          <label>Description:</label>
-          <textarea
-            value={selectedLocation ? selectedLocation.description : locationData.description}
-            onChange={(e) =>
-              selectedLocation
-                ? setSelectedLocation({ ...selectedLocation, description: e.target.value })
-                : setLocationData({ ...locationData, description: e.target.value })
-            }
-            required
-          />
-        </div>
-        <div>
-          <label>X Coordinate:</label>
-          <input
-            type="number"
-            value={selectedLocation ? selectedLocation.xCoordinate : locationData.xCoordinate}
-            onChange={(e) =>
-              selectedLocation
-                ? setSelectedLocation({
-                    ...selectedLocation,
-                    xCoordinate: parseFloat(e.target.value),
-                  })
-                : setLocationData({
-                    ...locationData,
-                    xCoordinate: parseFloat(e.target.value),
-                  })
-            }
-            required
-          />
-        </div>
-        <div>
-          <label>Y Coordinate:</label>
-          <input
-            type="number"
-            value={selectedLocation ? selectedLocation.yCoordinate : locationData.yCoordinate}
-            onChange={(e) =>
-              selectedLocation
-                ? setSelectedLocation({
-                    ...selectedLocation,
-                    yCoordinate: parseFloat(e.target.value),
-                  })
-                : setLocationData({
-                    ...locationData,
-                    yCoordinate: parseFloat(e.target.value),
-                  })
-            }
-            required
-          />
-        </div>
-        <button type="submit">
-          {selectedLocation ? 'Update Location' : 'Add Location'}
-        </button>
-        {selectedLocation && (
-          <button onClick={() => setSelectedLocation(null)} style={{ marginLeft: '1rem' }}>
-            Cancel
-          </button>
-        )}
-      </form>
+        {/* Location Management Section */}
+        <div className="admin-form">
+          <h2 className="form-full-width">{selectedLocation ? 'Edit Location' : 'Add New Location'}</h2>
+          <form onSubmit={handleLocationSubmit}>
+            <div className="form-grid">
+              <div className="form-group">
+                <label>Location Name:</label>
+                <input
+                  type="text"
+                  value={selectedLocation ? selectedLocation.name : locationData.name}
+                  onChange={(e) =>
+                    selectedLocation
+                      ? setSelectedLocation({ ...selectedLocation, name: e.target.value })
+                      : setLocationData({ ...locationData, name: e.target.value })
+                  }
+                  className="form-control"
+                  required
+                  placeholder="Enter location name..."
+                />
+              </div>
 
-      {/* Existing Locations */}
-      <h3>Existing Locations</h3>
-      <ul>
-        {locations.map((location) => (
-          <li key={location.id}>
-            <strong>{location.name}</strong> - {location.description} - (
-            {location.xCoordinate}, {location.yCoordinate})
-            <button onClick={() => setSelectedLocation(location)} style={{ marginLeft: '1rem' }}>
-              Edit
-            </button>
-            <button
-              onClick={() => handleDeleteLocation(location.id)}
-              style={{ marginLeft: '1rem', color: 'red' }}
-            >
-              Delete
-            </button>
-          </li>
-        ))}
-      </ul>
-    </div>
-    </div>
+              <div className="form-group form-full-width">
+                <label>Description:</label>
+                <textarea
+                  value={selectedLocation ? selectedLocation.description : locationData.description}
+                  onChange={(e) =>
+                    selectedLocation
+                      ? setSelectedLocation({ ...selectedLocation, description: e.target.value })
+                      : setLocationData({ ...locationData, description: e.target.value })
+                  }
+                  className="form-control"
+                  required
+                  placeholder="Describe this location..."
+                  rows={3}
+                />
+              </div>
 
-    {/* Right: Preview panel */}
-    <div style={{ width: '400px' }}>
-      <h2>Map Preview</h2>
-      {selectedMapForPreview ? (
-        <div>
-          <p><strong>{selectedMapForPreview.name}</strong></p>
-          <img
-            src={`http://localhost:5001${selectedMapForPreview.imageUrl}`}
-            alt={selectedMapForPreview.name}
-            style={{
-              maxWidth: '100%',
-              border: '1px solid #ccc',
-              borderRadius: '4px',
-              boxShadow: '0 0 5px rgba(0,0,0,0.1)',
-            }}
-          />
-          <button
-            onClick={() => setSelectedMapForPreview(null)}
-            style={{ marginTop: '1rem' }}
-          >
-            Close Preview
-          </button>
+              <div className="form-group">
+                <label>X Coordinate:</label>
+                <input
+                  type="number"
+                  value={selectedLocation ? selectedLocation.xCoordinate : locationData.xCoordinate}
+                  onChange={(e) =>
+                    selectedLocation
+                      ? setSelectedLocation({
+                          ...selectedLocation,
+                          xCoordinate: parseFloat(e.target.value),
+                        })
+                      : setLocationData({
+                          ...locationData,
+                          xCoordinate: parseFloat(e.target.value),
+                        })
+                  }
+                  className="form-control"
+                  required
+                />
+              </div>
+
+              <div className="form-group">
+                <label>Y Coordinate:</label>
+                <input
+                  type="number"
+                  value={selectedLocation ? selectedLocation.yCoordinate : locationData.yCoordinate}
+                  onChange={(e) =>
+                    selectedLocation
+                      ? setSelectedLocation({
+                          ...selectedLocation,
+                          yCoordinate: parseFloat(e.target.value),
+                        })
+                      : setLocationData({
+                          ...locationData,
+                          yCoordinate: parseFloat(e.target.value),
+                        })
+                  }
+                  className="form-control"
+                  required
+                />
+              </div>
+            </div>
+            
+            <div className="form-full-width">
+              <button type="submit" className="btn btn-primary">
+                {selectedLocation ? '✓ Update Location' : '+ Add Location'}
+              </button>
+              {selectedLocation && (
+                <button 
+                  type="button" 
+                  onClick={() => setSelectedLocation(null)} 
+                  className="btn btn-secondary"
+                  style={{ marginLeft: '1rem' }}
+                >
+                  Cancel
+                </button>
+              )}
+            </div>
+          </form>
         </div>
-      ) : (
-        <p>No map selected</p>
+
+        {/* Locations List */}
+        <div className="admin-table">
+          <h3>Existing Locations ({locations.length})</h3>
+          <table className="admin-table">
+            <thead>
+              <tr>
+                <th>Location Name</th>
+                <th>Description</th>
+                <th>Coordinates</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {locations.map((location) => (
+                <tr key={location.id}>
+                  <td><strong>{location.name}</strong></td>
+                  <td>{location.description}</td>
+                  <td>
+                    <span className="coordinate-badge">
+                      X: {location.xCoordinate}, Y: {location.yCoordinate}
+                    </span>
+                  </td>
+                  <td>
+                    <button 
+                      onClick={() => setSelectedLocation(location)} 
+                      className="btn btn-success"
+                    >
+                      ✏️ Edit
+                    </button>
+                    <button
+                      onClick={() => handleDeleteLocation(location.id)}
+                      className="btn btn-danger"
+                    >
+                      🗑️ Delete
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          
+          {locations.length === 0 && (
+            <div className="no-data">
+              <p>No locations created yet. Add your first location above!</p>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Map Preview Panel */}
+      {selectedMapForPreview && (
+        <div className="map-preview-overlay">
+          <div className="map-preview-modal">
+            <div className="map-preview-header">
+              <h3>{selectedMapForPreview.name}</h3>
+              <button
+                onClick={() => setSelectedMapForPreview(null)}
+                className="btn btn-secondary"
+              >
+                ✕ Close
+              </button>
+            </div>
+            <div className="map-preview-content">
+              <img
+                src={`http://localhost:5001${selectedMapForPreview.imageUrl}`}
+                alt={selectedMapForPreview.name}
+                className="map-preview-image"
+              />
+            </div>
+          </div>
+        </div>
       )}
     </div>
-  </div>
   );
 };
 

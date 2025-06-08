@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import './admin.css';
 
 interface SkillBranch {
   id: number;
@@ -55,51 +56,109 @@ const SkillBranchDashboard: React.FC = () => {
   };
 
   const handleDelete = async (id: number) => {
-    try {
-      await axios.delete(`http://localhost:5001/api/skill-branches/${id}`);
-      fetchBranches();
-    } catch (error) {
-      console.error('Error deleting skill branch:', error);
+    if (window.confirm('Are you sure you want to delete this skill branch?')) {
+      try {
+        await axios.delete(`http://localhost:5001/api/skill-branches/${id}`);
+        fetchBranches();
+      } catch (error) {
+        console.error('Error deleting skill branch:', error);
+      }
     }
   };
 
   return (
-    <div>
-      <h2>Skill Branch Dashboard</h2>
-      <form onSubmit={handleSubmit}>
-        <div>
-          <label>Name:</label>
-          <input type="text" name="name" value={formData.name} onChange={handleInputChange} required />
+    <div className="admin-panel">
+      <div className="admin-container">
+        <div className="admin-header">
+          <h1>Skill Branch Dashboard</h1>
         </div>
-        <div>
-          <label>Description:</label>
-          <textarea name="description" value={formData.description} onChange={handleInputChange} required />
-        </div>
-        <button type="submit">{selectedBranch ? 'Update Branch' : 'Create Branch'}</button>
-      </form>
 
-      <h3>Branches List</h3>
-      <table>
-        <thead>
-          <tr>
-            <th>Name</th>
-            <th>Description</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {branches.map(branch => (
-            <tr key={branch.id}>
-              <td>{branch.name}</td>
-              <td>{branch.description}</td>
-              <td>
-                <button onClick={() => handleEdit(branch)}>Edit</button>
-                <button onClick={() => handleDelete(branch.id)}>Delete</button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+        <div className="admin-form">
+          <h2 className="form-full-width">{selectedBranch ? 'Edit Skill Branch' : 'Create New Skill Branch'}</h2>
+          <form onSubmit={handleSubmit}>
+            <div className="form-grid">
+              <div className="form-group">
+                <label>Branch Name:</label>
+                <input 
+                  type="text" 
+                  name="name" 
+                  value={formData.name} 
+                  onChange={handleInputChange} 
+                  className="form-control" 
+                  required 
+                  placeholder="Enter skill branch name..." 
+                />
+              </div>
+
+              <div className="form-group form-full-width">
+                <label>Description:</label>
+                <textarea 
+                  name="description" 
+                  value={formData.description} 
+                  onChange={handleInputChange} 
+                  className="form-control" 
+                  required 
+                  placeholder="Describe this skill branch and its purpose..."
+                  rows={4}
+                />
+              </div>
+            </div>
+            
+            <div className="form-full-width">
+              <button type="submit" className="btn btn-primary">
+                {selectedBranch ? '✓ Update Branch' : '+ Create Branch'}
+              </button>
+              {selectedBranch && (
+                <button 
+                  type="button" 
+                  onClick={() => {
+                    setSelectedBranch(null);
+                    setFormData({ name: '', description: '' });
+                  }}
+                  className="btn btn-secondary"
+                  style={{ marginLeft: '1rem' }}
+                >
+                  Cancel
+                </button>
+              )}
+            </div>
+          </form>
+        </div>
+
+        <div className="admin-table">
+          <h3>Skill Branches ({branches.length})</h3>
+          <table className="admin-table">
+            <thead>
+              <tr>
+                <th>Branch Name</th>
+                <th>Description</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {branches.map(branch => (
+                <tr key={branch.id}>
+                  <td><strong>{branch.name}</strong></td>
+                  <td>{branch.description}</td>
+                  <td>
+                    <button onClick={() => handleEdit(branch)} className="btn btn-success">
+                      ✏️ Edit
+                    </button>
+                    <button onClick={() => handleDelete(branch.id)} className="btn btn-danger">
+                      🗑️ Delete
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          {branches.length === 0 && (
+            <div className="no-data">
+              <p>No skill branches created yet. Create your first one above!</p>
+            </div>
+          )}
+        </div>
+      </div>
     </div>
   );
 };

@@ -114,12 +114,32 @@ export const useCharacters = () => {
 
   const deleteCharacter = async (characterId: number) => {
     try {
-      await axios.delete(`http://localhost:5001/api/characters/${characterId}/delete`, {
+      const response = await axios.delete(`http://localhost:5001/api/characters/${characterId}/delete`, {
         withCredentials: true,
       });
-      setCharacters(prev => prev.filter(char => char.id !== characterId));
+      
+      // Only update state if the request was successful
+      if (response.status === 204) {
+        setCharacters(prev => prev.filter(char => char.id !== characterId));
+      }
     } catch (error) {
       console.error("Failed to delete character:", error);
+      
+      // Check if it's an authentication error
+      if (axios.isAxiosError(error)) {
+        if (error.response?.status === 401) {
+          setError("Authentication required. Please log in again.");
+        } else if (error.response?.status === 403) {
+          setError("You don't have permission to delete this character.");
+        } else if (error.response?.status === 404) {
+          setError("Character not found.");
+        } else {
+          setError(error.response?.data?.error || "Failed to delete character");
+        }
+      } else {
+        setError("Network error. Please try again.");
+      }
+      throw error; // Re-throw so the component can handle it if needed
     }
   };
   
