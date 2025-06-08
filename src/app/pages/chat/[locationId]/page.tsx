@@ -8,7 +8,7 @@ import { SkillsModal } from '@/app/components/skills/SkillsModal';
 import { MiniSkillRow } from '@/app/components/skills/MiniSkillRow';
 import { MasterPanel } from '@/app/components/master/MasterPanel';
 import { Skill } from '@/app/hooks/useCharacter';
-import { ChatUser } from '@/app/hooks/useChatUsers';
+import { ChatUser, useChatUsers } from '@/app/hooks/useChatUsers';
 import './chat.css';
 
 interface SkillEngineLogMessage {
@@ -34,8 +34,6 @@ interface ChatMessage {
   skill?: Skill;
 }
 
-
-
 const ChatPage = () => {
   const { user } = useAuth();
   const params = useParams();
@@ -46,6 +44,7 @@ const ChatPage = () => {
   const [charCount, setCharCount] = useState(0);
   const [isSkillsModalOpen, setIsSkillsModalOpen] = useState(false);
   const [isMasterPanelOpen, setIsMasterPanelOpen] = useState(false);
+  const [isPresencePanelOpen, setIsPresencePanelOpen] = useState(false);
   const [skillEngineLogs, setSkillEngineLogs] = useState<Array<{
     id: string;
     timestamp: Date;
@@ -59,6 +58,9 @@ const ChatPage = () => {
   }>>([]);
   const webSocketServiceRef = useRef<WebSocketService | null>(null);
   const [selectedSkill, setSelectedSkill] = useState<(Skill & { selectedTarget?: ChatUser }) | null>(null);
+
+  // Fetch users in this location
+  const { users: chatUsers, loading: usersLoading, refreshing: usersRefreshing, refreshUsers } = useChatUsers(locationId);
 
   // Check if user has master permissions
   const isMaster = user?.role === 'master' || user?.role === 'admin';
@@ -103,7 +105,7 @@ const ChatPage = () => {
     const messageCheckInterval = setInterval(fetchMessages, 10000); // Check every 10 seconds
 
     // Initialize WebSocket connection
-    const wsUrl = `ws://localhost:5001/ws/chat?locationId=${locationId}`;
+    const wsUrl = `ws://localhost:5001/ws/chat?locationId=${locationId}&userId=${user?.id || ''}&username=${encodeURIComponent(user?.username || '')}`;
     webSocketServiceRef.current = new WebSocketService({
       url: wsUrl,
       onMessage: (message) => {
@@ -342,6 +344,62 @@ const ChatPage = () => {
 
   return (
     <div className="chat-page">
+      {/* Online Presence Panel */}
+      <div className={`presence-panel ${isPresencePanelOpen ? 'open' : ''}`}>
+        <div className="presence-header">
+          <h3>Online in this location ({chatUsers.length})</h3>
+          <div className="presence-header-actions">
+            <button 
+              onClick={refreshUsers}
+              className="refresh-presence-button"
+              title="Refresh user list"
+              disabled={usersRefreshing}
+            >
+              {usersRefreshing ? '⏳' : '🔄'}
+            </button>
+            <button 
+              onClick={() => setIsPresencePanelOpen(false)}
+              className="close-presence-button"
+            >
+              ×
+            </button>
+          </div>
+        </div>
+        <div className="presence-list">
+          {usersLoading ? (
+            <div className="presence-loading">Loading users...</div>
+          ) : chatUsers.length === 0 ? (
+            <div className="no-users">No users in this location</div>
+          ) : (
+            chatUsers.map((chatUser) => (
+              <div key={`${chatUser.username}-${chatUser.characterName}`} className="presence-user">
+                <div className="user-avatar">
+                  {(chatUser.characterName || chatUser.username).charAt(0).toUpperCase()}
+                </div>
+                <div className="user-info">
+                  <div className="user-character">
+                    {chatUser.characterName || 'No active character'}
+                  </div>
+                  <div className="user-name">@{chatUser.username}</div>
+                </div>
+                {chatUser.username === user?.username && (
+                  <div className="you-indicator">You</div>
+                )}
+              </div>
+            ))
+          )}
+        </div>
+      </div>
+
+      {/* Presence Toggle Button */}
+      <button 
+        className="presence-toggle"
+        onClick={() => setIsPresencePanelOpen(!isPresencePanelOpen)}
+        title="Show online users"
+      >
+        👥 {chatUsers.length}
+      </button>
+
       <div className="chat-messages">
         {messages.map((msg, index) => (
           <div key={index} className="message">

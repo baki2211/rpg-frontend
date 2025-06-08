@@ -4,6 +4,7 @@ import axios from 'axios';
 
 interface PresenceUser {
   username: string;
+  characterName?: string;
   location: string;
 }
 
@@ -74,14 +75,17 @@ export const PresenceProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       console.log('Presence WebSocket connected');
       const location = await getLocationFromPath(pathname);
       ws.send(JSON.stringify({ type: 'updateLocation', location }));
+      // Request initial online users list
+      ws.send(JSON.stringify({ type: 'getOnlineUsers' }));
     };
 
     ws.onmessage = (event) => {
       try {
         const data = JSON.parse(event.data);
+        console.log('Presence WebSocket message received:', data);
         if (data.type === 'onlineUsers') {
-          console.log('Received online users:', data.users);
-          setOnlineUsers(data.users);
+          console.log('Updating online users:', data.users);
+          setOnlineUsers(data.users || []);
         }
       } catch (error) {
         console.error('Error parsing WebSocket message:', error);
@@ -114,6 +118,14 @@ export const PresenceProvider: React.FC<{ children: React.ReactNode }> = ({ chil
             username: data.user.username,
           });
           initializeWebSocket(data.user.id, data.user.username);
+          
+          // Set up a fallback to request online users if we don't get them within 2 seconds
+          setTimeout(() => {
+            if (onlineUsers.length === 0 && wsRef.current?.readyState === WebSocket.OPEN) {
+              console.log('Requesting online users fallback');
+              wsRef.current.send(JSON.stringify({ type: 'getOnlineUsers' }));
+            }
+          }, 2000);
         }
       } catch (error) {
         console.error('Error fetching user data:', error);
