@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../utils/AuthContext';
 import { useChatUsers } from '../../hooks/useChatUsers';
+import axios from 'axios';
 import './MasterPanel.css';
 
 interface SkillEngineLog {
@@ -13,6 +14,45 @@ interface SkillEngineLog {
   damage?: number;
   effects?: string[];
   details: string;
+}
+
+interface CombatRound {
+  id: number;
+  roundNumber: number;
+  status: string;
+  resolvedAt?: string;
+  resolutionData?: {
+    summary?: {
+      totalActions: number;
+      clashCount: number;
+      independentCount: number;
+    };
+  };
+}
+
+interface Event {
+  id: number;
+  title: string;
+  type: 'lore' | 'duel' | 'quest';
+  description?: string;
+  status: 'active' | 'closed';
+  createdAt: string;
+  closedAt?: string;
+  eventData?: {
+    totalRounds: number;
+    resolvedRounds: number;
+    cancelledRounds: number;
+    totalActions: number;
+  };
+}
+
+interface CombatAction {
+  id: number;
+  characterData: { name: string };
+  skillData: { name: string; target: string };
+  targetData?: { name: string };
+  finalOutput: number;
+  rollQuality: string;
 }
 
 interface CharacterHP {
@@ -54,13 +94,31 @@ export const MasterPanel: React.FC<MasterPanelProps> = ({
 }) => {
   const { user } = useAuth();
   const { users: chatUsers } = useChatUsers(locationId);
-  const [activeTab, setActiveTab] = useState<'logs' | 'hp' | 'status'>('logs');
+  const [activeTab, setActiveTab] = useState<'logs' | 'hp' | 'status' | 'combat' | 'events'>('logs');
   const [characterHP, setCharacterHP] = useState<CharacterHP[]>([]);
   const [selectedCharacter, setSelectedCharacter] = useState<string>('');
   const [damageAmount, setDamageAmount] = useState<number>(0);
   const [healingAmount, setHealingAmount] = useState<number>(0);
   const [selectedStatus, setSelectedStatus] = useState<string>('');
   const [statusDuration, setStatusDuration] = useState<number>(1);
+
+  // Combat state
+  const [activeRound, setActiveRound] = useState<CombatRound | null>(null);
+  const [roundActions, setRoundActions] = useState<CombatAction[]>([]);
+  const [resolvedRounds, setResolvedRounds] = useState<CombatRound[]>([]);
+  const [isCreatingRound, setIsCreatingRound] = useState(false);
+  const [isResolvingRound, setIsResolvingRound] = useState(false);
+
+  // Event state
+  const [activeEvent, setActiveEvent] = useState<Event | null>(null);
+  const [recentEvents, setRecentEvents] = useState<Event[]>([]);
+  const [isCreatingEvent, setIsCreatingEvent] = useState(false);
+  const [isClosingEvent, setIsClosingEvent] = useState(false);
+  const [eventForm, setEventForm] = useState({
+    title: '',
+    type: 'lore' as 'lore' | 'duel' | 'quest',
+    description: ''
+  });
 
   // Check if user has master permissions
   const isMaster = user?.role === 'master' || user?.role === 'admin';
@@ -107,6 +165,92 @@ export const MasterPanel: React.FC<MasterPanelProps> = ({
     console.log('Current skill engine logs:', skillEngineLogs.length);
   };
 
+  // Combat functions
+  const fetchActiveRound = async () => {
+    try {
+      const response = await axios.get(`http://localhost:5001/api/combat/rounds/active/${locationId}`, {
+        withCredentials: true
+      });
+      setActiveRound(response.data.round);
+      if (response.data.round) {
+        setRoundActions(response.data.round.actions || []);
+      }
+    } catch (error) {
+      console.error('Error fetching active round:', error);
+    }
+  };
+
+  const fetchResolvedRounds = async () => {
+    try {
+      const response = await axios.get(`http://localhost:5001/api/combat/rounds/resolved/${locationId}?limit=5`, {
+        withCredentials: true
+      });
+      setResolvedRounds(response.data.rounds || []);
+    } catch (error) {
+      console.error('Error fetching resolved rounds:', error);
+    }
+  };
+
+  const createNewRound = async () => {
+    setIsCreatingRound(true);
+    try {
+      const response = await axios.post('http://localhost:5001/api/combat/rounds', {
+        locationId: parseInt(locationId)
+      }, {
+        withCredentials: true
+      });
+      
+      if (response.data.success) {
+        await fetchActiveRound();
+      }
+    } catch (error) {
+      console.error('Error creating round:', error);
+      alert('Failed to create combat round');
+    } finally {
+      setIsCreatingRound(false);
+    }
+  };
+
+  const resolveRound = async () => {
+    if (!activeRound) return;
+    
+    setIsResolvingRound(true);
+    try {
+      const response = await axios.post(`http://localhost:5001/api/combat/rounds/${activeRound.id}/resolve`, {}, {
+        withCredentials: true
+      });
+      
+      if (response.data.success) {
+        setActiveRound(null);
+        setRoundActions([]);
+        await fetchResolvedRounds();
+      }
+    } catch (error) {
+      console.error('Error resolving round:', error);
+      alert('Failed to resolve combat round');
+    } finally {
+      setIsResolvingRound(false);
+    }
+  };
+
+  const cancelRound = async () => {
+    if (!activeRound) return;
+    
+    try {
+      const response = await axios.post(`http://localhost:5001/api/combat/rounds/${activeRound.id}/cancel`, {}, {
+        withCredentials: true
+      });
+      
+      if (response.data.success) {
+        setActiveRound(null);
+        setRoundActions([]);
+      }
+    } catch (error) {
+      console.error('Error cancelling round:', error);
+      alert('Failed to cancel combat round');
+    }
+  };
+
   // Initialize character HP data
   useEffect(() => {
     const initializeHP = () => {
@@ -125,6 +269,95 @@ export const MasterPanel: React.FC<MasterPanelProps> = ({
       initializeHP();
     }
   }, [chatUsers]);
+
+  // Load combat data
+  useEffect(() => {
+    if (activeTab === 'combat') {
+      fetchActiveRound();
+      fetchResolvedRounds();
+    }
+  }, [activeTab, locationId]);
+
+  // Load event data
+  useEffect(() => {
+    if (activeTab === 'events') {
+      fetchActiveEvent();
+      fetchRecentEvents();
+    }
+  }, [activeTab, locationId]);
+
+  // Event functions
+  const fetchActiveEvent = async () => {
+    try {
+      const response = await axios.get(`http://localhost:5001/api/events/active/${locationId}`, {
+        withCredentials: true
+      });
+      setActiveEvent(response.data.event);
+    } catch (error) {
+      console.error('Error fetching active event:', error);
+    }
+  };
+
+  const fetchRecentEvents = async () => {
+    try {
+      const response = await axios.get(`http://localhost:5001/api/events/location/${locationId}?limit=5`, {
+        withCredentials: true
+      });
+      setRecentEvents(response.data.events || []);
+    } catch (error) {
+      console.error('Error fetching recent events:', error);
+    }
+  };
+
+  const createNewEvent = async () => {
+    if (!eventForm.title || !eventForm.type) {
+      alert('Please fill in title and type');
+      return;
+    }
+
+    setIsCreatingEvent(true);
+    try {
+      const response = await axios.post('http://localhost:5001/api/events', {
+        title: eventForm.title,
+        type: eventForm.type,
+        description: eventForm.description,
+        locationId: parseInt(locationId)
+      }, {
+        withCredentials: true
+      });
+      
+      if (response.data.success) {
+        await fetchActiveEvent();
+        setEventForm({ title: '', type: 'lore', description: '' });
+      }
+    } catch (error) {
+      console.error('Error creating event:', error);
+      alert('Failed to create event');
+    } finally {
+      setIsCreatingEvent(false);
+    }
+  };
+
+  const closeEvent = async () => {
+    if (!activeEvent) return;
+    
+    setIsClosingEvent(true);
+    try {
+      const response = await axios.post(`http://localhost:5001/api/events/${activeEvent.id}/close`, {}, {
+        withCredentials: true
+      });
+      
+      if (response.data.success) {
+        setActiveEvent(null);
+        await fetchRecentEvents();
+      }
+    } catch (error) {
+      console.error('Error closing event:', error);
+      alert('Failed to close event');
+    } finally {
+      setIsClosingEvent(false);
+    }
+  };
 
   // Predefined status effects
   const statusEffects: StatusEffect[] = [
@@ -271,6 +504,18 @@ export const MasterPanel: React.FC<MasterPanelProps> = ({
           onClick={() => setActiveTab('status')}
         >
           ✨ Status Panel
+        </button>
+        <button 
+          className={`tab ${activeTab === 'combat' ? 'active' : ''}`}
+          onClick={() => setActiveTab('combat')}
+        >
+          ⚔️ Combat
+        </button>
+        <button 
+          className={`tab ${activeTab === 'events' ? 'active' : ''}`}
+          onClick={() => setActiveTab('events')}
+        >
+          📅 Events
         </button>
       </div>
 
@@ -510,6 +755,233 @@ export const MasterPanel: React.FC<MasterPanelProps> = ({
                   </div>
                 ))}
               </div>
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'combat' && (
+          <div className="combat-section">
+            <h3>Combat Manager</h3>
+            
+            {activeRound ? (
+              <div className="active-round">
+                <div className="round-header">
+                  <h4>Round {activeRound.roundNumber} - Active</h4>
+                  <div className="round-actions">
+                    <button 
+                      onClick={resolveRound}
+                      disabled={isResolvingRound || roundActions.length === 0}
+                      className="resolve-button"
+                    >
+                      {isResolvingRound ? 'Resolving...' : 'Resolve Round'}
+                    </button>
+                    <button 
+                      onClick={cancelRound}
+                      className="cancel-button"
+                    >
+                      Cancel Round
+                    </button>
+                  </div>
+                </div>
+
+                <div className="round-participants">
+                  <h5>Submitted Actions ({roundActions.length})</h5>
+                  {roundActions.length === 0 ? (
+                    <div className="no-actions">No actions submitted yet</div>
+                  ) : (
+                    <div className="actions-list">
+                      {roundActions.map((action, index) => (
+                        <div key={action.id || index} className="action-card">
+                          <div className="action-header">
+                            <span className="character-name">{action.characterData?.name || 'Unknown'}</span>
+                            <span className="skill-name">{action.skillData?.name || 'Unknown Skill'}</span>
+                          </div>
+                          <div className="action-details">
+                            <span className="output">Output: {action.finalOutput}</span>
+                            <span className="roll-quality">{action.rollQuality}</span>
+                            <span className="target">
+                              Target: {action.targetData?.name || (action.skillData?.target === 'self' ? 'Self' : 'Area')}
+                            </span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+            ) : (
+              <div className="no-active-round">
+                <div className="no-round-message">
+                  <h4>No Active Combat Round</h4>
+                  <p>Create a new round to begin structured combat</p>
+                </div>
+                <button 
+                  onClick={createNewRound}
+                  disabled={isCreatingRound}
+                  className="create-round-button"
+                >
+                  {isCreatingRound ? 'Creating...' : '⚔️ Start New Round'}
+                </button>
+              </div>
+            )}
+
+            <div className="resolved-rounds">
+              <h4>Recent Resolved Rounds</h4>
+              {resolvedRounds.length === 0 ? (
+                <div className="no-resolved">No resolved rounds yet</div>
+              ) : (
+                <div className="resolved-list">
+                  {resolvedRounds.map((round) => (
+                    <div key={round.id} className="resolved-round-card">
+                      <div className="resolved-header">
+                        <span className="round-number">Round {round.roundNumber}</span>
+                        <span className="resolved-time">
+                          {round.resolvedAt ? new Date(round.resolvedAt).toLocaleTimeString() : 'Unknown'}
+                        </span>
+                      </div>
+                      {round.resolutionData && (
+                        <div className="resolution-summary">
+                          <span>Actions: {round.resolutionData.summary?.totalActions || 0}</span>
+                          <span>Clashes: {round.resolutionData.summary?.clashCount || 0}</span>
+                          <span>Independent: {round.resolutionData.summary?.independentCount || 0}</span>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'events' && (
+          <div className="events-section">
+            <h3>Event Manager</h3>
+            
+            {activeEvent ? (
+              <div className="active-event">
+                <div className="event-header">
+                  <h4>{activeEvent.title} - {activeEvent.type.toUpperCase()}</h4>
+                  <div className="event-actions">
+                    <button 
+                      onClick={closeEvent}
+                      disabled={isClosingEvent}
+                      className="close-event-button"
+                    >
+                      {isClosingEvent ? 'Closing...' : 'Close Event'}
+                    </button>
+                  </div>
+                </div>
+
+                <div className="event-details">
+                  {activeEvent.description && (
+                    <p className="event-description">{activeEvent.description}</p>
+                  )}
+                  <div className="event-meta">
+                    <span>Started: {new Date(activeEvent.createdAt).toLocaleString()}</span>
+                    <span>Type: {activeEvent.type}</span>
+                    <span>Status: {activeEvent.status}</span>
+                  </div>
+                </div>
+
+                {activeEvent.eventData && (
+                  <div className="event-stats">
+                    <h5>Event Statistics</h5>
+                    <div className="stats-grid">
+                      <div className="stat-item">
+                        <span className="stat-label">Total Rounds:</span>
+                        <span className="stat-value">{activeEvent.eventData.totalRounds}</span>
+                      </div>
+                      <div className="stat-item">
+                        <span className="stat-label">Resolved:</span>
+                        <span className="stat-value">{activeEvent.eventData.resolvedRounds}</span>
+                      </div>
+                      <div className="stat-item">
+                        <span className="stat-label">Total Actions:</span>
+                        <span className="stat-value">{activeEvent.eventData.totalActions}</span>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="no-active-event">
+                <div className="create-event-form">
+                  <h4>Create New Event</h4>
+                  <div className="form-group">
+                    <label>Event Title:</label>
+                    <input 
+                      type="text" 
+                      value={eventForm.title}
+                      onChange={(e) => setEventForm({...eventForm, title: e.target.value})}
+                      placeholder="Enter event title..."
+                    />
+                  </div>
+                  
+                  <div className="form-group">
+                    <label>Event Type:</label>
+                    <select 
+                      value={eventForm.type}
+                      onChange={(e) => setEventForm({...eventForm, type: e.target.value as 'lore' | 'duel' | 'quest'})}
+                    >
+                      <option value="lore">Lore Event</option>
+                      <option value="duel">Duel Event</option>
+                      <option value="quest">Quest Event</option>
+                    </select>
+                  </div>
+                  
+                  <div className="form-group">
+                    <label>Description (Optional):</label>
+                    <textarea 
+                      value={eventForm.description}
+                      onChange={(e) => setEventForm({...eventForm, description: e.target.value})}
+                      placeholder="Describe the event..."
+                      rows={3}
+                    />
+                  </div>
+                  
+                  <button 
+                    onClick={createNewEvent}
+                    disabled={isCreatingEvent || !eventForm.title}
+                    className="create-event-button"
+                  >
+                    {isCreatingEvent ? 'Creating...' : '📅 Create Event'}
+                  </button>
+                </div>
+              </div>
+            )}
+
+            <div className="recent-events">
+              <h4>Recent Events</h4>
+              {recentEvents.length === 0 ? (
+                <div className="no-events">No events yet</div>
+              ) : (
+                <div className="events-list">
+                  {recentEvents.map((event) => (
+                    <div key={event.id} className="event-card">
+                      <div className="event-card-header">
+                        <span className="event-title">{event.title}</span>
+                        <span className={`event-status ${event.status}`}>{event.status}</span>
+                      </div>
+                      <div className="event-card-details">
+                        <span className="event-type">{event.type.toUpperCase()}</span>
+                        <span className="event-date">
+                          {event.status === 'closed' && event.closedAt ? 
+                            `Closed: ${new Date(event.closedAt).toLocaleDateString()}` :
+                            `Started: ${new Date(event.createdAt).toLocaleDateString()}`
+                          }
+                        </span>
+                      </div>
+                      {event.eventData && (
+                        <div className="event-summary">
+                          <span>{event.eventData.totalRounds} rounds</span>
+                          <span>{event.eventData.totalActions} actions</span>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         )}
