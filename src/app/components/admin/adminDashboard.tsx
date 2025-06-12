@@ -55,6 +55,9 @@ const AdminDashboard = () => {
               <li>
                 <a href="/pages/admin/engine">Engine Panel</a>
               </li>
+              <li>
+                <a href="/pages/admin/ranks">Rank Panel</a>
+              </li>
             </ul>
           </div>
         </div>
