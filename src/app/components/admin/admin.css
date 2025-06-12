@@ -955,4 +955,138 @@
     font-size: 0.7rem;
     padding: 0.2rem 0.5rem;
   }
+}
+
+/* Race panel form grid */
+.admin-form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+.admin-form-grid .form-group label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+}
+.admin-form-grid .form-group input,
+.admin-form-grid .form-group textarea,
+.admin-form-grid .form-group select {
+  width: 100%;
+  padding: 0.4rem 0.6rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 0.9rem;
+}
+/* race list */
+.race-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill,minmax(250px,1fr));
+  gap: 1rem;
+}
+.race-card {
+  border: 1px solid #ddd;
+  padding: 1rem;
+  border-radius: 6px;
+  background: #fafafa;
+}
+.race-card h3 { margin-top:0; }
+.race-card button {
+  margin: 0.25rem;
+}
+
+/* Race Panel Edit Form Styles */
+.edit-form {
+  padding: 1.5rem;
+  border: 2px solid #e9ecef;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.95);
+  margin-top: 1rem;
+}
+
+.form-row {
+  margin-bottom: 1rem;
+}
+
+.form-row label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+  color: #2c3e50;
+  font-size: 0.9rem;
+}
+
+.form-row input,
+.form-row textarea {
+  width: 100%;
+  padding: 0.75rem;
+  border: 2px solid #e9ecef;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  transition: all 0.3s ease;
+}
+
+.form-row input:focus,
+.form-row textarea:focus {
+  border-color: #667eea;
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.bonus-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.bonus-grid div {
+  display: flex;
+  flex-direction: column;
+}
+
+.bonus-grid label {
+  font-size: 0.85rem;
+  margin-bottom: 0.25rem;
+  font-weight: 600;
+  color: #495057;
+}
+
+.bonus-grid input {
+  padding: 0.5rem;
+  border: 2px solid #e9ecef;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  transition: all 0.3s ease;
+}
+
+.bonus-grid input:focus {
+  border-color: #667eea;
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.1);
+}
+
+.edit-form h4 {
+  margin: 1.5rem 0 1rem 0;
+  color: #2c3e50;
+  border-bottom: 2px solid #667eea;
+  padding-bottom: 0.5rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.edit-form h4:first-of-type {
+  margin-top: 1rem;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 1.5rem;
+  justify-content: flex-end;
+}
+
+.btn-sm {
+  padding: 0.5rem 1rem;
+  font-size: 0.85rem;
 } 

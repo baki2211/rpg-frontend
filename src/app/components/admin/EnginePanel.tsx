@@ -225,8 +225,8 @@ export const EnginePanel: React.FC = () => {
           {editingId === stat.id ? (
             <input
               type="number"
-              value={editData.defaultValue}
-              onChange={(e) => setEditData({ ...editData, defaultValue: parseInt(e.target.value) })}
+              value={Number.isNaN(editData.defaultValue)?'':editData.defaultValue}
+              onChange={(e) => setEditData({ ...editData, defaultValue: parseInt(e.target.value) || 0 })}
               className="form-input small"
             />
           ) : (
@@ -364,9 +364,9 @@ export const EnginePanel: React.FC = () => {
               <label>Default Value *</label>
               <input
                 type="number"
-                value={newStat.defaultValue}
-                onChange={(e) => setNewStat({ ...newStat, defaultValue: parseInt(e.target.value) })}
-                className="form-input"
+                value={Number.isNaN(newStat.defaultValue)?'':newStat.defaultValue}
+                onChange={(e) => setNewStat({ ...newStat, defaultValue: parseInt(e.target.value) || 0 })}
+                className="form-input small"
               />
             </div>
             

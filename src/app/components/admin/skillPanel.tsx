@@ -2,6 +2,19 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import './admin.css';
 
+interface StatDefinition {
+  id: number;
+  internalName: string;
+  displayName: string;
+  description?: string;
+  category: 'primary_stat' | 'resource' | 'scaling_stat';
+  defaultValue: number;
+  maxValue?: number;
+  minValue: number;
+  isActive: boolean;
+  sortOrder: number;
+}
+
 interface Skill {
   id: number;
   name: string;
@@ -34,6 +47,8 @@ const SkillDashboard: React.FC = () => {
   const [skills, setSkills] = useState<Skill[]>([]);
   const [branches, setBranches] = useState<Branch[]>([]);
   const [types, setTypes] = useState<Type[]>([]);
+  const [statDefinitions, setStatDefinitions] = useState<StatDefinition[]>([]);
+  const [loading, setLoading] = useState(true);
   const [selectedSkill, setSelectedSkill] = useState<Skill | null>(null);
   const [formData, setFormData] = useState<Partial<Skill>>({
     name: '',
@@ -43,7 +58,7 @@ const SkillDashboard: React.FC = () => {
     basePower: 0,
     duration: 0,
     activation: '',
-    requiredStats: { STR: 0, DEX: 0, RES: 0, MN: 0, CHA: 0 },
+    requiredStats: {},
     scalingStats: [],  // Initialize empty array for scaling stats
     aetherCost: 0,
     skillPointCost: 1,
@@ -53,10 +68,46 @@ const SkillDashboard: React.FC = () => {
   });
 
   useEffect(() => {
-    fetchSkills();
-    fetchBranches();
-    fetchTypes();
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        await Promise.all([
+          fetchSkills(),
+          fetchBranches(),
+          fetchTypes(),
+          fetchStatDefinitions()
+        ]);
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
   }, []);
+
+  const fetchStatDefinitions = async () => {
+    try {
+      const response = await axios.get('http://localhost:5001/api/stat-definitions?category=primary_stat&activeOnly=true', {
+        withCredentials: true,
+      });
+      setStatDefinitions(response.data);
+      
+      // Initialize required stats with all primary stats set to 0
+      const initialRequiredStats: Record<string, number> = {};
+      response.data.forEach((stat: StatDefinition) => {
+        initialRequiredStats[stat.internalName] = 0;
+      });
+      
+      setFormData(prev => ({
+        ...prev,
+        requiredStats: initialRequiredStats
+      }));
+    } catch (error) {
+      console.error('Error fetching stat definitions:', error);
+    }
+  };
 
   const fetchBranches = async () => {
     try {
@@ -133,6 +184,13 @@ const SkillDashboard: React.FC = () => {
         await axios.post('http://localhost:5001/api/skills', formData);
       }
       fetchSkills();
+      
+      // Reset form with proper required stats structure
+      const initialRequiredStats: Record<string, number> = {};
+      statDefinitions.forEach(stat => {
+        initialRequiredStats[stat.internalName] = 0;
+      });
+      
       setFormData({
         name: '',
         description: '',
@@ -141,7 +199,7 @@ const SkillDashboard: React.FC = () => {
         basePower: 0,
         duration: 0,
         activation: '',
-        requiredStats: { STR: 0, DEX: 0, RES: 0, MN: 0, CHA: 0 },
+        requiredStats: initialRequiredStats,
         scalingStats: [],
         aetherCost: 0,
         skillPointCost: 1,
@@ -157,7 +215,19 @@ const SkillDashboard: React.FC = () => {
 
   const handleEdit = (skill: Skill) => {
     setSelectedSkill(skill);
-    setFormData(skill);
+    
+    // Ensure required stats includes all current stat definitions
+    const updatedRequiredStats = { ...skill.requiredStats };
+    statDefinitions.forEach(stat => {
+      if (!(stat.internalName in updatedRequiredStats)) {
+        updatedRequiredStats[stat.internalName] = 0;
+      }
+    });
+    
+    setFormData({
+      ...skill,
+      requiredStats: updatedRequiredStats
+    });
   };
 
   const handleDelete = async (id: number) => {
@@ -168,6 +238,15 @@ const SkillDashboard: React.FC = () => {
       console.error('Error deleting skill:', error);
     }
   };
+
+  if (loading) {
+    return (
+      <div className="admin-panel">
+        <h1>Skill Dashboard</h1>
+        <div className="loading">Loading...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="admin-panel">
@@ -246,13 +325,13 @@ const SkillDashboard: React.FC = () => {
               <div className="form-group form-full-width">
                 <label>Required Stats:</label>
                 <div className="required-stats-grid">
-                  {Object.keys(formData.requiredStats || {}).map(stat => (
-                    <div key={stat} className="form-group">
-                      <label>{stat}:</label>
+                  {statDefinitions.map(stat => (
+                    <div key={stat.internalName} className="form-group">
+                      <label>{stat.displayName} ({stat.internalName.toUpperCase()}):</label>
                       <input
                         type="number"
-                        name={`requiredStats.${stat}`}
-                        value={formData.requiredStats?.[stat] || 0}
+                        name={`requiredStats.${stat.internalName}`}
+                        value={formData.requiredStats?.[stat.internalName] || 0}
                         onChange={handleInputChange}
                         className="form-control"
                         min="0"
@@ -276,12 +355,11 @@ const SkillDashboard: React.FC = () => {
                         className="form-control"
                       >
                         <option value="">Select Stat</option>
-                        <option value="FOC">Focus (FOC)</option>
-                        <option value="CON">Control (CON)</option>
-                        <option value="RES">Resilience (RES)</option>
-                        <option value="INS">Instinct (INS)</option>
-                        <option value="PRE">Presence (PRE)</option>
-                        <option value="FOR">Force (FOR)</option>
+                        {statDefinitions.map(stat => (
+                          <option key={stat.internalName} value={stat.internalName}>
+                            {stat.displayName} ({stat.internalName.toUpperCase()})
+                          </option>
+                        ))}
                       </select>
                     </div>
                   ))}
