@@ -17,9 +17,13 @@ export default function SkillsPage() {
 
   useEffect(() => {
     const fetchSkills = async () => {
-      if (!activeCharacter) return;
+      if (!activeCharacter) {
+        setLoading(false);
+        return;
+      }
       
       try {
+        setLoading(true);
         // Fetch available skills
         const availableSkillsResponse = await fetch(`http://localhost:5001/api/character-skills/${activeCharacter.id}/available-skills?include=branch,type`, {
           credentials: 'include'
@@ -42,9 +46,7 @@ export default function SkillsPage() {
       }
     };
 
-    if (activeCharacter) {
-      fetchSkills();
-    }
+    fetchSkills();
   }, [activeCharacter?.id]);
 
   const acquireSkill = async (skillId: number) => {
@@ -115,8 +117,25 @@ export default function SkillsPage() {
     return (
       <div className="warning-container">
         <div className="warning-message">
-          <h3>No Active Character</h3>
-          <p>Please select or create a character to view available skills.</p>
+          <h3>🎭 No Active Character</h3>
+          <p>You need an active character to browse and acquire skills.</p>
+          <div className="warning-actions">
+            {characters.length > 0 ? (
+              <>
+                <p>You have {characters.length} character{characters.length > 1 ? 's' : ''} available. Please activate one to continue:</p>
+                <a href="/pages/characters" className="btn btn-primary">
+                  🏛️ Manage Characters
+                </a>
+              </>
+            ) : (
+              <>
+                <p>Create your first character to start learning skills and abilities:</p>
+                <a href="/pages/characters" className="btn btn-primary">
+                  ✨ Create Character
+                </a>
+              </>
+            )}
+          </div>
         </div>
       </div>
     );
