@@ -48,6 +48,15 @@ const AdminDashboard = () => {
               </li>
             </ul>
           </div>
+
+          <div className="admin-card">
+            <h3>Engine Configuration</h3>
+            <ul>
+              <li>
+                <a href="/pages/admin/engine">Engine Panel</a>
+              </li>
+            </ul>
+          </div>
         </div>
       </div>
     </div>

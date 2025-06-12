@@ -28,6 +28,25 @@ interface Character {
   imageUrl?: string;
 }
 
+interface StatDefinition {
+  internalName: string;
+  displayName: string;
+  description?: string;
+  minValue: number;
+  maxValue: number | null;
+  defaultValue: number;
+}
+
+interface CharacterForm {
+  userId: number | null;
+  name: string;
+  surname: string;
+  age: number;
+  gender: string;
+  raceId: number | null;
+  stats: Record<string, number>;
+}
+
 interface CharacterCreationModalPanelProps {
   onSuccess?: () => void;
   createCharacter: (formData: FormData) => Promise<void>;
@@ -35,34 +54,30 @@ interface CharacterCreationModalPanelProps {
 
 const CharacterCreationModalPanel: React.FC<CharacterCreationModalPanelProps> = ({ onSuccess, createCharacter }) => {
   const [, setCharacters] = useState<Character[]>([]);
-  const [races, setRaces] = useState<Race[]>([]); // Initialize as an array
+  const [races, setRaces] = useState<Race[]>([]);
   const [user, setUser] = useState<User | null>(null);
   const [imageFile, setImageFile] = useState<File | null>(null);
-  const [characterData, setCharacterData] = useState({
-    userId: null as number | null,
+  const [characterData, setCharacterData] = useState<CharacterForm>({
+    userId: null,
     name: '',
     surname: '',
     age: 0,
     gender: '',
-    raceId: null as number | null, // Ensure raceId is of type number or null
-    stats: {
-      STR: 0,
-      DEX: 0,
-      RES: 0,
-      MN: 0,
-      CHA: 0,
-    },
+    raceId: null,
+    stats: {}
   });
   const [errorMessage, setErrorMessage] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
-  const totalPoints = 40;
-  const allocatedPoints = Object.values(characterData.stats).reduce((sum, val) => sum + val, 0);
-  const remainingPoints = totalPoints - allocatedPoints;
+  const [statDefinitions, setStatDefinitions] = useState<StatDefinition[]>([]);
+  const TOTAL_POINTS = 45;
+  const allocatedPoints = Object.values(characterData.stats).reduce((sum, val) => sum + (typeof val === 'number' ? val : 0), 0);
+  const remainingPoints = TOTAL_POINTS - allocatedPoints;
 
   useEffect(() => {
     fetchUser();
     fetchCharacters();
     fetchRaces();
+    fetchStatDefinitions();
   }, []);
 
   const fetchUser = async () => {
@@ -72,7 +87,7 @@ const CharacterCreationModalPanel: React.FC<CharacterCreationModalPanelProps> = 
       setUser(fetchedUser);
       setCharacterData((prev) => ({
         ...prev,
-        userId: fetchedUser.id, // Attach userId to characterData
+        userId: fetchedUser.id,
       }));
     } catch (error) {
       console.error('Failed to fetch user:', error);
@@ -93,20 +108,35 @@ const CharacterCreationModalPanel: React.FC<CharacterCreationModalPanelProps> = 
   const fetchRaces = async () => {
     try {
       const response = await axios.get('http://localhost:5001/api/races', { withCredentials: true });
-      setRaces(response.data); // Ensure races is an array
+      setRaces(response.data);
     } catch (error) {
       console.error('Failed to fetch races:', error);
       setErrorMessage('Failed to fetch races');
     }
   };
 
-  const handleStatChange = (stat: keyof typeof characterData.stats, value: number) => {
-    // Handle NaN values by defaulting to 0
+  const fetchStatDefinitions = async () => {
+    try {
+      const response = await axios.get('http://localhost:5001/api/stat-definitions?category=primary_stat&activeOnly=true', { withCredentials: true });
+      const defs = response.data as StatDefinition[];
+      setStatDefinitions(defs);
+
+      setCharacterData(prev => ({
+        ...prev,
+        stats: Object.fromEntries(defs.map((d: StatDefinition) => [d.internalName, d.defaultValue]))
+      }));
+    } catch (err) {
+      console.error('Failed to fetch stat definitions', err);
+      setErrorMessage('Failed to fetch stat definitions');
+    }
+  };
+
+  const handleStatChange = (stat: string, value: number) => {
     const cleanValue = isNaN(value) ? 0 : value;
     const newStats = { ...characterData.stats, [stat]: cleanValue };
     const newTotal = Object.values(newStats).reduce((sum, val) => sum + val, 0);
-    if (newTotal > totalPoints) {
-      setErrorMessage(`You have only ${remainingPoints} points remaining.`);
+    if (newTotal > TOTAL_POINTS) {
+      setErrorMessage(`You have only ${TOTAL_POINTS - newTotal} points remaining.`);
       return;
     }
     setCharacterData({ ...characterData, stats: newStats });
@@ -128,8 +158,8 @@ const CharacterCreationModalPanel: React.FC<CharacterCreationModalPanelProps> = 
       return;
     }
 
-    if (allocatedPoints > totalPoints) {
-      setErrorMessage(`Allocated points exceed ${totalPoints}. Please adjust your stats.`);
+    if (allocatedPoints > TOTAL_POINTS) {
+      setErrorMessage(`Allocated points exceed ${TOTAL_POINTS}. Please adjust your stats.`);
       return;
     }
 
@@ -283,23 +313,26 @@ const CharacterCreationModalPanel: React.FC<CharacterCreationModalPanelProps> = 
             </div>
 
             <div className="stats-grid">
-              {Object.entries(characterData.stats).map(([statKey, statValue]) => (
-                <div key={statKey} className="stat-item">
-                  <div className="stat-label">{statKey}</div>
-                  <input
-                    type="number"
-                    value={statValue || ''}
-                    onChange={(e) => {
-                      const value = e.target.value === '' ? 0 : parseInt(e.target.value, 10);
-                      handleStatChange(statKey as keyof typeof characterData.stats, value);
-                    }}
-                    className="stat-input"
-                    min="0"
-                    max="20"
-                    required
-                  />
-                </div>
-              ))}
+              {statDefinitions.map((stat) => {
+                const maxVal = stat.maxValue ?? 100;
+                return (
+                  <div key={stat.internalName} className="stat-item">
+                    <div className="stat-label" title={stat.description || ''}>{stat.displayName}</div>
+                    <input
+                      type="number"
+                      value={characterData.stats[stat.internalName] ?? ''}
+                      onChange={(e) => {
+                        const val = e.target.value === '' ? stat.minValue : parseInt(e.target.value, 10);
+                        handleStatChange(stat.internalName, val);
+                      }}
+                      className="stat-input"
+                      min={stat.minValue}
+                      max={maxVal}
+                      required
+                    />
+                  </div>
+                );
+              })}
             </div>
           </div>
         </div>
