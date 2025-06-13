@@ -8,7 +8,7 @@ import { usePresence } from "../../contexts/PresenceContext";
 
 const LogoutButton: React.FC = () => {
   const router = useRouter();
-  const { setIsAuthenticated } = useAuth(); // Use AuthContext to update state
+  const { setIsAuthenticated, setUser } = useAuth(); // Add setUser to clear user data
   const { currentUser } = usePresence();
 
   const handleLogout = async () => {
@@ -27,6 +27,7 @@ const LogoutButton: React.FC = () => {
       });
 
       setIsAuthenticated(false); // Update global authentication state
+      setUser(null); // Clear user data
       router.push('/pages/login'); // Redirect to login page
     } catch (error) {
       console.error('Error logging out:', error);

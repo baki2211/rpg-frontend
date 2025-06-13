@@ -12,7 +12,7 @@ const Login = () => {
   const [password, setPassword] = useState('');
   const [message, setMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const { setIsAuthenticated, isAuthenticated } = useAuth();
+  const { setIsAuthenticated, setUser, isAuthenticated } = useAuth();
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -33,10 +33,17 @@ const Login = () => {
         withCredentials: true,
       });
 
+      // Fetch user data after successful login to get complete user info including role
+      const userResponse = await axios.get('http://localhost:5001/api/protected', {
+        withCredentials: true,
+      });
+
       setMessage('Login successful! Redirecting...');
       setUsername('');
       setPassword('');
       setIsAuthenticated(true);
+      setUser(userResponse.data.user); // Set complete user data including role
+      
       setTimeout(() => {
         router.push('/pages/dashboard');
       }, 1000);
