@@ -50,15 +50,23 @@ export const SkillsModal: React.FC<SkillsModalProps> = ({ isOpen, onClose, onSel
   const activeCharacter = characters.find(char => char.isActive);
 
   // Filter out current user from target list for "other" target skills
+  // For "any" target skills, include all users (including self)
   const availableTargets = useMemo(() => {
     if (!user) return chatUsers;
+    
+    // For "any" target skills, include all users (self and others)
+    if (currentlySelectedSkill?.target === 'any') {
+      return chatUsers;
+    }
+    
+    // For "other" target skills, exclude current user
     return chatUsers.filter(chatUser => chatUser.username !== user.username);
-  }, [chatUsers, user]);
+  }, [chatUsers, user, currentlySelectedSkill?.target]);
 
   // Filter skills based on event status - only allow non-"other" skills when no event is active
   const availableSkills = useMemo(() => {
     if (!activeEvent) {
-      // Outside of events, only allow "self" and "none" target skills
+      // Outside of events, only allow "self", "none", and "any" target skills
       return skills.filter(skill => skill.target !== 'other');
     }
     // During events, all skills are available
@@ -147,7 +155,7 @@ export const SkillsModal: React.FC<SkillsModalProps> = ({ isOpen, onClose, onSel
     setCurrentlySelectedSkill(skill);
     setSelectedTarget(null);
     
-    if (skill.target === 'other') {
+    if (skill.target === 'other' || skill.target === 'any') {
       setShowTargetSelection(true);
     } else {
       // For self/none target skills, immediately complete selection
@@ -221,12 +229,12 @@ export const SkillsModal: React.FC<SkillsModalProps> = ({ isOpen, onClose, onSel
             
             {showTargetSelection ? (
               <div className="target-selection">
-                <p><strong>Target required:</strong> This skill targets other players</p>
+                <p><strong>Target required:</strong> {currentlySelectedSkill.target === 'any' ? 'This skill can target yourself or other players' : 'This skill targets other players'}</p>
                 
                 {usersLoading ? (
                   <div className="loading">Loading players...</div>
                 ) : availableTargets.length === 0 ? (
-                  <div className="no-targets">No other players available to target in this chat.</div>
+                  <div className="no-targets">No players available to target in this chat.</div>
                 ) : (
                   <div className="target-list">
                     <h4>Select Target:</h4>
@@ -238,6 +246,7 @@ export const SkillsModal: React.FC<SkillsModalProps> = ({ isOpen, onClose, onSel
                       >
                         <span className="target-name">
                           {targetUser.characterName || targetUser.username}
+                          {targetUser.username === user?.username ? ' (You)' : ''}
                         </span>
                         <span className="target-username">({targetUser.username})</span>
                       </div>
@@ -258,7 +267,7 @@ export const SkillsModal: React.FC<SkillsModalProps> = ({ isOpen, onClose, onSel
                 ← Back to Skills
               </button>
               
-              {currentlySelectedSkill.target === 'other' ? (
+              {currentlySelectedSkill.target === 'other' || currentlySelectedSkill.target === 'any' ? (
                 <button 
                   onClick={handleTargetSelection}
                   disabled={!selectedTarget}

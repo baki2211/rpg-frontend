@@ -28,7 +28,7 @@ interface Skill {
   scalingStats: string[];  // Array of up to 3 scaling stats
   aetherCost: number;
   skillPointCost: number;
-  target: string;  // 'self', 'other', 'none'
+  target: string;  // 'self', 'other', 'none', 'any'
   rank: number;
   isPassive: boolean;
 }
@@ -299,6 +299,7 @@ const SkillDashboard: React.FC = () => {
                 <option value="other">Other (targets enemies/others)</option>
                 <option value="self">Self (targets user)</option>
                 <option value="none">None (area effects, no target)</option>
+                <option value="any">Any (can target self or others)</option>
               </select>
             </div>
 
@@ -437,7 +438,9 @@ const SkillDashboard: React.FC = () => {
                       fontSize: '0.8rem',
                       fontWeight: '600',
                       textTransform: 'uppercase',
-                      backgroundColor: skill.target === 'self' ? '#4ecdc4' : skill.target === 'other' ? '#ff6b6b' : '#667eea',
+                      backgroundColor: skill.target === 'self' ? '#4ecdc4' : 
+                                     skill.target === 'other' ? '#ff6b6b' : 
+                                     skill.target === 'any' ? '#9b59b6' : '#667eea',
                       color: 'white'
                     }}>
                       {skill.target}

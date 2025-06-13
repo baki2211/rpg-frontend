@@ -234,9 +234,11 @@ export const MasterPanel: React.FC<MasterPanelProps> = ({
       
       if (response.data.success) {
         console.log(`⚔️ MASTER PANEL: Resolved round ${activeRound.roundNumber}`);
-        setActiveRound(null);
-        setRoundActions([]);
-        await fetchResolvedRounds();
+        // Refresh all combat data
+        await Promise.all([
+          fetchActiveRound(),
+          fetchResolvedRounds()
+        ]);
         // Trigger a refresh of engine logs to pick up new logs
         if (activeTab === 'logs') {
           await fetchEngineLogs();
@@ -292,6 +294,14 @@ export const MasterPanel: React.FC<MasterPanelProps> = ({
     if (activeTab === 'combat') {
       fetchActiveRound();
       fetchResolvedRounds();
+      
+      // Set up interval to refresh combat data periodically
+      const interval = setInterval(() => {
+        fetchActiveRound();
+        fetchResolvedRounds();
+      }, 5000); // Refresh every 5 seconds
+      
+      return () => clearInterval(interval);
     }
   }, [activeTab, locationId]);
 
@@ -300,6 +310,14 @@ export const MasterPanel: React.FC<MasterPanelProps> = ({
     if (activeTab === 'events') {
       fetchActiveEvent();
       fetchRecentEvents();
+      
+      // Set up interval to refresh event data periodically
+      const interval = setInterval(() => {
+        fetchActiveEvent();
+        fetchRecentEvents();
+      }, 5000); // Refresh every 5 seconds
+      
+      return () => clearInterval(interval);
     }
   }, [activeTab, locationId]);
 

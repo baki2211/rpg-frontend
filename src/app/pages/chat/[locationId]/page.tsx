@@ -91,7 +91,7 @@ const ChatPage = () => {
     try {
       // Find target character ID if needed
       let targetId = null;
-      if (skill.target === 'other' && skill.selectedTarget) {
+      if ((skill.target === 'other' || skill.target === 'any') && skill.selectedTarget) {
         targetId = skill.selectedTarget.userId;
       }
 

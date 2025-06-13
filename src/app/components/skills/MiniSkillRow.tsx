@@ -61,7 +61,7 @@ export const MiniSkillRow: React.FC<MiniSkillRowProps> = ({ skill }) => {
         )}
       </div>
 
-      {/* Show final result only if skill.target !== 'other' */}
+      {/* Show final result for self/none/any target skills (hide only for "other" target skills) */}
       {skill.target !== 'other' && (skill.output || skill.roll) && (
         <div className="mini-skill-output">
           {skill.output && <span className="output-value">Final Output: {skill.output}</span>}
