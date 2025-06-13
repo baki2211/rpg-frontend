@@ -60,6 +60,15 @@ const AdminDashboard = () => {
               </li>
             </ul>
           </div>
+
+          <div className="admin-card">
+            <h3>Testing & Simulation</h3>
+            <ul>
+              <li>
+                <a href="/pages/admin/simulator">⚡ Skill Simulator</a>
+              </li>
+            </ul>
+          </div>
         </div>
       </div>
     </div>

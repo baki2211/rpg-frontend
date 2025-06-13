@@ -5,14 +5,28 @@ import './SkillRow.css';
 interface ExtendedSkill extends Skill {
   uses?: number;
   scalingStats?: string[];
+  selectedTarget?: { characterName?: string; username: string };
+  output?: number;
+  roll?: string;
+}
+
+// Simplified skill structure from chat messages
+interface SimplifiedSkill {
+  id: number;
+  name: string;
+  branch?: string | { name: string };
+  type?: string | { name: string };
+  target?: string;
+  description?: string;
+  scalingStats?: string[];
+  uses?: number;
+  selectedTarget?: { characterName?: string; username: string };
+  output?: number;
+  roll?: string;
 }
 
 interface MiniSkillRowProps {
-  skill: ExtendedSkill & { 
-    selectedTarget?: { characterName?: string; username: string };
-    output?: number;
-    roll?: string;
-  };
+  skill: ExtendedSkill | SimplifiedSkill;
 }
 
 // Calculate skill rank based on uses (same logic as SkillEngine)
@@ -24,11 +38,28 @@ const calculateSkillRank = (uses: number = 0): { rank: string; level: number } =
   return { rank: 'V', level: 5 };
 };
 
+// Helper function to safely get branch name
+const getBranchName = (branch?: string | { name: string }): string => {
+  if (!branch) return 'Unknown';
+  if (typeof branch === 'string') return branch;
+  return branch.name || 'Unknown';
+};
+
+// Helper function to safely get type name
+const getTypeName = (type?: string | { name: string }): string => {
+  if (!type) return 'Unknown';
+  if (typeof type === 'string') return type;
+  return type.name || 'Unknown';
+};
+
 export const MiniSkillRow: React.FC<MiniSkillRowProps> = ({ skill }) => {
   const skillRank = calculateSkillRank(skill.uses || 0);
   const scalingStatsText = skill.scalingStats && skill.scalingStats.length > 0 
     ? skill.scalingStats.join(', ') 
     : 'None';
+
+  const branchName = getBranchName(skill.branch);
+  const typeName = getTypeName(skill.type);
 
   return (
     <div className="mini-skill-row" title={skill.description || 'No description available'}>
@@ -36,14 +67,14 @@ export const MiniSkillRow: React.FC<MiniSkillRowProps> = ({ skill }) => {
         <span className="mini-skill-name">{skill.name}</span>
         <div className="mini-skill-badges">
           <span className={`mini-skill-rank rank-${skillRank.level}`}>Rank {skillRank.rank}</span>
-          <span className="mini-skill-type">{skill.type?.name || 'Unknown'}</span>
+          <span className="mini-skill-type">{typeName}</span>
         </div>
       </div>
       
       <div className="mini-skill-details">
         <div className="mini-skill-info-row">
           <span className="mini-skill-label">Branch:</span>
-          <span className="mini-skill-branch">{skill.branch?.name || 'Unknown'}</span>
+          <span className="mini-skill-branch">{branchName}</span>
         </div>
         
         <div className="mini-skill-info-row">
