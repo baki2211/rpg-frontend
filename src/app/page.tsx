@@ -3,6 +3,7 @@
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from './utils/AuthContext';
+import { AuthDebug } from './components/debug/AuthDebug';
 
 export default function HomePage() {
   const { isAuthenticated } = useAuth();
@@ -20,6 +21,7 @@ export default function HomePage() {
 
   return (
     <div className="page-container">
+      <AuthDebug />
       <div className="page-header">
         <h1>Welcome to Arcane Realms</h1>
         <p>
