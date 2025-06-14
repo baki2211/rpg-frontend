@@ -21,6 +21,14 @@ jobs:
     - name: Copy frontend code to RPG
       run: |
         mkdir -p rpg/frontend
+        # Backup deployment-specific files
+        if [ -f rpg/frontend/next.config.ts ]; then
+          cp rpg/frontend/next.config.ts /tmp/next-config-deploy.ts
+        fi
+        if [ -f rpg/frontend/Dockerfile ]; then
+          cp rpg/frontend/Dockerfile /tmp/dockerfile-deploy
+        fi
+        
         rm -rf rpg/frontend/*
         # Exclude .git, node_modules, and other unnecessary files
         rsync -av \
@@ -32,6 +40,14 @@ jobs:
           --exclude='*.log' \
           --exclude='.DS_Store' \
           ./ rpg/frontend/
+          
+        # Restore deployment-specific files if they existed
+        if [ -f /tmp/next-config-deploy.ts ]; then
+          cp /tmp/next-config-deploy.ts rpg/frontend/next.config.ts
+        fi
+        if [ -f /tmp/dockerfile-deploy ]; then
+          cp /tmp/dockerfile-deploy rpg/frontend/Dockerfile
+        fi
         cd rpg
         git add frontend
         git commit -m "🔁 Sync frontend from commit $GITHUB_SHA" || echo "No changes to commit"
