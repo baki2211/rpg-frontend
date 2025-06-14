@@ -1,8 +1,8 @@
 'use client';
 
 import React, { useState } from 'react';
-import { api } from '../../services/apiClient';
-import { API_CONFIG } from '../../config/api';
+import { api } from '../../../services/apiClient';
+import { API_CONFIG } from '../../../config/api';
 
 export const AuthDebug: React.FC = () => {
   const [debugInfo, setDebugInfo] = useState<string>('');
@@ -33,9 +33,10 @@ export const AuthDebug: React.FC = () => {
         const protectedResponse = await api.get('/protected');
         setDebugInfo(prev => prev + `✅ Protected endpoint: Success\n`);
         setDebugInfo(prev => prev + `📄 Response: ${JSON.stringify(protectedResponse.data, null, 2)}\n\n`);
-      } catch (protectedError: any) {
-        setDebugInfo(prev => prev + `❌ Protected endpoint failed: ${protectedError.response?.status} ${protectedError.response?.statusText}\n`);
-        setDebugInfo(prev => prev + `📄 Error data: ${JSON.stringify(protectedError.response?.data, null, 2)}\n\n`);
+      } catch (protectedError: unknown) {
+        const error = protectedError as { response?: { status?: number; statusText?: string; data?: unknown } };
+        setDebugInfo(prev => prev + `❌ Protected endpoint failed: ${error.response?.status} ${error.response?.statusText}\n`);
+        setDebugInfo(prev => prev + `📄 Error data: ${JSON.stringify(error.response?.data, null, 2)}\n\n`);
       }
 
       // Test login endpoint structure
@@ -47,12 +48,14 @@ export const AuthDebug: React.FC = () => {
         });
         setDebugInfo(prev => prev + `✅ Login endpoint OPTIONS: ${loginTestResponse.status}\n`);
         setDebugInfo(prev => prev + `📄 CORS headers: ${JSON.stringify(Object.fromEntries(loginTestResponse.headers.entries()), null, 2)}\n\n`);
-      } catch (optionsError: any) {
-        setDebugInfo(prev => prev + `❌ Login OPTIONS failed: ${optionsError.message}\n\n`);
+      } catch (optionsError: unknown) {
+        const error = optionsError as { message?: string };
+        setDebugInfo(prev => prev + `❌ Login OPTIONS failed: ${error.message}\n\n`);
       }
 
-    } catch (error: any) {
-      setDebugInfo(prev => prev + `❌ Connection test failed: ${error.message}\n`);
+    } catch (error: unknown) {
+      const err = error as { message?: string };
+      setDebugInfo(prev => prev + `❌ Connection test failed: ${err.message}\n`);
     } finally {
       setIsLoading(false);
     }
@@ -68,10 +71,11 @@ export const AuthDebug: React.FC = () => {
         password: 'test',
       });
       setDebugInfo(prev => prev + '✅ Login request sent successfully\n');
-    } catch (error: any) {
-      setDebugInfo(prev => prev + `❌ Login failed: ${error.response?.status} ${error.response?.statusText}\n`);
-      setDebugInfo(prev => prev + `📄 Error details: ${JSON.stringify(error.response?.data, null, 2)}\n`);
-      setDebugInfo(prev => prev + `📄 Request headers: ${JSON.stringify(error.config?.headers, null, 2)}\n`);
+    } catch (error: unknown) {
+      const err = error as { response?: { status?: number; statusText?: string; data?: unknown }; config?: { headers?: unknown } };
+      setDebugInfo(prev => prev + `❌ Login failed: ${err.response?.status} ${err.response?.statusText}\n`);
+      setDebugInfo(prev => prev + `📄 Error details: ${JSON.stringify(err.response?.data, null, 2)}\n`);
+      setDebugInfo(prev => prev + `📄 Request headers: ${JSON.stringify(err.config?.headers, null, 2)}\n`);
     } finally {
       setIsLoading(false);
     }
