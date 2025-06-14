@@ -14,7 +14,7 @@ const ProtectedPage = () => {
         // Verify the token using cookies
         await axios.get('http://localhost:5001/api/protected', { withCredentials: true });
         setMessage('Welcome to the protected page!');
-      } catch (error) {
+      } catch {
         // Redirect if unauthorized
         setMessage('You are not authorized to view this page. Redirecting...');
         setTimeout(() => router.push('/pages/login'), 2000);

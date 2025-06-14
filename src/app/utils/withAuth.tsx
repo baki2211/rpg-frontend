@@ -3,7 +3,7 @@ import { useRouter } from "next/router";
 import axios from "axios";
 
 const withAuth = (WrappedComponent: React.ComponentType) => {
-  return (props: any) => {
+  const AuthComponent = (props: Record<string, unknown>) => {
     const router = useRouter();
 
     useEffect(() => {
@@ -20,6 +20,9 @@ const withAuth = (WrappedComponent: React.ComponentType) => {
 
     return <WrappedComponent {...props} />;
   };
+  
+  AuthComponent.displayName = `withAuth(${WrappedComponent.displayName || WrappedComponent.name})`;
+  return AuthComponent;
 };
 
 export default withAuth;
