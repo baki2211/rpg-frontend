@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import './admin.css';
+import { API_URL } from '../../../config/api';
 
 interface Rank {
   level: number;
@@ -32,7 +33,7 @@ export const RankPanel: React.FC = () => {
   const fetchRanks = async () => {
     setLoading(true);
     try {
-      const res = await fetch('http://localhost:5001/api/ranks', { credentials: 'include' });
+      const res = await fetch(`${API_URL}/ranks`, { credentials: 'include' });
       if (res.ok) {
         const data = await res.json();
         setRanks(data);
@@ -55,7 +56,7 @@ export const RankPanel: React.FC = () => {
     try {
       const existing = ranks.find(r=>r.level===rank.level);
       const method = existing ? 'PUT' : 'POST';
-      const url = existing ? `http://localhost:5001/api/ranks/${rank.level}` : 'http://localhost:5001/api/ranks';
+      const url = existing ? `${API_URL}/ranks/${rank.level}` : `${API_URL}/ranks`;
       const res = await fetch(url, {
         method,
         credentials: 'include',
@@ -78,7 +79,7 @@ export const RankPanel: React.FC = () => {
   const handleDelete = async (level: number) => {
     if (!confirm('Delete this rank?')) return;
     try {
-      const res = await fetch(`http://localhost:5001/api/ranks/delete/${level}`, {
+      const res = await fetch(`${API_URL}/ranks/delete/${level}`, {
         method: 'DELETE',
         credentials: 'include'
       });

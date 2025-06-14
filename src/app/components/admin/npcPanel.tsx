@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import './admin.css';
+import { API_URL } from '../../../config/api';
 
 interface StatDefinition {
   id: number;
@@ -80,9 +81,9 @@ const NPCPanel: React.FC = () => {
       setLoading(true);
       
       const [npcsResponse, racesResponse, statsResponse] = await Promise.all([
-        axios.get('http://localhost:5001/api/characters/npcs', { withCredentials: true }),
-        axios.get('http://localhost:5001/api/admin/races', { withCredentials: true }),
-        axios.get('http://localhost:5001/api/stat-definitions?category=primary_stat&activeOnly=true', { withCredentials: true })
+        axios.get(`${API_URL}/characters/npcs`, { withCredentials: true }),
+        axios.get(`${API_URL}/admin/races`, { withCredentials: true }),
+        axios.get(`${API_URL}/stat-definitions?category=primary_stat&activeOnly=true`, { withCredentials: true })
       ]);
 
       setNpcs(npcsResponse.data);
@@ -155,7 +156,7 @@ const NPCPanel: React.FC = () => {
       if (editingId) {
         // Update existing NPC
         const response = await axios.put(
-          `http://localhost:5001/api/characters/npcs/${editingId}`, 
+          `${API_URL}/characters/npcs/${editingId}`, 
           submitData, 
           { withCredentials: true }
         );
@@ -164,7 +165,7 @@ const NPCPanel: React.FC = () => {
       } else {
         // Create new NPC
         const response = await axios.post(
-          'http://localhost:5001/api/characters/npcs', 
+          `${API_URL}/characters/npcs`, 
           submitData, 
           { withCredentials: true }
         );
@@ -206,7 +207,7 @@ const NPCPanel: React.FC = () => {
     if (!confirm('Are you sure you want to delete this NPC?')) return;
 
     try {
-      await axios.delete(`http://localhost:5001/api/characters/npcs/${id}`, {
+      await axios.delete(`${API_URL}/characters/npcs/${id}`, {
         withCredentials: true,
       });
       setNpcs(npcs.filter(npc => npc.id !== id));
@@ -222,7 +223,7 @@ const NPCPanel: React.FC = () => {
 
   const handleActivate = async (id: number) => {
     try {
-      await axios.post(`http://localhost:5001/api/characters/npcs/${id}/activate`, {}, {
+      await axios.post(`${API_URL}/characters/npcs/${id}/activate`, {}, {
         withCredentials: true,
       });
       
@@ -245,7 +246,7 @@ const NPCPanel: React.FC = () => {
 
   const handleDeactivate = async (id: number) => {
     try {
-      await axios.post(`http://localhost:5001/api/characters/npcs/${id}/deactivate`, {}, {
+      await axios.post(`${API_URL}/characters/npcs/${id}/deactivate`, {}, {
         withCredentials: true,
       });
       

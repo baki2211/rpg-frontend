@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import './admin.css';
+import { API_URL } from '../../../config/api';
 
 interface StatDefinition {
   id: number;
@@ -89,7 +90,7 @@ const SkillDashboard: React.FC = () => {
 
   const fetchStatDefinitions = async () => {
     try {
-      const response = await axios.get('http://localhost:5001/api/stat-definitions?category=primary_stat&activeOnly=true', {
+      const response = await axios.get(`${API_URL}/stat-definitions?category=primary_stat&activeOnly=true`, {
         withCredentials: true,
       });
       setStatDefinitions(response.data);
@@ -111,7 +112,7 @@ const SkillDashboard: React.FC = () => {
 
   const fetchBranches = async () => {
     try {
-      const response = await axios.get('http://localhost:5001/api/skill-branches');
+      const response = await axios.get(`${API_URL}/skill-branches`);
       setBranches(response.data);
     } catch (error) {
       console.error('Error fetching branches:', error);
@@ -120,7 +121,7 @@ const SkillDashboard: React.FC = () => {
 
   const fetchTypes = async () => {
     try {
-      const response = await axios.get('http://localhost:5001/api/skill-types');
+      const response = await axios.get(`${API_URL}/skill-types`);
       setTypes(response.data);
     } catch (error) {
       console.error('Error fetching types:', error);
@@ -129,7 +130,7 @@ const SkillDashboard: React.FC = () => {
 
   const fetchSkills = async () => {
     try {
-      const response = await axios.get('http://localhost:5001/api/skills');
+      const response = await axios.get(`${API_URL}/skills`);
       setSkills(response.data);
     } catch (error) {
       console.error('Error fetching skills:', error);
@@ -179,9 +180,9 @@ const SkillDashboard: React.FC = () => {
     e.preventDefault();
     try {
       if (selectedSkill) {
-        await axios.put(`http://localhost:5001/api/skills/${selectedSkill.id}`, formData);
+        await axios.put(`${API_URL}/skills/${selectedSkill.id}`, formData);
       } else {
-        await axios.post('http://localhost:5001/api/skills', formData);
+        await axios.post(`${API_URL}/skills`, formData);
       }
       fetchSkills();
       
@@ -232,7 +233,7 @@ const SkillDashboard: React.FC = () => {
 
   const handleDelete = async (id: number) => {
     try {
-      await axios.delete(`http://localhost:5001/api/skills/${id}`);
+      await axios.delete(`${API_URL}/skills/${id}`);
       fetchSkills();
     } catch (error) {
       console.error('Error deleting skill:', error);

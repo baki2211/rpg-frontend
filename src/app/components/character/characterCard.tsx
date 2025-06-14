@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import Image from 'next/image';
+import { UPLOADS_URL } from '../../../config/api';
 
 interface Character {
   id: number;
@@ -34,7 +35,7 @@ const CharacterCard: React.FC<CharacterCardProps> = ({
   // Construct the image URL with fallback
   const getImageUrl = () => {
     if (imageError) {
-      return 'http://localhost:5001/uploads/placeholder.jpg';
+      return `${UPLOADS_URL}/placeholder.jpg`;
     }
     
     if (character.imageUrl) {
@@ -42,12 +43,12 @@ const CharacterCard: React.FC<CharacterCardProps> = ({
       if (character.imageUrl.startsWith('http')) {
         return character.imageUrl;
       }
-      // Otherwise, prepend the localhost URL
-      return `http://localhost:5001${character.imageUrl}`;
+      // Otherwise, prepend the uploads URL
+      return `${UPLOADS_URL}${character.imageUrl}`;
     }
     
     // Default fallback
-    return 'http://localhost:5001/uploads/placeholder.jpg';
+    return `${UPLOADS_URL}/placeholder.jpg`;
   };
 
   return (

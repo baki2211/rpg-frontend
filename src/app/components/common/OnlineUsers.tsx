@@ -1,6 +1,7 @@
 import React from 'react';
 import { usePresence } from '../../contexts/PresenceContext';
 import { useRouter } from 'next/navigation';
+import { API_URL } from '../../../config/api';
 
 interface Location {
   id: number;
@@ -24,7 +25,7 @@ const UserCard: React.FC<UserCardProps> = ({ username, location, isCurrentUser }
     if (location.startsWith('Chat:')) {
       const locationName = location.split('Chat: ')[1];
       // Find the location ID from the map data
-      fetch('http://localhost:5001/api/maps/main', {
+      fetch(`${API_URL}/maps/main`, {
         credentials: 'include'
       })
         .then(response => response.json())

@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { API_URL } from '../../../config/api';
 
 interface NPC {
   id: number;
@@ -41,8 +42,8 @@ const NPCSection: React.FC = () => {
       setLoading(true);
       
       const [npcsResponse, activeCharResponse] = await Promise.all([
-        axios.get('http://localhost:5001/api/characters/npcs/available', { withCredentials: true }),
-        axios.get('http://localhost:5001/api/characters/', { withCredentials: true })
+        axios.get(`${API_URL}/characters/npcs/available`, { withCredentials: true }),
+        axios.get(`${API_URL}/characters/`, { withCredentials: true })
       ]);
 
       setAvailableNPCs(npcsResponse.data);
@@ -62,7 +63,7 @@ const NPCSection: React.FC = () => {
   const handleActivateNPC = async (npcId: number) => {
     try {
       setError('');
-      await axios.post(`http://localhost:5001/api/characters/npcs/${npcId}/activate`, {}, {
+      await axios.post(`${API_URL}/characters/npcs/${npcId}/activate`, {}, {
         withCredentials: true
       });
       
@@ -84,7 +85,7 @@ const NPCSection: React.FC = () => {
     
     try {
       setError('');
-      await axios.post(`http://localhost:5001/api/characters/npcs/${activeCharacter.id}/deactivate`, {}, {
+      await axios.post(`${API_URL}/characters/npcs/${activeCharacter.id}/deactivate`, {}, {
         withCredentials: true
       });
       

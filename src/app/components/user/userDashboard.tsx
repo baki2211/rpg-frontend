@@ -7,6 +7,7 @@ import CharacterCard from '../character/characterCard';
 import OnlineUsers from '../common/OnlineUsers';
 import SessionList from '../sessions/SessionList';
 import { useCharacters } from '../../hooks/useCharacter';
+import { API_URL } from '../../../config/api';
 
 const Dashboard = () => {
   const router = useRouter();
@@ -24,7 +25,7 @@ const Dashboard = () => {
   useEffect(() => {
     const fetchDashboard = async () => {
       try {
-        const response = await axios.get('http://localhost:5001/api/user/dashboard', {
+        const response = await axios.get(`${API_URL}/user/dashboard`, {
           withCredentials: true,
         });
         setUserData(response.data.user);

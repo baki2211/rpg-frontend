@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import './admin.css';
+import { API_URL } from '../../../config/api';
 
 interface StatDefinition {
   id: number;
@@ -75,13 +76,13 @@ const SkillSimulator: React.FC = () => {
     try {
       setLoading(true);
       const [statsResponse, skillsResponse, charactersResponse] = await Promise.all([
-        axios.get('http://localhost:5001/api/stat-definitions/categories?activeOnly=true', {
+        axios.get(`${API_URL}/stat-definitions/categories?activeOnly=true`, {
           withCredentials: true,
         }),
-        axios.get('http://localhost:5001/api/skills', {
+        axios.get(`${API_URL}/skills`, {
           withCredentials: true,
         }),
-        axios.get('http://localhost:5001/api/characters/all', {
+        axios.get(`${API_URL}/characters/all`, {
           withCredentials: true,
         })
       ]);

@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import './admin.css';
+import { API_URL } from '../../../config/api';
 
 interface StatDefinition {
   id: number;
@@ -51,13 +52,13 @@ const RacePanel: React.FC = () => {
         setLoading(true);
         
         // Fetch races
-        const racesResponse = await axios.get('http://localhost:5001/api/admin/races', {
+        const racesResponse = await axios.get(`${API_URL}/admin/races`, {
           withCredentials: true,
         });
         setRaces(racesResponse.data);
 
         // Fetch stat definitions for primary stats
-        const statsResponse = await axios.get('http://localhost:5001/api/stat-definitions?category=primary_stat&activeOnly=true', {
+        const statsResponse = await axios.get(`${API_URL}/stat-definitions?category=primary_stat&activeOnly=true`, {
           withCredentials: true,
         });
         setStatDefinitions(statsResponse.data);
@@ -85,7 +86,7 @@ const RacePanel: React.FC = () => {
   const addRace = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const response = await axios.post('http://localhost:5001/api/admin/races/new', newRace, {
+      const response = await axios.post(`${API_URL}/admin/races/new`, newRace, {
         withCredentials: true,
       });
       setRaces([...races, response.data]);
@@ -101,7 +102,7 @@ const RacePanel: React.FC = () => {
 
   const deleteRace = async (id: number) => {
     try {
-      await axios.delete(`http://localhost:5001/api/admin/races/delete/${id}`, {
+      await axios.delete(`${API_URL}/admin/races/delete/${id}`, {
         withCredentials: true,
       });
       setRaces(races.filter((race) => race.id !== id));
@@ -112,7 +113,7 @@ const RacePanel: React.FC = () => {
 
   const handleSave = async (id: number) => {
     try {
-      await axios.put(`http://localhost:5001/api/admin/races/update/${id}`, editData, { withCredentials: true });
+      await axios.put(`${API_URL}/admin/races/update/${id}`, editData, { withCredentials: true });
       setRaces(races.map(r => r.id === id ? {...r, ...editData} as Race : r));
       setEditingId(null);
     } catch (err) {

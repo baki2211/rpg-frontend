@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { SkillCard } from '@/app/components/skills/SkillCard';
 import { useCharacters, type Skill } from '@/app/hooks/useCharacter';
 import './skills.css';
+import { API_URL } from '../../../config/api';
 
 export default function SkillsPage() {
   const { characters, fetchCharacters } = useCharacters();
@@ -25,7 +26,7 @@ export default function SkillsPage() {
       try {
         setLoading(true);
         // Fetch available skills
-        const availableSkillsResponse = await fetch(`http://localhost:5001/api/character-skills/${activeCharacter.id}/available-skills?include=branch,type`, {
+        const availableSkillsResponse = await fetch(`${API_URL}/character-skills/${activeCharacter.id}/available-skills?include=branch,type`, {
           credentials: 'include'
         });
         if (!availableSkillsResponse.ok) throw new Error('Failed to fetch available skills');
@@ -33,7 +34,7 @@ export default function SkillsPage() {
         setAvailableSkills(available);
 
         // Fetch acquired skills
-        const acquiredSkillsResponse = await fetch(`http://localhost:5001/api/character-skills/${activeCharacter.id}/acquired-skills?include=branch,type`, {
+        const acquiredSkillsResponse = await fetch(`${API_URL}/character-skills/${activeCharacter.id}/acquired-skills?include=branch,type`, {
           credentials: 'include'
         });
         if (!acquiredSkillsResponse.ok) throw new Error('Failed to fetch acquired skills');
@@ -53,7 +54,7 @@ export default function SkillsPage() {
     if (!activeCharacter) return;
     
     try {
-      const response = await fetch(`http://localhost:5001/api/character-skills/${skillId}`, {
+      const response = await fetch(`${API_URL}/character-skills/${skillId}`, {
         method: 'POST',
         credentials: 'include',
         headers: {
@@ -71,10 +72,10 @@ export default function SkillsPage() {
       
       // Fetch both available and acquired skills again
       const [availableSkillsResponse, acquiredSkillsResponse] = await Promise.all([
-        fetch(`http://localhost:5001/api/character-skills/${activeCharacter.id}/available-skills?include=branch,type`, {
+        fetch(`${API_URL}/character-skills/${activeCharacter.id}/available-skills?include=branch,type`, {
           credentials: 'include'
         }),
-        fetch(`http://localhost:5001/api/character-skills/${activeCharacter.id}/acquired-skills?include=branch,type`, {
+        fetch(`${API_URL}/character-skills/${activeCharacter.id}/acquired-skills?include=branch,type`, {
           credentials: 'include'
         })
       ]);

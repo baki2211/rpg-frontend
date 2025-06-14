@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import './LogList.css';
+import { API_URL } from '../../../config/api';
 
 interface Participant {
   id: string;
@@ -49,7 +50,7 @@ const LogList = () => {
     try {
       setLoading(true);
       
-      const response = await fetch('http://localhost:5001/api/sessions/closed', {
+      const response = await fetch(`${API_URL}/sessions/closed`, {
         credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
@@ -83,7 +84,7 @@ const LogList = () => {
   const openSessionLogPopup = async (session: Session) => {
     try {
       // Fetch chat messages for this session's location
-      const response = await fetch(`http://localhost:5001/api/chat/${session.locationId}`, {
+      const response = await fetch(`${API_URL}/chat/${session.locationId}`, {
         credentials: 'include',
       });
 

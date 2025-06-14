@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '../../utils/AuthContext';
 import './SessionList.css';
+import { API_URL } from '../../../config/api';
 
 interface Participant {
   id: string;
@@ -54,7 +55,7 @@ const SessionList = () => {
     try {
       setLoading(true);
       
-      const response = await fetch('http://localhost:5001/api/sessions/active', {
+      const response = await fetch(`${API_URL}/sessions/active`, {
         credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
@@ -100,7 +101,7 @@ const SessionList = () => {
       const newStatus = currentStatus === 'frozen' ? 'open' : 'frozen';
       const action = newStatus === 'frozen' ? 'Freezing' : 'Unfreezing';
       
-      const response = await fetch(`http://localhost:5001/api/sessions/${sessionId}/status`, {
+      const response = await fetch(`${API_URL}/sessions/${sessionId}/status`, {
         method: 'PUT',
         credentials: 'include',
         headers: {
@@ -144,7 +145,7 @@ const SessionList = () => {
       
       console.log(`🔄 Updating session ${sessionId} from ${currentIsActive ? 'active' : 'inactive'} to status: ${newStatus}`);
       
-      const response = await fetch(`http://localhost:5001/api/sessions/${sessionId}/status`, {
+      const response = await fetch(`${API_URL}/sessions/${sessionId}/status`, {
         method: 'PUT',
         credentials: 'include',
         headers: {

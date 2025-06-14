@@ -5,6 +5,7 @@ import axios from "axios";
 import { useRouter } from 'next/navigation';
 import { useAuth } from "../../utils/AuthContext";
 import { usePresence } from "../../contexts/PresenceContext";
+import { API_URL, WS_URL } from '../../../config/api';
 
 const LogoutButton: React.FC = () => {
   const router = useRouter();
@@ -15,14 +16,14 @@ const LogoutButton: React.FC = () => {
     try {
       // Send logout message to WebSocket server
       if (currentUser) {
-        const ws = new WebSocket(`ws://localhost:5001/ws/presence?userId=${currentUser.id}&username=${encodeURIComponent(currentUser.username)}`);
+        const ws = new WebSocket(`${WS_URL}/ws/presence?userId=${currentUser.id}&username=${encodeURIComponent(currentUser.username)}`);
         ws.onopen = () => {
           ws.send(JSON.stringify({ type: 'logout' }));
           ws.close();
         };
       }
 
-      await axios.post('http://localhost:5001/api/auth/logout', {}, {
+      await axios.post(`${API_URL}/auth/logout`, {}, {
         withCredentials: true,
       });
 

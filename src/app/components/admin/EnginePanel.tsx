@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import './EnginePanel.css';
+import { API_URL } from '../../../config/api';
 
 interface StatDefinition {
   id: number;
@@ -56,7 +57,7 @@ export const EnginePanel: React.FC = () => {
   const fetchStats = async () => {
     setLoading(true);
     try {
-      const response = await fetch('http://localhost:5001/api/stat-definitions/categories', {
+      const response = await fetch(`${API_URL}/stat-definitions/categories`, {
         credentials: 'include'
       });
       
@@ -80,7 +81,7 @@ export const EnginePanel: React.FC = () => {
 
   const handleCreate = async () => {
     try {
-      const response = await fetch('http://localhost:5001/api/stat-definitions', {
+      const response = await fetch(`${API_URL}/stat-definitions`, {
         method: 'POST',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
@@ -113,7 +114,7 @@ export const EnginePanel: React.FC = () => {
 
   const handleUpdate = async (id: number, updateData: Partial<StatDefinition>) => {
     try {
-      const response = await fetch(`http://localhost:5001/api/stat-definitions/${id}`, {
+      const response = await fetch(`${API_URL}/stat-definitions/${id}`, {
         method: 'PUT',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
@@ -139,7 +140,7 @@ export const EnginePanel: React.FC = () => {
     }
 
     try {
-      const response = await fetch(`http://localhost:5001/api/stat-definitions/${id}`, {
+      const response = await fetch(`${API_URL}/stat-definitions/${id}`, {
         method: 'DELETE',
         credentials: 'include'
       });
@@ -162,7 +163,7 @@ export const EnginePanel: React.FC = () => {
     }
 
     try {
-      const response = await fetch('http://localhost:5001/api/stat-definitions/initialize', {
+      const response = await fetch(`${API_URL}/stat-definitions/initialize`, {
         method: 'POST',
         credentials: 'include'
       });

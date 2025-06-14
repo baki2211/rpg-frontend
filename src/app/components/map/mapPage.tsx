@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import axios from 'axios';
 import { useRouter } from 'next/navigation';
+import { API_URL, UPLOADS_URL } from '../../../config/api';
 
 interface Location {
   id: number;
@@ -21,8 +22,8 @@ const MapPage = () => {
   useEffect(() => {
     const fetchMapAndLocations = async () => {
       try {
-        const mainMapResponse = await axios.get('http://localhost:5001/api/maps/main', { withCredentials: true });
-        setMapUrl(`http://localhost:5001${mainMapResponse.data.imageUrl}`);
+        const mainMapResponse = await axios.get(`${API_URL}/maps/main`, { withCredentials: true });
+        setMapUrl(`${API_URL}${mainMapResponse.data.imageUrl}`);
         setLocations(mainMapResponse.data.locations || []);
       } catch (error) {
         console.error('Failed to fetch main map and locations', error);
@@ -41,7 +42,7 @@ const MapPage = () => {
       {mapUrl ? (
         <div style={{ position: 'relative' }}>
           <Image 
-            src={imageError ? 'http://localhost:5001/uploads/placeholder.jpg' : mapUrl} 
+            src={imageError ? `${UPLOADS_URL}/uploads/placeholder.jpg` : mapUrl} 
             alt="Game Map" 
             width={1200}
             height={800}

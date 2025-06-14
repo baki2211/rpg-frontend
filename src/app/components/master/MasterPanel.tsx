@@ -3,6 +3,7 @@ import { useAuth } from '../../utils/AuthContext';
 import { useChatUsers } from '../../hooks/useChatUsers';
 import axios from 'axios';
 import './MasterPanel.css';
+import { API_URL } from '../../../config/api';
 
 interface SkillEngineLog {
   id: string;
@@ -130,7 +131,7 @@ export const MasterPanel: React.FC<MasterPanelProps> = ({
   // Fetch engine logs
   const fetchEngineLogs = async () => {
     try {
-      const response = await axios.get(`http://localhost:5001/api/engine-logs/location/${locationId}`, {
+      const response = await axios.get(`${API_URL}/engine-logs/location/${locationId}`, {
         withCredentials: true
       });
       
@@ -173,7 +174,7 @@ export const MasterPanel: React.FC<MasterPanelProps> = ({
   // Combat functions
   const fetchActiveRound = async () => {
     try {
-      const response = await axios.get(`http://localhost:5001/api/combat/rounds/active/${locationId}`, {
+      const response = await axios.get(`${API_URL}/combat/rounds/active/${locationId}`, {
         withCredentials: true
       });
       setActiveRound(response.data.round);
@@ -187,7 +188,7 @@ export const MasterPanel: React.FC<MasterPanelProps> = ({
 
   const fetchResolvedRounds = async () => {
     try {
-      const response = await axios.get(`http://localhost:5001/api/combat/rounds/resolved/${locationId}?limit=5`, {
+      const response = await axios.get(`${API_URL}/combat/rounds/resolved/${locationId}?limit=5`, {
         withCredentials: true
       });
       setResolvedRounds(response.data.rounds || []);
@@ -204,7 +205,7 @@ export const MasterPanel: React.FC<MasterPanelProps> = ({
 
     setIsCreatingRound(true);
     try {
-      const response = await axios.post('http://localhost:5001/api/combat/rounds', {
+      const response = await axios.post(`${API_URL}/combat/rounds`, {
         locationId: parseInt(locationId),
         eventId: activeEvent.id  // Pass the event ID explicitly
       }, {
@@ -228,7 +229,7 @@ export const MasterPanel: React.FC<MasterPanelProps> = ({
     
     setIsResolvingRound(true);
     try {
-      const response = await axios.post(`http://localhost:5001/api/combat/rounds/${activeRound.id}/resolve`, {}, {
+      const response = await axios.post(`${API_URL}/combat/rounds/${activeRound.id}/resolve`, {}, {
         withCredentials: true
       });
       
@@ -256,7 +257,7 @@ export const MasterPanel: React.FC<MasterPanelProps> = ({
     if (!activeRound) return;
     
     try {
-      const response = await axios.post(`http://localhost:5001/api/combat/rounds/${activeRound.id}/cancel`, {}, {
+      const response = await axios.post(`${API_URL}/combat/rounds/${activeRound.id}/cancel`, {}, {
         withCredentials: true
       });
       
@@ -324,7 +325,7 @@ export const MasterPanel: React.FC<MasterPanelProps> = ({
   // Event functions
   const fetchActiveEvent = async () => {
     try {
-      const response = await axios.get(`http://localhost:5001/api/events/active/${locationId}`, {
+      const response = await axios.get(`${API_URL}/events/active/${locationId}`, {
         withCredentials: true
       });
       setActiveEvent(response.data.event);
@@ -335,7 +336,7 @@ export const MasterPanel: React.FC<MasterPanelProps> = ({
 
   const fetchRecentEvents = async () => {
     try {
-      const response = await axios.get(`http://localhost:5001/api/events/location/${locationId}?limit=5`, {
+      const response = await axios.get(`${API_URL}/events/location/${locationId}?limit=5`, {
         withCredentials: true
       });
       setRecentEvents(response.data.events || []);
@@ -352,7 +353,7 @@ export const MasterPanel: React.FC<MasterPanelProps> = ({
 
     setIsCreatingEvent(true);
     try {
-      const response = await axios.post('http://localhost:5001/api/events', {
+      const response = await axios.post(`${API_URL}/events`, {
         title: eventForm.title,
         type: eventForm.type,
         description: eventForm.description,
@@ -378,7 +379,7 @@ export const MasterPanel: React.FC<MasterPanelProps> = ({
     
     setIsClosingEvent(true);
     try {
-      const response = await axios.post(`http://localhost:5001/api/events/${activeEvent.id}/close`, {}, {
+      const response = await axios.post(`${API_URL}/events/${activeEvent.id}/close`, {}, {
         withCredentials: true
       });
       
@@ -399,7 +400,7 @@ export const MasterPanel: React.FC<MasterPanelProps> = ({
     
     setIsFreezingEvent(true);
     try {
-      const response = await axios.post(`http://localhost:5001/api/events/${activeEvent.id}/freeze`, {}, {
+      const response = await axios.post(`${API_URL}/events/${activeEvent.id}/freeze`, {}, {
         withCredentials: true
       });
       
@@ -420,7 +421,7 @@ export const MasterPanel: React.FC<MasterPanelProps> = ({
     
     setIsUnfreezingEvent(true);
     try {
-      const response = await axios.post(`http://localhost:5001/api/events/${activeEvent.id}/unfreeze`, {}, {
+      const response = await axios.post(`${API_URL}/events/${activeEvent.id}/unfreeze`, {}, {
         withCredentials: true
       });
       

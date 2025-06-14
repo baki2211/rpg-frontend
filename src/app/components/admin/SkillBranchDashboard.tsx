@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import './admin.css';
+import { API_URL } from '../../../config/api';
 
 interface SkillBranch {
   id: number;
@@ -22,7 +23,7 @@ const SkillBranchDashboard: React.FC = () => {
 
   const fetchBranches = async () => {
     try {
-      const response = await axios.get('http://localhost:5001/api/skill-branches');
+      const response = await axios.get(`${API_URL}/skill-branches`);
       setBranches(response.data);
     } catch (error) {
       console.error('Error fetching skill branches:', error);
@@ -38,9 +39,9 @@ const SkillBranchDashboard: React.FC = () => {
     e.preventDefault();
     try {
       if (selectedBranch) {
-        await axios.put(`http://localhost:5001/api/skill-branches/${selectedBranch.id}`, formData);
+        await axios.put(`${API_URL}/skill-branches/${selectedBranch.id}`, formData);
       } else {
-        await axios.post('http://localhost:5001/api/skill-branches', formData);
+        await axios.post(`${API_URL}/skill-branches`, formData);
       }
       fetchBranches();
       setFormData({ name: '', description: '' });
@@ -58,7 +59,7 @@ const SkillBranchDashboard: React.FC = () => {
   const handleDelete = async (id: number) => {
     if (window.confirm('Are you sure you want to delete this skill branch?')) {
       try {
-        await axios.delete(`http://localhost:5001/api/skill-branches/${id}`);
+        await axios.delete(`${API_URL}/skill-branches/${id}`);
         fetchBranches();
       } catch (error) {
         console.error('Error deleting skill branch:', error);

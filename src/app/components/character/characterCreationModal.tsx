@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import './characterCreationModal.css';
+import { API_URL } from '../../../config/api';
 
 interface User {
   id: number;
@@ -82,7 +83,7 @@ const CharacterCreationModalPanel: React.FC<CharacterCreationModalPanelProps> = 
 
   const fetchUser = async () => {
     try {
-      const response = await axios.get('http://localhost:5001/api/user/', { withCredentials: true });
+      const response = await axios.get(`${API_URL}/user/`, { withCredentials: true });
       const fetchedUser = response.data;
       setUser(fetchedUser);
       setCharacterData((prev) => ({
@@ -97,7 +98,7 @@ const CharacterCreationModalPanel: React.FC<CharacterCreationModalPanelProps> = 
 
   const fetchCharacters = async () => {
     try {
-      const response = await axios.get('http://localhost:5001/api/characters', { withCredentials: true });
+      const response = await axios.get(`${API_URL}/characters`, { withCredentials: true });
       setCharacters(response.data);
     } catch (error) {
       console.error('Failed to fetch characters:', error);
@@ -107,7 +108,7 @@ const CharacterCreationModalPanel: React.FC<CharacterCreationModalPanelProps> = 
 
   const fetchRaces = async () => {
     try {
-      const response = await axios.get('http://localhost:5001/api/races', { withCredentials: true });
+      const response = await axios.get(`${API_URL}/races`, { withCredentials: true });
       setRaces(response.data);
     } catch (error) {
       console.error('Failed to fetch races:', error);
@@ -117,7 +118,7 @@ const CharacterCreationModalPanel: React.FC<CharacterCreationModalPanelProps> = 
 
   const fetchStatDefinitions = async () => {
     try {
-      const response = await axios.get('http://localhost:5001/api/stat-definitions?category=primary_stat&activeOnly=true', { withCredentials: true });
+      const response = await axios.get(`${API_URL}/stat-definitions?category=primary_stat&activeOnly=true`, { withCredentials: true });
       const defs = response.data as StatDefinition[];
       setStatDefinitions(defs);
 

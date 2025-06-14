@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
+import { API_URL } from "../../config/api";
 
 export interface Race {
   id: number;
@@ -63,7 +64,7 @@ export const useCharacters = () => {
 
   const fetchCharacters = async () => {
     try {
-      const response = await axios.get("http://localhost:5001/api/characters?include=skills,race", { 
+      const response = await axios.get(`${API_URL}/characters?include=skills,race`, { 
         withCredentials: true 
       });
       // Ensure skills array exists for each character and is properly initialized
@@ -88,7 +89,7 @@ export const useCharacters = () => {
   const fetchActiveNPCs = async () => {
     try {
       // This endpoint should return any NPCs currently assigned to the user
-      const response = await axios.get("http://localhost:5001/api/characters/active-npc", { 
+      const response = await axios.get(`${API_URL}/characters/active-npc`, { 
         withCredentials: true 
       });
       
@@ -111,7 +112,7 @@ export const useCharacters = () => {
 
   const fetchRaces = async () => {
     try {
-      const response = await axios.get("http://localhost:5001/api/races", { withCredentials: true });
+      const response = await axios.get(`${API_URL}/races`, { withCredentials: true });
       setRaces(response.data);
     } catch (error) {
       console.error("Failed to fetch races:", error);
@@ -121,7 +122,7 @@ export const useCharacters = () => {
 
   const createCharacter = async (formData: FormData) => {
     try {
-      const response = await axios.post("http://localhost:5001/api/characters/new", formData, { 
+      const response = await axios.post(`${API_URL}/characters/new`, formData, { 
         withCredentials: true,
         headers: {
           'Content-Type': 'multipart/form-data',
@@ -140,7 +141,7 @@ export const useCharacters = () => {
 
     try {
       await axios.put(
-        `http://localhost:5001/api/characters/${characterId}/activate`,
+        `${API_URL}/characters/${characterId}/activate`,
         {}, // Empty body since userId comes from auth middleware
         { withCredentials: true }
       );
@@ -155,7 +156,7 @@ export const useCharacters = () => {
 
   const deleteCharacter = async (characterId: number) => {
     try {
-      const response = await axios.delete(`http://localhost:5001/api/characters/${characterId}/delete`, {
+      const response = await axios.delete(`${API_URL}/characters/${characterId}/delete`, {
         withCredentials: true,
       });
       

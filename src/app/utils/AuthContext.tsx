@@ -2,6 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect } from "react";
 import axios from "axios";
+import { API_URL } from "../../config/api";
 
 interface User {
   id: string;
@@ -33,7 +34,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         setError(null);
         console.log('Checking authentication status...');
         
-        const response = await axios.get('http://localhost:5001/api/protected', {
+        const response = await axios.get(`${API_URL}/protected`, {
           withCredentials: true,
           timeout: 5000, // 5 second timeout (reduced from 10)
         });

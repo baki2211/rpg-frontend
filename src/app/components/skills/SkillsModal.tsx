@@ -6,6 +6,7 @@ import { useChatUsers, ChatUser } from '@/app/hooks/useChatUsers';
 import { useAuth } from '@/app/utils/AuthContext';
 import axios from 'axios';
 import './SkillsModal.css';
+import { API_URL } from '../../../config/api';
 
 interface SkillWithTarget extends Skill {
   selectedTarget?: ChatUser;
@@ -79,7 +80,7 @@ export const SkillsModal: React.FC<SkillsModalProps> = ({ isOpen, onClose, onSel
 
       try {
         const response = await fetch(
-          `http://localhost:5001/api/character-skills/${activeCharacter.id}/acquired-skills?include=branch,type`,
+          `${API_URL}/character-skills/${activeCharacter.id}/acquired-skills?include=branch,type`,
           {
             credentials: 'include',
           }
@@ -109,7 +110,7 @@ export const SkillsModal: React.FC<SkillsModalProps> = ({ isOpen, onClose, onSel
       if (!locationId) return;
       
       try {
-        const response = await axios.get(`http://localhost:5001/api/combat/rounds/active/${locationId}`, {
+        const response = await axios.get(`${API_URL}/combat/rounds/active/${locationId}`, {
           withCredentials: true
         });
         setActiveRound(response.data.round);
@@ -130,7 +131,7 @@ export const SkillsModal: React.FC<SkillsModalProps> = ({ isOpen, onClose, onSel
       if (!locationId) return;
       
       try {
-        const response = await axios.get(`http://localhost:5001/api/events/active/${locationId}`, {
+        const response = await axios.get(`${API_URL}/events/active/${locationId}`, {
           withCredentials: true
         });
         setActiveEvent(response.data.event);

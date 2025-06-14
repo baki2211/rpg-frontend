@@ -11,6 +11,7 @@ import { Skill } from '@/app/hooks/useCharacter';
 import { ChatUser, useChatUsers } from '@/app/hooks/useChatUsers';
 import { useToast } from '@/app/contexts/ToastContext';
 import './chat.css';
+import { API_URL, WS_URL } from '../../../../config/api';
 
 interface SkillEngineLogMessage {
   type: 'skill_engine_log';
@@ -65,7 +66,7 @@ const ChatPage = () => {
       if (!locationId) return;
       
       try {
-        const response = await fetch(`http://localhost:5001/api/combat/rounds/active/${locationId}`, {
+        const response = await fetch(`${API_URL}/combat/rounds/active/${locationId}`, {
           credentials: 'include',
         });
         if (response.ok) {
@@ -95,7 +96,7 @@ const ChatPage = () => {
         targetId = skill.selectedTarget.userId;
       }
 
-      const response = await fetch(`http://localhost:5001/api/combat/rounds/${round.id}/actions`, {
+      const response = await fetch(`${API_URL}/combat/rounds/${round.id}/actions`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -132,7 +133,7 @@ const ChatPage = () => {
     // Fetch messages from the database
     const fetchMessages = async () => {
       try {
-        const response = await fetch(`http://localhost:5001/api/chat/${locationId}`, {
+        const response = await fetch(`${API_URL}/chat/${locationId}`, {
           credentials: 'include',
         });
         if (!response.ok) throw new Error('Failed to fetch messages');
@@ -157,7 +158,7 @@ const ChatPage = () => {
     const messageCheckInterval = setInterval(fetchMessages, 10000); // Check every 10 seconds
 
     // Initialize WebSocket connection
-    const wsUrl = `ws://localhost:5001/ws/chat?locationId=${locationId}&userId=${user?.id || ''}&username=${encodeURIComponent(user?.username || '')}`;
+    const wsUrl = `${WS_URL}/ws/chat?locationId=${locationId}&userId=${user?.id || ''}&username=${encodeURIComponent(user?.username || '')}`;
     webSocketServiceRef.current = new WebSocketService({
       url: wsUrl,
       onMessage: (message) => {

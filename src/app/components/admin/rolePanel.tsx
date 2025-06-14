@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import './admin.css';
+import { API_URL } from '../../../config/api';
 
 interface User {
   id: number;
@@ -24,7 +25,7 @@ const RolePanel: React.FC = () => {
   const fetchUsers = async () => {
     try {
       setLoading(true);
-      const response = await axios.get('http://localhost:5001/api/user/all', {
+      const response = await axios.get(`${API_URL}/user/all`, {
         withCredentials: true
       });
       setUsers(response.data);
@@ -41,7 +42,7 @@ const RolePanel: React.FC = () => {
       setError(null);
       setSuccessMessage(null);
       
-      await axios.put(`http://localhost:5001/api/user/${userId}/role`, 
+      await axios.put(`${API_URL}/user/${userId}/role`, 
         { role: newRole },
         { withCredentials: true }
       );
