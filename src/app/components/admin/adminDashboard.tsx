@@ -31,6 +31,9 @@ const AdminDashboard = () => {
               <li>
                 <a href="/pages/admin/map">Map and Locations Panel</a>
               </li>
+              <li>
+                <a href="/pages/admin/wiki">Wiki Management</a>
+              </li>
             </ul>
           </div>
 
