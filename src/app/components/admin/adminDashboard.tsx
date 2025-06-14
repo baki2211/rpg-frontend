@@ -65,7 +65,16 @@ const AdminDashboard = () => {
             <h3>Testing & Simulation</h3>
             <ul>
               <li>
-                <a href="/pages/admin/simulator">⚡ Skill Simulator</a>
+                <a href="/pages/admin/simulator">Skill Simulator</a>
+              </li>
+            </ul>
+          </div>
+          
+          <div className="admin-card">
+            <h3>NPC Management</h3>
+            <ul>
+              <li>
+                <a href="/pages/admin/npcs">NPC Management</a>
               </li>
             </ul>
           </div>

@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '../../utils/AuthContext';
 import { Map, Location } from '../../../types/types';
 import './admin.css';
+import Image from 'next/image';
 
 const AdminMapPanel = () => {
   const router = useRouter();
@@ -412,9 +413,11 @@ const AdminMapPanel = () => {
               </button>
             </div>
             <div className="map-preview-content">
-              <img
+              <Image
                 src={`http://localhost:5001${selectedMapForPreview.imageUrl}`}
                 alt={selectedMapForPreview.name}
+                width={800}
+                height={600}
                 className="map-preview-image"
               />
             </div>

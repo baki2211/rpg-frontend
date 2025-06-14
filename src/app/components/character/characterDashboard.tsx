@@ -7,7 +7,7 @@ import CharacterCard from './characterCard';
 import Modal from '../common/Modal';
 
 const CharactersDashboard = () => {
-  const { characters, loading, error, activateCharacter, deleteCharacter, createCharacter } = useCharacters();
+  const { allCharacters, activeCharacter, loading, error, activateCharacter, deleteCharacter, createCharacter } = useCharacters();
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   if (loading) {
@@ -31,6 +31,19 @@ const CharactersDashboard = () => {
       <div className="page-header">
         <h2>Your Characters</h2>
         <p>Create and manage your adventurers for the RPG world</p>
+        {activeCharacter && (
+          <div style={{ 
+            background: 'rgba(0, 255, 0, 0.1)', 
+            border: '1px solid rgba(0, 255, 0, 0.3)', 
+            borderRadius: '8px', 
+            padding: '0.75rem', 
+            marginTop: '0.5rem',
+            marginBottom: '1rem'
+          }}>
+            <strong style={{ color: '#4ade80' }}>Currently Active:</strong> {activeCharacter.name} {activeCharacter.surname}
+            {activeCharacter.isNPC && <span style={{ color: '#fbbf24', marginLeft: '0.5rem' }}>(NPC)</span>}
+          </div>
+        )}
         <button 
           onClick={() => setIsModalOpen(true)}
           className="btn btn-primary"
@@ -40,11 +53,11 @@ const CharactersDashboard = () => {
         </button>
       </div>
 
-      {characters.length > 0 ? (
+      {allCharacters.length > 0 ? (
         <div className="character-grid">
-          {characters.map((character) => (
+          {allCharacters.map((character) => (
             <CharacterCard 
-              key={character.id} 
+              key={`${character.isNPC ? 'npc' : 'char'}-${character.id}`} 
               character={character} 
               isCharacterPanel={true}
               onActivate={activateCharacter}

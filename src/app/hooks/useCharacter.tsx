@@ -38,16 +38,26 @@ export interface Character {
   imageUrl?: string;
   skills: Skill[];
   skillPoints: number;
+  isNPC?: boolean;
+}
+
+export interface ActiveCharacterStatus {
+  userCharacters: Character[];
+  assignedNPCs: Character[];
+  activeCount: number;
+  hasConflict: boolean;
 }
 
 export const useCharacters = () => {
   const [characters, setCharacters] = useState<Character[]>([]);
+  const [activeNPCs, setActiveNPCs] = useState<Character[]>([]);
   const [races, setRaces] = useState<Race[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string>("");
 
   useEffect(() => {
     fetchCharacters();
+    fetchActiveNPCs();
     fetchRaces();
   }, []);
 
@@ -57,17 +67,45 @@ export const useCharacters = () => {
         withCredentials: true 
       });
       // Ensure skills array exists for each character and is properly initialized
-      const charactersWithSkills = response.data.map((char: Character) => ({
-        ...char,
-        skills: Array.isArray(char.skills) ? char.skills : [],
-        skillPoints: char.skillPoints || 0
-      }));
+      // Filter out any NPCs that might be included (they should only come from fetchActiveNPCs)
+      const charactersWithSkills = response.data
+        .filter((char: Character) => !char.isNPC) // Only include user's own characters
+        .map((char: Character) => ({
+          ...char,
+          skills: Array.isArray(char.skills) ? char.skills : [],
+          skillPoints: char.skillPoints || 0,
+          isNPC: false
+        }));
       setCharacters(charactersWithSkills);
     } catch (error) {
       console.error("Failed to fetch characters:", error);
       setError("Failed to fetch characters");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchActiveNPCs = async () => {
+    try {
+      // This endpoint should return any NPCs currently assigned to the user
+      const response = await axios.get("http://localhost:5001/api/characters/active-npc", { 
+        withCredentials: true 
+      });
+      
+      if (response.data) {
+        const npcWithSkills = {
+          ...response.data,
+          skills: Array.isArray(response.data.skills) ? response.data.skills : [],
+          skillPoints: response.data.skillPoints || 0,
+          isNPC: true
+        };
+        setActiveNPCs([npcWithSkills]);
+      } else {
+        setActiveNPCs([]);
+      }
+    } catch {
+      // If no active NPC or error, just set empty array
+      setActiveNPCs([]);
     }
   };
 
@@ -97,18 +135,21 @@ export const useCharacters = () => {
     }
   };
 
-  const activateCharacter = async (characterId: number, userId: number) => {
+  const activateCharacter = async (characterId: number) => {
     console.log('Activating character:', characterId);
 
     try {
       await axios.put(
         `http://localhost:5001/api/characters/${characterId}/activate`,
-        { userId },
+        {}, // Empty body since userId comes from auth middleware
         { withCredentials: true }
       );
+      // Refresh both characters and NPCs to reflect the change
       await fetchCharacters();
+      await fetchActiveNPCs();
     } catch (error) {
       console.error("Failed to activate character:", error);
+      throw error; // Re-throw so the component can handle it
     }
   };
 
@@ -142,14 +183,41 @@ export const useCharacters = () => {
       throw error; // Re-throw so the component can handle it if needed
     }
   };
-  
+
+  // Get all characters and NPCs combined for display
+  const getAllCharactersAndNPCs = () => {
+    // Create a map to prevent duplicates based on ID and type
+    const characterMap = new Map();
+    
+    // Add regular characters
+    characters.forEach(char => {
+      characterMap.set(`char-${char.id}`, char);
+    });
+    
+    // Add NPCs (they should have different IDs, but just in case)
+    activeNPCs.forEach(npc => {
+      characterMap.set(`npc-${npc.id}`, npc);
+    });
+    
+    return Array.from(characterMap.values());
+  };
+
+  // Get only the active character/NPC
+  const getActiveCharacter = () => {
+    const allCharacters = getAllCharactersAndNPCs();
+    return allCharacters.find(char => char.isActive) || null;
+  };
 
   return {
     characters,
+    activeNPCs,
+    allCharacters: getAllCharactersAndNPCs(),
+    activeCharacter: getActiveCharacter(),
     races,
     loading,
     error,
     fetchCharacters,
+    fetchActiveNPCs,
     fetchRaces,
     createCharacter,
     activateCharacter,

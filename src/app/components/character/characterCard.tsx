@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import Image from 'next/image';
 
 interface Character {
@@ -13,12 +13,13 @@ interface Character {
   };
   isActive: boolean;
   imageUrl?: string;
+  isNPC?: boolean;
 }
 
 interface CharacterCardProps {
   character: Character;
   isCharacterPanel: boolean;
-  onActivate: (characterId: number, userId: number) => Promise<void>;
+  onActivate: (characterId: number) => Promise<void>;
   onDelete: (characterId: number) => Promise<void>;
 }
 
@@ -27,17 +28,54 @@ const CharacterCard: React.FC<CharacterCardProps> = ({
   isCharacterPanel,
   onActivate,
   onDelete
-}) => {  
+}) => {
+  const [imageError, setImageError] = useState(false);
+  
+  // Construct the image URL with fallback
+  const getImageUrl = () => {
+    if (imageError) {
+      return 'http://localhost:5001/uploads/placeholder.jpg';
+    }
+    
+    if (character.imageUrl) {
+      // If imageUrl already starts with http, use it as is
+      if (character.imageUrl.startsWith('http')) {
+        return character.imageUrl;
+      }
+      // Otherwise, prepend the localhost URL
+      return `http://localhost:5001${character.imageUrl}`;
+    }
+    
+    // Default fallback
+    return 'http://localhost:5001/uploads/placeholder.jpg';
+  };
+
   return (
     <div className="character-card">
       <Image 
-        src={`http://localhost:5001${character.imageUrl ?? '/uploads/placeholder.jpg'}`} 
-        alt={'Character Image'} 
+        src={getImageUrl()}
+        alt={`${character.name} ${character.surname}`} 
         width={150}
         height={150}
         style={{ objectFit: 'cover', borderRadius: '12px', marginBottom: '1rem', border: '2px solid rgba(255, 255, 255, 0.2)' }}
+        onError={() => setImageError(true)}
       />
-      <h3>{character.name} {character.surname}</h3>
+      <h3>
+        {character.name} {character.surname}
+        {character.isNPC && (
+          <span style={{ 
+            marginLeft: '0.5rem',
+            padding: '0.25rem 0.5rem',
+            borderRadius: '12px',
+            fontSize: '0.7rem',
+            fontWeight: '600',
+            backgroundColor: '#fbbf24',
+            color: 'white'
+          }}>
+            NPC
+          </span>
+        )}
+      </h3>
       <p><strong>Race:</strong> {character.race.name}</p>
       <p><strong>Gender:</strong> {character.gender}</p>
       <p>
@@ -57,27 +95,41 @@ const CharacterCard: React.FC<CharacterCardProps> = ({
       {isCharacterPanel && (
         <div style={{ marginTop: '1rem', display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
           <button 
-            onClick={() => onActivate(character.id, character.userId)}
+            onClick={() => onActivate(character.id)}
             disabled={character.isActive}
             className={character.isActive ? 'btn btn-secondary' : 'btn btn-success'}
           >
             {character.isActive ? '🏛️ Active' : '⚡ Activate'}
           </button>
-          <button 
-            onClick={async () => {
-              const confirmed = window.confirm(`Are you sure you want to delete ${character.name} ${character.surname}? This action cannot be undone.`);
-              if (confirmed) {
-                try {
-                  await onDelete(character.id);
-                } catch (error) {
-                  console.error('Delete failed:', error);
+          {!character.isNPC && (
+            <button 
+              onClick={async () => {
+                const confirmed = window.confirm(`Are you sure you want to delete ${character.name} ${character.surname}? This action cannot be undone.`);
+                if (confirmed) {
+                  try {
+                    await onDelete(character.id);
+                  } catch (error) {
+                    console.error('Delete failed:', error);
+                  }
                 }
-              }
-            }}
-            className="btn btn-danger"
-          >
-            🗑️ Delete
-          </button>
+              }}
+              disabled={character.isActive}
+              className={character.isActive ? 'btn btn-secondary' : 'btn btn-danger'}
+              title={character.isActive ? 'Cannot delete active character' : 'Delete character'}
+            >
+              🗑️ Delete
+            </button>
+          )}
+          {character.isNPC && (
+            <div style={{ 
+              padding: '0.5rem', 
+              fontSize: '0.8rem', 
+              color: 'rgba(255, 255, 255, 0.7)',
+              fontStyle: 'italic'
+            }}>
+              NPC - Managed by admins
+            </div>
+          )}
         </div>
       )}
     </div>

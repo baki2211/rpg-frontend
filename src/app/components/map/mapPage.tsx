@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import Image from 'next/image';
 import axios from 'axios';
 import { useRouter } from 'next/navigation';
 
@@ -15,6 +16,7 @@ const MapPage = () => {
   const router = useRouter();
   const [mapUrl, setMapUrl] = useState('');
   const [locations, setLocations] = useState([]);
+  const [imageError, setImageError] = useState(false);
 
   useEffect(() => {
     const fetchMapAndLocations = async () => {
@@ -38,7 +40,14 @@ const MapPage = () => {
     <div style={{ position: 'relative', padding: '2rem', backgroundColor: '#b7abab' }}>
       {mapUrl ? (
         <div style={{ position: 'relative' }}>
-          <img src={mapUrl} alt="Map-alt" style={{ width: '100%' }} />
+          <Image 
+            src={imageError ? 'http://localhost:5001/uploads/placeholder.jpg' : mapUrl} 
+            alt="Game Map" 
+            width={1200}
+            height={800}
+            style={{ width: '100%', height: 'auto' }}
+            onError={() => setImageError(true)}
+          />
           {locations.map((location: Location) => (
             <button
               key={location.id}
