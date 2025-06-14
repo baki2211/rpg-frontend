@@ -22,7 +22,16 @@ jobs:
       run: |
         mkdir -p rpg/frontend
         rm -rf rpg/frontend/*
-        rsync -av --exclude='rpg' ./ rpg/frontend/
+        # Exclude .git, node_modules, and other unnecessary files
+        rsync -av \
+          --exclude='rpg' \
+          --exclude='.git' \
+          --exclude='node_modules' \
+          --exclude='.next' \
+          --exclude='.env' \
+          --exclude='*.log' \
+          --exclude='.DS_Store' \
+          ./ rpg/frontend/
         cd rpg
         git add frontend
         git commit -m "🔁 Sync frontend from commit $GITHUB_SHA" || echo "No changes to commit"
