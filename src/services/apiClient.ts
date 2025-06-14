@@ -8,12 +8,25 @@ const apiClient: AxiosInstance = axios.create({
   timeout: 10000,
   headers: {
     'Content-Type': 'application/json',
+    // Add headers that might help with CORS in production
+    'Accept': 'application/json',
+    'Cache-Control': 'no-cache',
   },
 });
 
 // Request interceptor (for adding auth tokens, logging, etc.)
 apiClient.interceptors.request.use(
   (config) => {
+    // Add debug logging for production issues
+    if (API_CONFIG.isProduction) {
+      console.log('🔧 API Request:', {
+        url: config.url,
+        method: config.method,
+        baseURL: config.baseURL,
+        withCredentials: config.withCredentials
+      });
+    }
+    
     // You can add auth tokens here if needed
     // config.headers.Authorization = `Bearer ${token}`;
     return config;
@@ -26,9 +39,29 @@ apiClient.interceptors.request.use(
 // Response interceptor (for handling errors globally)
 apiClient.interceptors.response.use(
   (response) => {
+    // Add debug logging for production
+    if (API_CONFIG.isProduction) {
+      console.log('✅ API Response:', {
+        status: response.status,
+        url: response.config.url,
+        headers: response.headers
+      });
+    }
     return response;
   },
   (error) => {
+    // Enhanced error logging for production debugging
+    if (API_CONFIG.isProduction) {
+      console.error('❌ API Error:', {
+        status: error.response?.status,
+        statusText: error.response?.statusText,
+        url: error.config?.url,
+        method: error.config?.method,
+        data: error.response?.data,
+        headers: error.response?.headers
+      });
+    }
+    
     // Handle common errors here (401, 403, 500, etc.)
     if (error.response?.status === 401) {
       // Handle unauthorized - maybe redirect to login

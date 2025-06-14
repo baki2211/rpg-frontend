@@ -4,7 +4,8 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import axios from 'axios';
 import { useAuth } from '../../utils/AuthContext';
-import { API_URL } from '../../../config/api';
+import { api } from '../../../services/apiClient';
+import { AuthDebug } from '../../components/debug/AuthDebug';
 import './login.css';
 
 const Login = () => {
@@ -27,23 +28,19 @@ const Login = () => {
     setMessage('');
 
     try {
-      await axios.post(`${API_URL}/auth/login`, {
+      await api.post('/auth/login', {
         username,
         password,
-      }, {
-        withCredentials: true,
       });
 
       // Fetch user data after successful login to get complete user info including role
-      const userResponse = await axios.get(`${API_URL}/protected`, {
-        withCredentials: true,
-      });
+      const userResponse = await api.get('/protected');
 
       setMessage('Login successful! Redirecting...');
       setUsername('');
       setPassword('');
       setIsAuthenticated(true);
-      setUser(userResponse.data.user); // Set complete user data including role
+      setUser((userResponse.data as { user: { id: string; username: string; role: string } }).user); // Set complete user data including role
       
       setTimeout(() => {
         router.push('/pages/dashboard');
@@ -65,6 +62,7 @@ const Login = () => {
 
   return (
     <div className="login-container">
+      <AuthDebug />
       <div className="login-background">
         <div className="floating-orb orb-1"></div>
         <div className="floating-orb orb-2"></div>
