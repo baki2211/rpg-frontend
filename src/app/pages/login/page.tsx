@@ -6,7 +6,6 @@ import axios from 'axios';
 import { useAuth } from '../../utils/AuthContext';
 import { api } from '../../../services/apiClient';
 import { tokenService } from '../../../services/tokenService';
-import { AuthDebug } from '../../components/debug/AuthDebug';
 import './login.css';
 
 const Login = () => {
@@ -69,7 +68,6 @@ const Login = () => {
 
   return (
     <div className="login-container">
-      <AuthDebug />
       <div className="login-background">
         <div className="floating-orb orb-1"></div>
         <div className="floating-orb orb-2"></div>

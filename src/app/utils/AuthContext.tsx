@@ -33,14 +33,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       try {
         setIsLoading(true);
         setError(null);
-        console.log('Checking authentication status...');
-        
         // First check if we have a stored token
         const storedToken = tokenService.getToken();
         const storedUser = tokenService.getUser();
         
         if (storedToken && storedUser) {
-          console.log('Found stored token, checking validity...');
           // We have a stored token, let's verify it's still valid
           const response = await axios.get(`${API_URL}/protected`, {
             headers: {
@@ -50,23 +47,19 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             timeout: 5000,
           });
           
-          console.log('Stored token is valid:', response.data);
           setIsAuthenticated(true);
           setUser(response.data.user);
         } else {
-          console.log('No stored token, trying cookie-based auth...');
           // No stored token, try cookie-based auth (for local development)
           const response = await axios.get(`${API_URL}/protected`, {
             withCredentials: true,
             timeout: 5000,
           });
           
-          console.log('Cookie auth successful:', response.data);
           setIsAuthenticated(true);
           setUser(response.data.user);
         }
       } catch (error: unknown) {
-        console.error('Auth check failed:', error);
         
         // Clear stored auth data on failure
         tokenService.clearAuth();

@@ -24,16 +24,7 @@ apiClient.interceptors.request.use(
       config.headers.Authorization = `Bearer ${token}`;
     }
 
-    // Add debug logging for production issues
-    if (API_CONFIG.isProduction) {
-      console.log('🔧 API Request:', {
-        url: config.url,
-        method: config.method,
-        baseURL: config.baseURL,
-        withCredentials: config.withCredentials,
-        hasAuthToken: !!token
-      });
-    }
+
     
     return config;
   },
@@ -45,33 +36,13 @@ apiClient.interceptors.request.use(
 // Response interceptor (for handling errors globally)
 apiClient.interceptors.response.use(
   (response) => {
-    // Add debug logging for production
-    if (API_CONFIG.isProduction) {
-      console.log('✅ API Response:', {
-        status: response.status,
-        url: response.config.url,
-        headers: response.headers
-      });
-    }
     return response;
   },
   (error) => {
-    // Enhanced error logging for production debugging
-    if (API_CONFIG.isProduction) {
-      console.error('❌ API Error:', {
-        status: error.response?.status,
-        statusText: error.response?.statusText,
-        url: error.config?.url,
-        method: error.config?.method,
-        data: error.response?.data,
-        headers: error.response?.headers
-      });
-    }
-    
     // Handle common errors here (401, 403, 500, etc.)
     if (error.response?.status === 401) {
-      // Handle unauthorized - maybe redirect to login
-      console.warn('Unauthorized request');
+      // Handle unauthorized - redirect to login if needed
+      // Could add redirect logic here in the future
     }
     return Promise.reject(error);
   }

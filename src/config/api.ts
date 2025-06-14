@@ -20,17 +20,7 @@ const getApiConfig = () => {
     ? 'wss://rpg-be.onrender.com'         // Production WebSocket URL
     : 'ws://localhost:5001';              // Local WebSocket URL
 
-  // Debug logging (only in development)
-  if (!isProduction && typeof window !== 'undefined') {
-    console.log('🔧 API Configuration Debug:', {
-      isNodeProduction,
-      isDeployedDomain,
-      hostname: window.location.hostname,
-      isProduction,
-      baseUrl,
-      wsUrl
-    });
-  }
+
 
   return {
     baseUrl,
