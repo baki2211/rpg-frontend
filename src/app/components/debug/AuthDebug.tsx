@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { api } from '../../../services/apiClient';
 import { API_CONFIG } from '../../../config/api';
+import { tokenService } from '../../../services/tokenService';
 
 export const AuthDebug: React.FC = () => {
   const [debugInfo, setDebugInfo] = useState<string>('');
@@ -123,6 +124,13 @@ export const AuthDebug: React.FC = () => {
       setDebugInfo(prev => prev + '✅ Real login successful!\n');
       setDebugInfo(prev => prev + `📄 Response: ${JSON.stringify(response.data, null, 2)}\n`);
       
+      // Store token if received (for cross-domain compatibility)
+      const responseData = response.data as { token?: string; user?: { id: number; username: string; role: string } };
+      if (responseData.token) {
+        tokenService.setToken(responseData.token, responseData.user);
+        setDebugInfo(prev => prev + '🔑 Token stored in localStorage for cross-domain auth\n');
+      }
+      
       // Immediately check cookies after successful login
       setDebugInfo(prev => prev + '🍪 Checking cookies after successful login...\n');
       try {
@@ -132,6 +140,10 @@ export const AuthDebug: React.FC = () => {
         });
         const cookieData = await cookieCheckResponse.json();
         setDebugInfo(prev => prev + `📄 Post-login cookies: ${JSON.stringify(cookieData, null, 2)}\n`);
+        
+        // Check localStorage token
+        const storedToken = tokenService.getToken();
+        setDebugInfo(prev => prev + `🔑 Stored token: ${storedToken ? 'Present' : 'Missing'}\n`);
         
         // Now test protected endpoint
         setDebugInfo(prev => prev + '🔒 Testing protected endpoint after login...\n');
@@ -236,9 +248,18 @@ export const AuthDebug: React.FC = () => {
         </button>
         <button 
           onClick={clearDebug}
+          style={{ marginRight: '0.5rem', padding: '0.25rem 0.5rem' }}
+        >
+          Clear Debug
+        </button>
+        <button 
+          onClick={() => {
+            tokenService.clearAuth();
+            setDebugInfo(prev => prev + '🗑️ Cleared stored authentication\n');
+          }}
           style={{ padding: '0.25rem 0.5rem' }}
         >
-          Clear
+          Clear Auth
         </button>
       </div>
       <pre style={{ 

@@ -1,5 +1,6 @@
 import axios, { AxiosInstance, AxiosRequestConfig } from 'axios';
 import { API_CONFIG } from '../config/api';
+import { tokenService } from './tokenService';
 
 // Create axios instance with default configuration
 const apiClient: AxiosInstance = axios.create({
@@ -17,18 +18,23 @@ const apiClient: AxiosInstance = axios.create({
 // Request interceptor (for adding auth tokens, logging, etc.)
 apiClient.interceptors.request.use(
   (config) => {
+    // Add Authorization header if token exists
+    const token = tokenService.getToken();
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+
     // Add debug logging for production issues
     if (API_CONFIG.isProduction) {
       console.log('🔧 API Request:', {
         url: config.url,
         method: config.method,
         baseURL: config.baseURL,
-        withCredentials: config.withCredentials
+        withCredentials: config.withCredentials,
+        hasAuthToken: !!token
       });
     }
     
-    // You can add auth tokens here if needed
-    // config.headers.Authorization = `Bearer ${token}`;
     return config;
   },
   (error) => {

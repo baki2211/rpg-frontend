@@ -3,6 +3,7 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import axios from "axios";
 import { API_URL } from "../../config/api";
+import { tokenService } from "../../services/tokenService";
 
 interface User {
   id: string;
@@ -34,16 +35,41 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         setError(null);
         console.log('Checking authentication status...');
         
-        const response = await axios.get(`${API_URL}/protected`, {
-          withCredentials: true,
-          timeout: 5000, // 5 second timeout (reduced from 10)
-        });
+        // First check if we have a stored token
+        const storedToken = tokenService.getToken();
+        const storedUser = tokenService.getUser();
         
-        console.log('Auth check successful:', response.data);
-        setIsAuthenticated(true);
-        setUser(response.data.user); // Assume the backend sends user details
+        if (storedToken && storedUser) {
+          console.log('Found stored token, checking validity...');
+          // We have a stored token, let's verify it's still valid
+          const response = await axios.get(`${API_URL}/protected`, {
+            headers: {
+              Authorization: `Bearer ${storedToken}`
+            },
+            withCredentials: true,
+            timeout: 5000,
+          });
+          
+          console.log('Stored token is valid:', response.data);
+          setIsAuthenticated(true);
+          setUser(response.data.user);
+        } else {
+          console.log('No stored token, trying cookie-based auth...');
+          // No stored token, try cookie-based auth (for local development)
+          const response = await axios.get(`${API_URL}/protected`, {
+            withCredentials: true,
+            timeout: 5000,
+          });
+          
+          console.log('Cookie auth successful:', response.data);
+          setIsAuthenticated(true);
+          setUser(response.data.user);
+        }
       } catch (error: unknown) {
         console.error('Auth check failed:', error);
+        
+        // Clear stored auth data on failure
+        tokenService.clearAuth();
         
         if (axios.isAxiosError(error)) {
           if (error.code === 'ECONNREFUSED') {
@@ -60,7 +86,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         }
         
         setIsAuthenticated(false);
-        setUser(null); // Clear user on error
+        setUser(null);
       } finally {
         setIsLoading(false);
       }

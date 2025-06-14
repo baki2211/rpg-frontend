@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import axios from 'axios';
 import { useAuth } from '../../utils/AuthContext';
 import { api } from '../../../services/apiClient';
+import { tokenService } from '../../../services/tokenService';
 import { AuthDebug } from '../../components/debug/AuthDebug';
 import './login.css';
 
@@ -28,10 +29,16 @@ const Login = () => {
     setMessage('');
 
     try {
-      await api.post('/auth/login', {
+      const loginResponse = await api.post('/auth/login', {
         username,
         password,
       });
+
+      // Store token if received (for cross-domain compatibility)
+      const responseData = loginResponse.data as { token?: string; user?: { id: number; username: string; role: string } };
+      if (responseData.token) {
+        tokenService.setToken(responseData.token, responseData.user);
+      }
 
       // Fetch user data after successful login to get complete user info including role
       const userResponse = await api.get('/protected');
