@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import axios, { AxiosError } from 'axios';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '../../utils/AuthContext';
+import { API_URL } from '../../../config/api';
 import './register.css';
 
 const Register = () => {
@@ -39,7 +40,7 @@ const Register = () => {
     }
 
     try {
-      await axios.post('http://localhost:5001/api/auth/register', {
+      await axios.post(`${API_URL}/auth/register`, {
         username,
         password,
       });

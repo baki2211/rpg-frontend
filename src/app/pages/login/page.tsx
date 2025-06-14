@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import axios from 'axios';
 import { useAuth } from '../../utils/AuthContext';
+import { API_URL } from '../../../config/api';
 import './login.css';
 
 const Login = () => {
@@ -26,7 +27,7 @@ const Login = () => {
     setMessage('');
 
     try {
-      await axios.post('http://localhost:5001/api/auth/login', {
+      await axios.post(`${API_URL}/auth/login`, {
         username,
         password,
       }, {
@@ -34,7 +35,7 @@ const Login = () => {
       });
 
       // Fetch user data after successful login to get complete user info including role
-      const userResponse = await axios.get('http://localhost:5001/api/protected', {
+      const userResponse = await axios.get(`${API_URL}/protected`, {
         withCredentials: true,
       });
 
