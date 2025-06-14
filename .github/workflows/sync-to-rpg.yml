@@ -1,0 +1,29 @@
+name: Sync Frontend to RPG
+
+on:
+  push:
+    branches: [main] 
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout frontend repo
+      uses: actions/checkout@v3
+
+    - name: Clone RPG
+      run: |
+        git config --global user.name "GitHub Action"
+        git config --global user.email "actions@github.com"
+        git clone https://x-access-token:${{ secrets.RPG_PAT }}@github.com/baki2211/rpg.git rpg
+
+    - name: Copy frontend code to RPG
+      run: |
+        mkdir -p rpg/frontend
+        rm -rf rpg/frontend/*
+        rsync -av --exclude='rpg' ./ rpg/frontend/
+        cd rpg
+        git add frontend
+        git commit -m "🔁 Sync frontend from commit $GITHUB_SHA" || echo "No changes to commit"
+        git push origin main --force
