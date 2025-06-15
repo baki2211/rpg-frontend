@@ -8,6 +8,7 @@ import OnlineUsers from '../common/OnlineUsers';
 import SessionList from '../sessions/SessionList';
 import { useCharacters } from '../../hooks/useCharacter';
 import { API_URL } from '../../../config/api';
+import TokenDebug from '../debug/TokenDebug';
 
 const Dashboard = () => {
   const router = useRouter();
@@ -52,6 +53,7 @@ const Dashboard = () => {
 
   return (
     <div className="dashboard-page">
+      <TokenDebug />
       <div className="page-container">
         <div className="page-header">
           <h1>Welcome back, {userData.username}!</h1>
