@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { SkillCard } from '@/app/components/skills/SkillCard';
 import { useCharacters, type Skill } from '@/app/hooks/useCharacter';
 import './skills.css';
-import { API_URL } from '../../../config/api';
+import { api } from '../../../services/apiClient';
 
 export default function SkillsPage() {
   const { characters, fetchCharacters } = useCharacters();
@@ -26,20 +26,12 @@ export default function SkillsPage() {
       try {
         setLoading(true);
         // Fetch available skills
-        const availableSkillsResponse = await fetch(`${API_URL}/character-skills/${activeCharacter.id}/available-skills?include=branch,type`, {
-          credentials: 'include'
-        });
-        if (!availableSkillsResponse.ok) throw new Error('Failed to fetch available skills');
-        const available = await availableSkillsResponse.json();
-        setAvailableSkills(available);
+        const availableSkillsResponse = await api.get<Skill[]>(`/character-skills/${activeCharacter.id}/available-skills?include=branch,type`);
+        setAvailableSkills(availableSkillsResponse.data);
 
         // Fetch acquired skills
-        const acquiredSkillsResponse = await fetch(`${API_URL}/character-skills/${activeCharacter.id}/acquired-skills?include=branch,type`, {
-          credentials: 'include'
-        });
-        if (!acquiredSkillsResponse.ok) throw new Error('Failed to fetch acquired skills');
-        const acquired = await acquiredSkillsResponse.json();
-        setAcquiredSkills(acquired);
+        const acquiredSkillsResponse = await api.get<Skill[]>(`/character-skills/${activeCharacter.id}/acquired-skills?include=branch,type`);
+        setAcquiredSkills(acquiredSkillsResponse.data);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'An error occurred');
       } finally {
@@ -54,42 +46,19 @@ export default function SkillsPage() {
     if (!activeCharacter) return;
     
     try {
-      const response = await fetch(`${API_URL}/character-skills/${skillId}`, {
-        method: 'POST',
-        credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ message: 'Failed to acquire skill' }));
-        throw new Error(errorData.message || 'Failed to acquire skill');
-      }
+      await api.post(`/character-skills/${skillId}`);
 
       // Refresh character data
       await fetchCharacters();
       
       // Fetch both available and acquired skills again
       const [availableSkillsResponse, acquiredSkillsResponse] = await Promise.all([
-        fetch(`${API_URL}/character-skills/${activeCharacter.id}/available-skills?include=branch,type`, {
-          credentials: 'include'
-        }),
-        fetch(`${API_URL}/character-skills/${activeCharacter.id}/acquired-skills?include=branch,type`, {
-          credentials: 'include'
-        })
+        api.get<Skill[]>(`/character-skills/${activeCharacter.id}/available-skills?include=branch,type`),
+        api.get<Skill[]>(`/character-skills/${activeCharacter.id}/acquired-skills?include=branch,type`)
       ]);
 
-      if (!availableSkillsResponse.ok) throw new Error('Failed to fetch updated available skills');
-      if (!acquiredSkillsResponse.ok) throw new Error('Failed to fetch updated acquired skills');
-
-      const [updatedAvailable, updatedAcquired] = await Promise.all([
-        availableSkillsResponse.json(),
-        acquiredSkillsResponse.json()
-      ]);
-
-      setAvailableSkills(updatedAvailable);
-      setAcquiredSkills(updatedAcquired);
+      setAvailableSkills(availableSkillsResponse.data);
+      setAcquiredSkills(acquiredSkillsResponse.data);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to acquire skill');
     }

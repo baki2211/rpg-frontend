@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import './LogList.css';
-import { API_URL } from '../../../config/api';
+import { api } from '../../../services/apiClient';
 
 interface Participant {
   id: string;
@@ -50,27 +50,8 @@ const LogList = () => {
     try {
       setLoading(true);
       
-      const response = await fetch(`${API_URL}/sessions/closed`, {
-        credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-        }, 
-      });
-
-      const contentType = response.headers.get('content-type');
-      if (!contentType || !contentType.includes('application/json')) {
-        throw new Error(`Invalid response format: ${contentType}`);
-      }
-      
-      if (!response.ok) {
-        const errorData = await response.json();
-        console.error('Server error response:', errorData);
-        throw new Error(errorData.error || 'Failed to fetch closed sessions');
-      }
-      
-      const data = await response.json();
-      setSessions(data);
+      const response = await api.get('/sessions/closed');
+      setSessions(response.data as Session[]);
       setError(null);
     } catch (error) {
       console.error('Error fetching closed sessions:', error);
@@ -84,14 +65,8 @@ const LogList = () => {
   const openSessionLogPopup = async (session: Session) => {
     try {
       // Fetch chat messages for this session's location
-      const response = await fetch(`${API_URL}/chat/${session.locationId}`, {
-        credentials: 'include',
-      });
-
-      let messages = [];
-      if (response.ok) {
-        messages = await response.json();
-      }
+      const response = await api.get(`/chat/${session.locationId}`);
+      const messages = (response.data as Message[]) || [];
 
       const popupContent = `
         <!DOCTYPE html>

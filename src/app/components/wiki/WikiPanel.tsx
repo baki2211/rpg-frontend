@@ -219,8 +219,8 @@ export const WikiPanel: React.FC = () => {
   };
 
   const filteredEntries = selectedSectionId 
-    ? entries.filter(entry => entry.sectionId === selectedSectionId)
-    : entries;
+    ? (entries || []).filter(entry => entry.sectionId === selectedSectionId)
+    : (entries || []);
 
   return (
     <div className="wiki-panel">
@@ -240,13 +240,13 @@ export const WikiPanel: React.FC = () => {
           className={`tab-button ${activeTab === 'sections' ? 'active' : ''}`}
           onClick={() => setActiveTab('sections')}
         >
-          Sections ({sections.length})
+          Sections ({(sections || []).length})
         </button>
         <button 
           className={`tab-button ${activeTab === 'entries' ? 'active' : ''}`}
           onClick={() => setActiveTab('entries')}
         >
-          Entries ({entries.length})
+          Entries ({(entries || []).length})
         </button>
         <button 
           className={`tab-button ${activeTab === 'stats' ? 'active' : ''}`}
@@ -309,7 +309,7 @@ export const WikiPanel: React.FC = () => {
 
           <div className="sections-list">
             <h3>Existing Sections</h3>
-            {sections.length === 0 ? (
+                              {(sections || []).length === 0 ? (
               <div className="empty-state">
                 <p>No sections created yet. Create your first section above.</p>
               </div>
@@ -327,7 +327,7 @@ export const WikiPanel: React.FC = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {sections.map((section) => (
+                    {(sections || []).map((section) => (
                       <tr key={section.id}>
                         <td>
                           <strong>{section.name}</strong>
