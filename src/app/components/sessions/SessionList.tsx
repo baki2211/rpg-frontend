@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '../../utils/AuthContext';
 import './SessionList.css';
-import { API_URL } from '../../../config/api';
+import { api } from '../../../services/apiClient';
 
 interface Participant {
   id: string;
@@ -54,28 +54,8 @@ const SessionList = () => {
   const fetchSessions = async () => {
     try {
       setLoading(true);
-      
-      const response = await fetch(`${API_URL}/sessions/active`, {
-        credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-        }, 
-      });
-
-      const contentType = response.headers.get('content-type');
-      if (!contentType || !contentType.includes('application/json')) {
-        throw new Error(`Invalid response format: ${contentType}`);
-      }
-      
-      if (!response.ok) {
-        const errorData = await response.json();
-        console.error('Server error response:', errorData);
-        throw new Error(errorData.error || 'Failed to fetch sessions');
-      }
-      
-      const data = await response.json();
-      setSessions(data);
+      const response = await api.get<Session[]>('/sessions/active');
+      setSessions(response.data);
       setError(null);
     } catch (error) {
       console.error('Error fetching sessions:', error);
@@ -101,21 +81,8 @@ const SessionList = () => {
       const newStatus = currentStatus === 'frozen' ? 'open' : 'frozen';
       const action = newStatus === 'frozen' ? 'Freezing' : 'Unfreezing';
       
-      const response = await fetch(`${API_URL}/sessions/${sessionId}/status`, {
-        method: 'PUT',
-        credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ status: newStatus }),
-      });
-
-      if (!response.ok) {
-        throw new Error(`Failed to ${action.toLowerCase()} session`);
-      }
-
-      const result = await response.json();
-      console.log(`✅ Session ${action.toLowerCase()} successful:`, result);
+      const response = await api.put(`/sessions/${sessionId}/status`, { status: newStatus });
+      console.log(`✅ Session ${action.toLowerCase()} successful:`, response.data);
       
       // Show user feedback
       if (newStatus === 'frozen') {
@@ -145,21 +112,8 @@ const SessionList = () => {
       
       console.log(`🔄 Updating session ${sessionId} from ${currentIsActive ? 'active' : 'inactive'} to status: ${newStatus}`);
       
-      const response = await fetch(`${API_URL}/sessions/${sessionId}/status`, {
-        method: 'PUT',
-        credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ status: newStatus }),
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to update session status');
-      }
-
-      const updatedSession = await response.json();
-      console.log('✅ Session updated successfully:', updatedSession);
+      const response = await api.put(`/sessions/${sessionId}/status`, { status: newStatus });
+      console.log('✅ Session updated successfully:', response.data);
       
       // Refresh sessions list
       console.log('🔄 Refreshing sessions list...');

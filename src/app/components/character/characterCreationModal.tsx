@@ -1,9 +1,8 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import axios from 'axios';
 import './characterCreationModal.css';
-import { API_URL } from '../../../config/api';
+import { api } from '../../../services/apiClient';
 
 interface User {
   id: number;
@@ -83,7 +82,7 @@ const CharacterCreationModalPanel: React.FC<CharacterCreationModalPanelProps> = 
 
   const fetchUser = async () => {
     try {
-      const response = await axios.get(`${API_URL}/user/`, { withCredentials: true });
+      const response = await api.get<User>('/user/');
       const fetchedUser = response.data;
       setUser(fetchedUser);
       setCharacterData((prev) => ({
@@ -98,7 +97,7 @@ const CharacterCreationModalPanel: React.FC<CharacterCreationModalPanelProps> = 
 
   const fetchCharacters = async () => {
     try {
-      const response = await axios.get(`${API_URL}/characters`, { withCredentials: true });
+      const response = await api.get<Character[]>('/characters');
       setCharacters(response.data);
     } catch (error) {
       console.error('Failed to fetch characters:', error);
@@ -108,7 +107,7 @@ const CharacterCreationModalPanel: React.FC<CharacterCreationModalPanelProps> = 
 
   const fetchRaces = async () => {
     try {
-      const response = await axios.get(`${API_URL}/races`, { withCredentials: true });
+      const response = await api.get<Race[]>('/races');
       setRaces(response.data);
     } catch (error) {
       console.error('Failed to fetch races:', error);
@@ -118,8 +117,8 @@ const CharacterCreationModalPanel: React.FC<CharacterCreationModalPanelProps> = 
 
   const fetchStatDefinitions = async () => {
     try {
-      const response = await axios.get(`${API_URL}/stat-definitions?category=primary_stat&activeOnly=true`, { withCredentials: true });
-      const defs = response.data as StatDefinition[];
+      const response = await api.get<StatDefinition[]>('/stat-definitions?category=primary_stat&activeOnly=true');
+      const defs = response.data;
       setStatDefinitions(defs);
 
       setCharacterData(prev => ({

@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
-import axios from "axios";
-import { API_URL } from "../../config/api";
+import { api } from "../../services/apiClient";
 
 export interface Race {
   id: number;
@@ -64,9 +63,7 @@ export const useCharacters = () => {
 
   const fetchCharacters = async () => {
     try {
-      const response = await axios.get(`${API_URL}/characters?include=skills,race`, { 
-        withCredentials: true 
-      });
+      const response = await api.get<Character[]>('/characters?include=skills,race');
       // Ensure skills array exists for each character and is properly initialized
       // Filter out any NPCs that might be included (they should only come from fetchActiveNPCs)
       const charactersWithSkills = response.data
@@ -89,9 +86,7 @@ export const useCharacters = () => {
   const fetchActiveNPCs = async () => {
     try {
       // This endpoint should return any NPCs currently assigned to the user
-      const response = await axios.get(`${API_URL}/characters/active-npc`, { 
-        withCredentials: true 
-      });
+      const response = await api.get<Character>('/characters/active-npc');
       
       if (response.data) {
         const npcWithSkills = {
@@ -112,7 +107,7 @@ export const useCharacters = () => {
 
   const fetchRaces = async () => {
     try {
-      const response = await axios.get(`${API_URL}/races`, { withCredentials: true });
+      const response = await api.get<Race[]>('/races');
       setRaces(response.data);
     } catch (error) {
       console.error("Failed to fetch races:", error);
@@ -122,8 +117,7 @@ export const useCharacters = () => {
 
   const createCharacter = async (formData: FormData) => {
     try {
-      const response = await axios.post(`${API_URL}/characters/new`, formData, { 
-        withCredentials: true,
+      const response = await api.post<Character>('/characters/new', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
@@ -140,11 +134,7 @@ export const useCharacters = () => {
     console.log('Activating character:', characterId);
 
     try {
-      await axios.put(
-        `${API_URL}/characters/${characterId}/activate`,
-        {}, // Empty body since userId comes from auth middleware
-        { withCredentials: true }
-      );
+      await api.put(`/characters/${characterId}/activate`, {});
       // Refresh both characters and NPCs to reflect the change
       await fetchCharacters();
       await fetchActiveNPCs();
@@ -156,9 +146,7 @@ export const useCharacters = () => {
 
   const deleteCharacter = async (characterId: number) => {
     try {
-      const response = await axios.delete(`${API_URL}/characters/${characterId}/delete`, {
-        withCredentials: true,
-      });
+      const response = await api.delete(`/characters/${characterId}/delete`);
       
       // Only update state if the request was successful
       if (response.status === 204) {
@@ -166,21 +154,7 @@ export const useCharacters = () => {
       }
     } catch (error) {
       console.error("Failed to delete character:", error);
-      
-      // Check if it's an authentication error
-      if (axios.isAxiosError(error)) {
-        if (error.response?.status === 401) {
-          setError("Authentication required. Please log in again.");
-        } else if (error.response?.status === 403) {
-          setError("You don't have permission to delete this character.");
-        } else if (error.response?.status === 404) {
-          setError("Character not found.");
-        } else {
-          setError(error.response?.data?.error || "Failed to delete character");
-        }
-      } else {
-        setError("Network error. Please try again.");
-      }
+      setError("Failed to delete character");
       throw error; // Re-throw so the component can handle it if needed
     }
   };
