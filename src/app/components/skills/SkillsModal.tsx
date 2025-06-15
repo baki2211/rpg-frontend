@@ -99,7 +99,7 @@ export const SkillsModal: React.FC<SkillsModalProps> = ({ isOpen, onClose, onSel
       
       try {
         const response = await api.get(`/combat/rounds/active/${locationId}`);
-        setActiveRound(response.data.round);
+        setActiveRound((response.data as { round: CombatRound }).round);
       } catch {
         console.error('Error fetching active round');
         setActiveRound(null);
@@ -117,12 +117,10 @@ export const SkillsModal: React.FC<SkillsModalProps> = ({ isOpen, onClose, onSel
       if (!locationId) return;
       
       try {
-        const response = await axios.get(`${API_URL}/events/active/${locationId}`, {
-          withCredentials: true
-        });
-        setActiveEvent(response.data.event);
-      } catch (error) {
-        console.error('Error fetching active event:', error);
+        const response = await api.get(`/events/active/${locationId}`);
+        setActiveEvent((response.data as { event: ActiveEvent }).event);
+      } catch {
+        console.error('Error fetching active event');
         setActiveEvent(null);
       }
     };
