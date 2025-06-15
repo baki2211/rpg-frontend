@@ -19,7 +19,7 @@ const ApiConfigDebug = () => {
                      !window.location.hostname.includes('localhost') &&
                      !window.location.hostname.includes('127.0.0.1'),
     manualOverride: typeof window !== 'undefined' && 
-                   (window as any).__FORCE_PRODUCTION_API,
+                   (window as { __FORCE_PRODUCTION_API?: boolean }).__FORCE_PRODUCTION_API,
   };
 
   return (
