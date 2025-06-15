@@ -1,6 +1,6 @@
 .admin-panel {
   padding: 2rem;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #2F4A72 0%, #0E2C40 100%);
   min-height: 100vh;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
@@ -23,7 +23,7 @@
 .admin-header h1 {
   font-size: 3rem;
   font-weight: 700;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #2F4A72 0%, #0E2C40 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -63,7 +63,7 @@
   font-size: 1.4rem;
   font-weight: 700;
   margin-bottom: 1.5rem;
-  border-bottom: 3px solid #667eea;
+  border-bottom: 3px solid #2F4A72;
   padding-bottom: 0.5rem;
 }
 
@@ -90,10 +90,10 @@
 }
 
 .admin-card a:hover {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #2F4A72 0%, #0E2C40 100%);
   color: white;
   transform: translateX(5px);
-  border-color: #667eea;
+  border-color: #2F4A72;
 }
 
 .admin-form {
@@ -150,7 +150,7 @@
 }
 
 .form-control:focus {
-  border-color: #667eea;
+  border-color: #2F4A72;
   outline: none;
   box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
   background: rgba(255, 255, 255, 1);
@@ -187,7 +187,7 @@
 }
 
 .btn-primary {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #2F4A72 0%, #0E2C40 100%);
   color: white;
   box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
   justify-self: center;
@@ -242,7 +242,7 @@
 }
 
 .admin-table th {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #2F4A72 0%, #0E2C40 100%);
   font-weight: 700;
   color: white;
   font-size: 0.9rem;
@@ -345,7 +345,7 @@
 .form-group input[type="checkbox"] {
   transform: scale(1.2);
   margin-right: 0.8rem;
-  accent-color: #667eea;
+  accent-color: #2F4A72;
 }
 
 .form-group input[type="number"] {
@@ -515,12 +515,12 @@
 }
 
 .role-select:hover {
-  border-color: #667eea;
+  border-color: #2F4A72;
 }
 
 .role-select:focus {
   outline: none;
-  border-color: #667eea;
+  border-color: #2F4A72;
   box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
 }
 
@@ -608,7 +608,7 @@
   }
 
   .admin-header h1 {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #2F4A72 0%, #0E2C40 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -633,7 +633,7 @@
   }
 
   .form-control:focus {
-    border-color: #667eea;
+    border-color: #2F4A72;
     background: rgba(74, 85, 104, 1);
   }
 
@@ -686,7 +686,7 @@
 
   .admin-card h3 {
     color: #e2e8f0;
-    border-bottom-color: #667eea;
+    border-bottom-color: #2F4A72;
   }
 
   .admin-card a {
@@ -695,7 +695,7 @@
   }
 
   .admin-card a:hover {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #2F4A72 0%, #0E2C40 100%);
     color: white;
   }
 }
@@ -738,7 +738,7 @@
   color: #2c3e50;
   margin-bottom: 1.5rem;
   text-align: center;
-  border-bottom: 2px solid #667eea;
+  border-bottom: 2px solid #2F4A72;
   padding-bottom: 0.5rem;
 }
 
@@ -760,7 +760,7 @@
 .map-card:hover {
   transform: translateY(-5px);
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
-  border-color: #667eea;
+  border-color: #2F4A72;
 }
 
 .map-card-header {
@@ -856,7 +856,7 @@
   align-items: center;
   padding: 1.5rem 2rem;
   border-bottom: 1px solid #e9ecef;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #2F4A72 0%, #0E2C40 100%);
   color: white;
 }
 
@@ -894,7 +894,7 @@
   text-align: center;
   padding: 3rem;
   font-size: 1.2rem;
-  color: #667eea;
+  color: #2F4A72;
   font-weight: 600;
 }
 
@@ -1028,7 +1028,7 @@
 
 .form-row input:focus,
 .form-row textarea:focus {
-  border-color: #667eea;
+  border-color: #2F4A72;
   outline: none;
   box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
 }
@@ -1061,7 +1061,7 @@
 }
 
 .bonus-grid input:focus {
-  border-color: #667eea;
+  border-color: #2F4A72;
   outline: none;
   box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.1);
 }
@@ -1069,7 +1069,7 @@
 .edit-form h4 {
   margin: 1.5rem 0 1rem 0;
   color: #2c3e50;
-  border-bottom: 2px solid #667eea;
+  border-bottom: 2px solid #2F4A72;
   padding-bottom: 0.5rem;
   font-size: 1.1rem;
   font-weight: 600;
@@ -1111,7 +1111,7 @@
 .simulator-card h3 {
   color: #5a5a5a;
   margin-bottom: 15px;
-  border-bottom: 2px solid #667eea;
+  border-bottom: 2px solid #2F4A72;
   padding-bottom: 5px;
 }
 
@@ -1127,7 +1127,7 @@
   padding: 15px;
   border-radius: 8px;
   margin: 15px 0;
-  border-left: 4px solid #667eea;
+  border-left: 4px solid #2F4A72;
 }
 
 .skill-info p {
@@ -1171,7 +1171,7 @@
 }
 
 .result-card {
-  background: linear-gradient(135deg, #667eea, #764ba2);
+  background: linear-gradient(135deg, #2F4A72, #0E2C40);
   color: white;
 }
 
@@ -1207,7 +1207,7 @@
 }
 
 .combat-card {
-  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  background: linear-gradient(135deg, #D4B67A 0%, #998B5F 100%);
   color: white;
 }
 

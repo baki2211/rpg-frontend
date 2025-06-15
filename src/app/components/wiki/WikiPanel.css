@@ -10,7 +10,7 @@
   text-align: center;
   margin-bottom: 2rem;
   padding: 2rem;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #2F4A72 0%, #0E2C40 100%);
   color: white;
   border-radius: 12px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
@@ -77,7 +77,7 @@
 }
 
 .tab-button.active {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #2F4A72 0%, #0E2C40 100%);
   color: white;
   box-shadow: 0 2px 10px rgba(102, 126, 234, 0.3);
 }
@@ -139,7 +139,7 @@
 
 .form-input:focus {
   outline: none;
-  border-color: #667eea;
+  border-color: #2F4A72;
   box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
 }
 
@@ -175,7 +175,7 @@
 }
 
 .btn-primary {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #2F4A72 0%, #0E2C40 100%);
   color: white;
 }
 
@@ -458,7 +458,7 @@
 .stat-value {
   font-size: 2.5rem;
   font-weight: 700;
-  color: #667eea;
+  color: #2F4A72;
   margin-bottom: 0.5rem;
 }
 
@@ -490,7 +490,7 @@
 }
 
 .tag-stat .count {
-  background: #667eea;
+  background: #2F4A72;
   color: white;
   padding: 0.25rem 0.5rem;
   border-radius: 12px;
@@ -647,7 +647,7 @@
   }
 
   .form-input:focus {
-    border-color: #667eea;
+    border-color: #2F4A72;
   }
 
   .wiki-table th {

@@ -127,7 +127,7 @@
 .warning-actions .btn {
   display: inline-block;
   padding: 0.75rem 1.5rem;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #2F4A72 0%, #0E2C40 100%);
   color: white;
   text-decoration: none;
   border-radius: 6px;
@@ -146,5 +146,5 @@
 }
 
 .warning-actions .btn.btn-primary {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #2F4A72 0%, #0E2C40 100%);
 } 

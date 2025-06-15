@@ -10,7 +10,7 @@ body {
   max-width: 100vw;
   overflow-x: hidden;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #2F4A72 0%, #0E2C40 100%);
   min-height: 100vh;
   color: #333;
 }
@@ -258,47 +258,51 @@ body {
 }
 
 .btn-primary {
-  background: linear-gradient(135deg, #667eea, #764ba2);
+  background: linear-gradient(135deg, #2F4A72, #0E2C40);
   color: white;
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  border: none;
+  font-weight: 600;
 }
 
 .btn-primary:hover {
+  background: linear-gradient(135deg, #0E2C40, #2F4A72);
   transform: translateY(-2px);
-  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
 }
 
 .btn-secondary {
-  background: rgba(255, 255, 255, 0.1);
+  background: linear-gradient(135deg, #998B5F, #D4B67A);
   color: white;
-  border: 1px solid rgba(255, 255, 255, 0.3);
+  border: none;
+  font-weight: 600;
 }
 
 .btn-secondary:hover {
-  background: rgba(255, 255, 255, 0.2);
+  background: linear-gradient(135deg, #D4B67A, #998B5F);
   transform: translateY(-2px);
 }
 
 .btn-success {
   background: linear-gradient(135deg, #4ecdc4, #44a08d);
   color: white;
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  border: none;
+  font-weight: 600;
 }
 
 .btn-success:hover {
+  background: linear-gradient(135deg, #44a08d, #4ecdc4);
   transform: translateY(-2px);
-  box-shadow: 0 4px 15px rgba(78, 205, 196, 0.4);
 }
 
 .btn-danger {
   background: linear-gradient(135deg, #ff6b6b, #ee5a24);
   color: white;
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  border: none;
+  font-weight: 600;
 }
 
 .btn-danger:hover {
+  background: linear-gradient(135deg, #ee5a24, #ff6b6b);
   transform: translateY(-2px);
-  box-shadow: 0 4px 15px rgba(255, 107, 107, 0.4);
 }
 
 .btn:disabled {

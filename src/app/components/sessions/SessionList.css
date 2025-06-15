@@ -1,6 +1,6 @@
 .session-container {
   padding: 2rem;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #2F4A72 0%, #0E2C40 100%);
   border-radius: 20px;
   color: white;
   min-height: 500px;
@@ -191,7 +191,7 @@
 }
 
 .session-row.free-session {
-  border-left: 4px solid #667eea;
+  border-left: 4px solid #2F4A72;
 }
 
 /* Type Cell */
