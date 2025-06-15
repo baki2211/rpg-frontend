@@ -377,7 +377,7 @@ export const WikiPanel: React.FC = () => {
                 onChange={(e) => setSelectedSectionId(e.target.value ? parseInt(e.target.value) : null)}
               >
                 <option value="">All Sections</option>
-                {sections.map(section => (
+                {(sections || []).map(section => (
                   <option key={section.id} value={section.id}>{section.name}</option>
                 ))}
               </select>
@@ -397,7 +397,7 @@ export const WikiPanel: React.FC = () => {
                     required
                   >
                     <option value="">Select a section</option>
-                    {sections.filter(s => s.isActive).map(section => (
+                    {(sections || []).filter(s => s.isActive).map(section => (
                       <option key={section.id} value={section.id}>{section.name}</option>
                     ))}
                   </select>
@@ -462,9 +462,9 @@ export const WikiPanel: React.FC = () => {
           <div className="entries-list">
             <h3>
               {selectedSectionId 
-                ? `Entries in ${sections.find(s => s.id === selectedSectionId)?.name}`
+                ? `Entries in ${(sections || []).find(s => s.id === selectedSectionId)?.name}`
                 : 'All Entries'
-              } ({filteredEntries.length})
+              } ({(filteredEntries || []).length})
             </h3>
             {filteredEntries.length === 0 ? (
               <div className="empty-state">
@@ -472,7 +472,7 @@ export const WikiPanel: React.FC = () => {
               </div>
             ) : (
               <div className="entries-grid">
-                {filteredEntries.map((entry) => (
+                {(filteredEntries || []).map((entry) => (
                   <div key={entry.id} className="entry-card">
                     <div className="entry-header">
                       <h4>{entry.title}</h4>
@@ -487,7 +487,7 @@ export const WikiPanel: React.FC = () => {
                       <p className="entry-excerpt">{entry.excerpt}</p>
                     )}
                     <div className="entry-tags">
-                      {entry.tags.map(tag => (
+                      {(entry.tags || []).map(tag => (
                         <span key={tag} className="tag">{tag}</span>
                       ))}
                     </div>
@@ -539,7 +539,7 @@ export const WikiPanel: React.FC = () => {
               <div className="stat-card popular-tags">
                 <h4>Popular Tags</h4>
                 <div className="tags-list">
-                  {stats.popularTags.slice(0, 10).map(({ tag, count }) => (
+                  {(stats.popularTags || []).slice(0, 10).map(({ tag, count }) => (
                     <div key={tag} className="tag-stat">
                       <span className="tag">{tag}</span>
                       <span className="count">{count}</span>

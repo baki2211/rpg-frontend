@@ -181,7 +181,7 @@ export const WikiBrowser: React.FC = () => {
       {view === 'navigation' && navigation && (
         <div className="wiki-navigation">
           <div className="sections-grid">
-            {navigation.sections.map((section) => (
+            {(navigation.sections || []).map((section) => (
               <div key={section.id} className="section-card">
                 <div className="section-header">
                   <h2>{section.name}</h2>
