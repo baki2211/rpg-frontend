@@ -54,6 +54,7 @@ export const WikiPanel: React.FC = () => {
   const [sectionForm, setSectionForm] = useState({
     name: '',
     description: '',
+    position: 0,
     isActive: true
   });
   const [editingSectionId, setEditingSectionId] = useState<number | null>(null);
@@ -132,6 +133,7 @@ export const WikiPanel: React.FC = () => {
     setSectionForm({
       name: section.name,
       description: section.description || '',
+      position: section.position,
       isActive: section.isActive
     });
     setEditingSectionId(section.id);
@@ -154,7 +156,7 @@ export const WikiPanel: React.FC = () => {
   };
 
   const resetSectionForm = () => {
-    setSectionForm({ name: '', description: '', isActive: true });
+    setSectionForm({ name: '', description: '', position: 0, isActive: true });
     setEditingSectionId(null);
   };
 
@@ -271,6 +273,16 @@ export const WikiPanel: React.FC = () => {
                     onChange={(e) => setSectionForm({...sectionForm, name: e.target.value})}
                     required
                     placeholder="e.g., Races, Geography, History"
+                  />
+                </div>
+                <div className="form-group">
+                  <label>Position</label>
+                  <input
+                    type="number"
+                    className="form-input"
+                    value={sectionForm.position}
+                    onChange={(e) => setSectionForm({...sectionForm, position: parseInt(e.target.value) || 0})}
+                    placeholder="Display order (0 = auto)"
                   />
                 </div>
                 <div className="form-group">
