@@ -56,8 +56,8 @@ export const WikiBrowser: React.FC = () => {
 
   const fetchNavigation = async () => {
     try {
-      const response = await api.get<WikiNavigation>('/wiki/navigation');
-      setNavigation(response.data);
+      const response = await api.get<{success: boolean, data: WikiNavigation}>('/wiki/navigation');
+      setNavigation(response.data.data);
     } catch (error) {
       console.error('Error fetching navigation:', error);
     }
@@ -65,8 +65,8 @@ export const WikiBrowser: React.FC = () => {
 
   const fetchTags = async () => {
     try {
-      const response = await api.get<string[]>('/wiki/tags');
-      setAvailableTags(response.data);
+      const response = await api.get<{success: boolean, data: string[]}>('/wiki/tags');
+      setAvailableTags(response.data.data);
     } catch (error) {
       console.error('Error fetching tags:', error);
     }
@@ -75,8 +75,8 @@ export const WikiBrowser: React.FC = () => {
   const fetchEntry = async (sectionSlug: string, entrySlug: string) => {
     setLoading(true);
     try {
-      const response = await api.get<WikiEntryDetail>(`/wiki/sections/${sectionSlug}/entries/${entrySlug}`);
-      setCurrentEntry(response.data);
+      const response = await api.get<{success: boolean, data: WikiEntryDetail}>(`/wiki/sections/${sectionSlug}/entries/${entrySlug}`);
+      setCurrentEntry(response.data.data);
       setView('entry');
     } catch (error) {
       console.error('Error fetching entry:', error);
@@ -94,8 +94,8 @@ export const WikiBrowser: React.FC = () => {
 
     setLoading(true);
     try {
-      const response = await api.get<WikiEntry[]>(`/wiki/search?q=${encodeURIComponent(query)}`);
-      setSearchResults(response.data);
+      const response = await api.get<{success: boolean, data: WikiEntry[]}>(`/wiki/search?q=${encodeURIComponent(query)}`);
+      setSearchResults(response.data.data);
       setView('search');
     } catch (error) {
       console.error('Error searching:', error);
@@ -107,8 +107,8 @@ export const WikiBrowser: React.FC = () => {
   const handleTagClick = async (tag: string) => {
     setLoading(true);
     try {
-      const response = await api.get<WikiEntry[]>(`/wiki/tags/${encodeURIComponent(tag)}/entries`);
-      setTagEntries(response.data);
+      const response = await api.get<{success: boolean, data: WikiEntry[]}>(`/wiki/tags/${encodeURIComponent(tag)}/entries`);
+      setTagEntries(response.data.data);
       setSelectedTag(tag);
       setView('tag');
     } catch (error) {

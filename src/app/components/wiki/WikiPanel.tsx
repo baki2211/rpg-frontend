@@ -77,8 +77,8 @@ export const WikiPanel: React.FC = () => {
 
   const fetchSections = async () => {
     try {
-      const response = await api.get<WikiSection[]>('/wiki/admin/sections');
-      setSections(response.data);
+      const response = await api.get<{success: boolean, data: WikiSection[]}>('/wiki/admin/sections');
+      setSections(response.data.data);
     } catch (error) {
       console.error('Error fetching sections:', error);
     }
@@ -86,8 +86,8 @@ export const WikiPanel: React.FC = () => {
 
   const fetchEntries = async () => {
     try {
-      const response = await api.get<WikiEntry[]>('/wiki/admin/entries');
-      setEntries(response.data);
+      const response = await api.get<{success: boolean, data: WikiEntry[]}>('/wiki/admin/entries');
+      setEntries(response.data.data);
     } catch (error) {
       console.error('Error fetching entries:', error);
     }
@@ -95,8 +95,8 @@ export const WikiPanel: React.FC = () => {
 
   const fetchStats = async () => {
     try {
-      const response = await api.get<WikiStats>('/wiki/admin/stats');
-      setStats(response.data);
+      const response = await api.get<{success: boolean, data: WikiStats}>('/wiki/admin/stats');
+      setStats(response.data.data);
     } catch (error) {
       console.error('Error fetching stats:', error);
     }

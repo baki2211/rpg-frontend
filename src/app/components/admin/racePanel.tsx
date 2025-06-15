@@ -1,9 +1,8 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
 import './admin.css';
-import { API_URL } from '../../../config/api';
+import { api } from '../../../services/apiClient';
 
 interface StatDefinition {
   id: number;
@@ -52,15 +51,11 @@ const RacePanel: React.FC = () => {
         setLoading(true);
         
         // Fetch races
-        const racesResponse = await axios.get(`${API_URL}/admin/races`, {
-          withCredentials: true,
-        });
+        const racesResponse = await api.get<Race[]>('/admin/races');
         setRaces(racesResponse.data);
 
         // Fetch stat definitions for primary stats
-        const statsResponse = await axios.get(`${API_URL}/stat-definitions?category=primary_stat&activeOnly=true`, {
-          withCredentials: true,
-        });
+        const statsResponse = await api.get<StatDefinition[]>('/stat-definitions?category=primary_stat&activeOnly=true');
         setStatDefinitions(statsResponse.data);
         
       } catch (error) {
@@ -86,25 +81,18 @@ const RacePanel: React.FC = () => {
   const addRace = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const response = await axios.post(`${API_URL}/admin/races/new`, newRace, {
-        withCredentials: true,
-      });
+      const response = await api.post<Race>('/admin/races/new', newRace);
       setRaces([...races, response.data]);
       setNewRace({});
     } catch (error: unknown) {
-      if (axios.isAxiosError(error)) {
-        setError(error.response?.data?.message || 'Failed to add race');
-      } else {
-        setError('An unexpected error occurred');
-      }
+      console.error('Error adding race:', error);
+      setError('Failed to add race');
     }
   };
 
   const deleteRace = async (id: number) => {
     try {
-      await axios.delete(`${API_URL}/admin/races/delete/${id}`, {
-        withCredentials: true,
-      });
+      await api.delete(`/admin/races/delete/${id}`);
       setRaces(races.filter((race) => race.id !== id));
     } catch (error) {
       console.error('Failed to delete race:', error);
@@ -113,7 +101,7 @@ const RacePanel: React.FC = () => {
 
   const handleSave = async (id: number) => {
     try {
-      await axios.put(`${API_URL}/admin/races/update/${id}`, editData, { withCredentials: true });
+      await api.put(`/admin/races/update/${id}`, editData);
       setRaces(races.map(r => r.id === id ? {...r, ...editData} as Race : r));
       setEditingId(null);
     } catch (err) {
