@@ -34,12 +34,14 @@ interface PresenceContextType {
   } | null;
   connectionStatus: 'connected' | 'connecting' | 'disconnected' | 'error';
   serverMessage?: string;
+  isPresenceEnabled: boolean;
 }
 
 const PresenceContext = createContext<PresenceContextType>({
   onlineUsers: [],
   currentUser: null,
   connectionStatus: 'disconnected',
+  isPresenceEnabled: true,
 });
 
 export const usePresence = () => useContext(PresenceContext);
@@ -49,6 +51,7 @@ export const PresenceProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const [currentUser, setCurrentUser] = useState<{ id: string; username: string } | null>(null);
   const [connectionStatus, setConnectionStatus] = useState<'connected' | 'connecting' | 'disconnected' | 'error'>('disconnected');
   const [serverMessage, setServerMessage] = useState<string | undefined>();
+  const [isPresenceEnabled, setIsPresenceEnabled] = useState(true);
   const pathname = usePathname();
   const wsRef = useRef<WebSocket | null>(null);
   const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -124,7 +127,8 @@ export const PresenceProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         } else if (retryCountRef.current >= 3) {
           console.warn('Max reconnection attempts reached for presence WebSocket. Server may be overloaded.');
           setConnectionStatus('error');
-          setServerMessage('Unable to connect to server. Please refresh the page or try again later.');
+          setServerMessage('Server overloaded. Real-time features disabled, but core functionality remains available.');
+          setIsPresenceEnabled(false); // Disable presence features when server is overloaded
         }
       };
 
@@ -220,8 +224,39 @@ export const PresenceProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     };
   }, []);
 
+  // Polling fallback when WebSocket fails
+  const startPollingFallback = useCallback(() => {
+    if (!isAuthenticated || !currentUser) return;
+    
+    console.log('Starting polling fallback for presence data');
+    const pollInterval = setInterval(async () => {
+      try {
+        // Only poll for basic user data, not real-time presence
+        // This reduces server load while maintaining core functionality
+        const response = await api.get('/auth/me');
+        if (response.data) {
+          // Just verify we're still authenticated, don't update presence
+          console.log('Polling fallback: user still authenticated');
+        }
+      } catch (error) {
+        console.error('Polling fallback failed:', error);
+        clearInterval(pollInterval);
+      }
+    }, 60000); // Poll every minute instead of real-time updates
+
+    return () => clearInterval(pollInterval);
+  }, [isAuthenticated, currentUser]);
+
+  // Start polling fallback when presence is disabled
+  useEffect(() => {
+    if (!isPresenceEnabled && isAuthenticated && currentUser) {
+      const cleanup = startPollingFallback();
+      return cleanup;
+    }
+  }, [isPresenceEnabled, isAuthenticated, currentUser, startPollingFallback]);
+
   return (
-    <PresenceContext.Provider value={{ onlineUsers, currentUser, connectionStatus, serverMessage }}>
+    <PresenceContext.Provider value={{ onlineUsers, currentUser, connectionStatus, serverMessage, isPresenceEnabled }}>
       {children}
     </PresenceContext.Provider>
   );

@@ -1,0 +1,92 @@
+.presence-indicator {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.presence-indicator.connected {
+  background: linear-gradient(135deg, rgba(47, 74, 114, 0.8), rgba(31, 61, 82, 0.8));
+  color: #D4B67A;
+  border: 1px solid rgba(212, 182, 122, 0.3);
+}
+
+.presence-indicator.connecting {
+  background: linear-gradient(135deg, rgba(153, 139, 95, 0.8), rgba(212, 182, 122, 0.8));
+  color: #0E2C40;
+  border: 1px solid rgba(153, 139, 95, 0.3);
+}
+
+.presence-indicator.disabled {
+  background: linear-gradient(135deg, rgba(108, 117, 125, 0.8), rgba(73, 80, 87, 0.8));
+  color: #ffffff;
+  border: 1px solid rgba(108, 117, 125, 0.3);
+}
+
+.presence-icon {
+  font-size: 14px;
+}
+
+.connecting .presence-icon {
+  animation: spin 1s linear infinite;
+}
+
+.presence-text {
+  white-space: nowrap;
+}
+
+.online-users-tooltip {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: rgba(14, 44, 64, 0.95);
+  border: 1px solid rgba(212, 182, 122, 0.3);
+  border-radius: 8px;
+  padding: 8px;
+  margin-top: 4px;
+  z-index: 1000;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-10px);
+  transition: all 0.2s ease;
+  backdrop-filter: blur(10px);
+  min-width: 200px;
+}
+
+.presence-indicator:hover .online-users-tooltip {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+.online-user {
+  padding: 4px 0;
+  border-bottom: 1px solid rgba(212, 182, 122, 0.1);
+  color: #D4B67A;
+  font-size: 11px;
+}
+
+.online-user:last-child {
+  border-bottom: none;
+}
+
+.user-location {
+  color: rgba(212, 182, 122, 0.7);
+  font-style: italic;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+} 

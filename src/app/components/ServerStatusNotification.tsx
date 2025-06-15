@@ -11,6 +11,10 @@ const ServerStatusNotification: React.FC = () => {
     return null;
   }
 
+  const handleRetry = () => {
+    window.location.reload();
+  };
+
   const getStatusClass = () => {
     switch (connectionStatus) {
       case 'connecting':
@@ -41,6 +45,15 @@ const ServerStatusNotification: React.FC = () => {
     <div className={`server-status-notification ${getStatusClass()}`}>
       <span className="status-icon">{getStatusIcon()}</span>
       <span className="status-message">{serverMessage}</span>
+      {connectionStatus === 'error' && (
+        <button 
+          onClick={handleRetry}
+          className="retry-button"
+          title="Refresh page to retry connection"
+        >
+          🔄 Retry
+        </button>
+      )}
     </div>
   );
 };
