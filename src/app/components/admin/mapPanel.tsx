@@ -7,6 +7,7 @@ import { Map, Location } from '../../../types/types';
 import './admin.css';
 import Image from 'next/image';
 import { api } from '../../../services/apiClient';
+import { UPLOADS_URL } from '../../../config/api';
 
 const AdminMapPanel = () => {
   const router = useRouter();
@@ -397,7 +398,7 @@ const AdminMapPanel = () => {
             </div>
             <div className="map-preview-content">
               <Image
-                src={`http://localhost:5001${selectedMapForPreview.imageUrl}`}
+                src={`${UPLOADS_URL}${selectedMapForPreview.imageUrl}`}
                 alt={selectedMapForPreview.name}
                 width={800}
                 height={600}

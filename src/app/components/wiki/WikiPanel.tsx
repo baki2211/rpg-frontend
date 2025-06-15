@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import './WikiPanel.css';
+import { api } from '../../../services/apiClient';
 
 interface WikiSection {
   id: number;
@@ -76,13 +77,8 @@ export const WikiPanel: React.FC = () => {
 
   const fetchSections = async () => {
     try {
-      const response = await fetch('/api/wiki/admin/sections', {
-        credentials: 'include'
-      });
-      if (response.ok) {
-        const data = await response.json();
-        setSections(data);
-      }
+      const response = await api.get<WikiSection[]>('/wiki/admin/sections');
+      setSections(response.data);
     } catch (error) {
       console.error('Error fetching sections:', error);
     }
@@ -90,13 +86,8 @@ export const WikiPanel: React.FC = () => {
 
   const fetchEntries = async () => {
     try {
-      const response = await fetch('/api/wiki/admin/entries', {
-        credentials: 'include'
-      });
-      if (response.ok) {
-        const data = await response.json();
-        setEntries(data);
-      }
+      const response = await api.get<WikiEntry[]>('/wiki/admin/entries');
+      setEntries(response.data);
     } catch (error) {
       console.error('Error fetching entries:', error);
     }
@@ -104,13 +95,8 @@ export const WikiPanel: React.FC = () => {
 
   const fetchStats = async () => {
     try {
-      const response = await fetch('/api/wiki/admin/stats', {
-        credentials: 'include'
-      });
-      if (response.ok) {
-        const data = await response.json();
-        setStats(data);
-      }
+      const response = await api.get<WikiStats>('/wiki/admin/stats');
+      setStats(response.data);
     } catch (error) {
       console.error('Error fetching stats:', error);
     }
@@ -127,27 +113,13 @@ export const WikiPanel: React.FC = () => {
     setLoading(true);
 
     try {
-      const url = editingSectionId 
-        ? `/api/wiki/admin/sections/${editingSectionId}`
-        : '/api/wiki/admin/sections';
-      
-      const method = editingSectionId ? 'PUT' : 'POST';
-      
-      const response = await fetch(url, {
-        method,
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify(sectionForm)
-      });
+      await (editingSectionId 
+        ? api.put(`/wiki/admin/sections/${editingSectionId}`, sectionForm)
+        : api.post('/wiki/admin/sections', sectionForm));
 
-      if (response.ok) {
-        showMessage('success', `Section ${editingSectionId ? 'updated' : 'created'} successfully`);
-        resetSectionForm();
-        fetchSections();
-      } else {
-        const error = await response.json();
-        showMessage('error', error.message || 'Failed to save section');
-      }
+      showMessage('success', `Section ${editingSectionId ? 'updated' : 'created'} successfully`);
+      resetSectionForm();
+      fetchSections();
     } catch (error) {
       console.error('Network error:', error);
       showMessage('error', 'Network error occurred');
@@ -171,19 +143,10 @@ export const WikiPanel: React.FC = () => {
     }
 
     try {
-      const response = await fetch(`/api/wiki/admin/sections/${id}`, {
-        method: 'DELETE',
-        credentials: 'include'
-      });
-
-      if (response.ok) {
-        showMessage('success', 'Section deleted successfully');
-        fetchSections();
-        fetchEntries();
-      } else {
-        const error = await response.json();
-        showMessage('error', error.message || 'Failed to delete section');
-      }
+      await api.delete(`/wiki/admin/sections/${id}`);
+      showMessage('success', 'Section deleted successfully');
+      fetchSections();
+      fetchEntries();
     } catch (error) {
       console.error('Network error:', error);
       showMessage('error', 'Network error occurred');
@@ -201,34 +164,20 @@ export const WikiPanel: React.FC = () => {
     setLoading(true);
 
     try {
-      const url = editingEntryId 
-        ? `/api/wiki/admin/entries/${editingEntryId}`
-        : '/api/wiki/admin/entries';
-      
-      const method = editingEntryId ? 'PUT' : 'POST';
-      
       const entryData = {
         ...entryForm,
         sectionId: parseInt(entryForm.sectionId),
         tags: entryForm.tags.split(',').map(tag => tag.trim()).filter(tag => tag)
       };
       
-      const response = await fetch(url, {
-        method,
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify(entryData)
-      });
+      await (editingEntryId 
+        ? api.put(`/wiki/admin/entries/${editingEntryId}`, entryData)
+        : api.post('/wiki/admin/entries', entryData));
 
-      if (response.ok) {
-        showMessage('success', `Entry ${editingEntryId ? 'updated' : 'created'} successfully`);
-        resetEntryForm();
-        fetchEntries();
-        fetchStats();
-      } else {
-        const error = await response.json();
-        showMessage('error', error.message || 'Failed to save entry');
-      }
+      showMessage('success', `Entry ${editingEntryId ? 'updated' : 'created'} successfully`);
+      resetEntryForm();
+      fetchEntries();
+      fetchStats();
     } catch (error) {
       console.error('Network error:', error);
       showMessage('error', 'Network error occurred');
@@ -254,19 +203,10 @@ export const WikiPanel: React.FC = () => {
     }
 
     try {
-      const response = await fetch(`/api/wiki/admin/entries/${id}`, {
-        method: 'DELETE',
-        credentials: 'include'
-      });
-
-      if (response.ok) {
-        showMessage('success', 'Entry deleted successfully');
-        fetchEntries();
-        fetchStats();
-      } else {
-        const error = await response.json();
-        showMessage('error', error.message || 'Failed to delete entry');
-      }
+      await api.delete(`/wiki/admin/entries/${id}`);
+      showMessage('success', 'Entry deleted successfully');
+      fetchEntries();
+      fetchStats();
     } catch (error) {
       console.error('Network error:', error);
       showMessage('error', 'Network error occurred');
