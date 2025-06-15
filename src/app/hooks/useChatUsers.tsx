@@ -197,7 +197,7 @@ export const useChatUsers = (locationId: string) => {
         wsRef.current = null;
       }
     };
-  }, [currentUser]);
+  }, [currentUser, locationId]);
 
   // Helper function to send location updates
   const sendLocationUpdate = async (locId: string) => {

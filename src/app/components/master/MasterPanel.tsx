@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../../utils/AuthContext';
 import { useChatUsers } from '../../hooks/useChatUsers';
 import './MasterPanel.css';
@@ -128,7 +128,7 @@ export const MasterPanel: React.FC<MasterPanelProps> = ({
   const isMaster = user?.role === 'master' || user?.role === 'admin';
 
   // Fetch engine logs
-  const fetchEngineLogs = async () => {
+  const fetchEngineLogs = useCallback(async () => {
     try {
       const response = await api.get(`/engine-logs/location/${locationId}`);
       
@@ -167,7 +167,7 @@ export const MasterPanel: React.FC<MasterPanelProps> = ({
       // Don't show error to user for empty logs - this is expected when no skills have been used
       setEngineLogs([]);
     }
-  };
+  }, [locationId]);
 
   // Load engine logs when the logs tab is active
   useEffect(() => {
@@ -177,10 +177,10 @@ export const MasterPanel: React.FC<MasterPanelProps> = ({
       const interval = setInterval(fetchEngineLogs, 10000); // Refresh every 10 seconds
       return () => clearInterval(interval);
     }
-  }, [activeTab, isOpen, locationId]);
+  }, [activeTab, isOpen, locationId, fetchEngineLogs]);
 
   // Combat functions
-  const fetchActiveRound = async () => {
+  const fetchActiveRound = useCallback(async () => {
     try {
       const response = await api.get(`/combat/rounds/active/${locationId}`);
       const responseData = response.data as { round: CombatRound & { actions?: CombatAction[] } };
@@ -191,9 +191,9 @@ export const MasterPanel: React.FC<MasterPanelProps> = ({
     } catch (error) {
       console.error('Error fetching active round:', error);
     }
-  };
+  }, [locationId]);
 
-  const fetchResolvedRounds = async () => {
+  const fetchResolvedRounds = useCallback(async () => {
     try {
       const response = await api.get(`/combat/rounds/resolved/${locationId}?limit=5`);
       const responseData = response.data as { rounds: CombatRound[] };
@@ -201,7 +201,28 @@ export const MasterPanel: React.FC<MasterPanelProps> = ({
     } catch (error) {
       console.error('Error fetching resolved rounds:', error);
     }
-  };
+  }, [locationId]);
+
+  // Event functions
+  const fetchActiveEvent = useCallback(async () => {
+    try {
+      const response = await api.get(`/events/active/${locationId}`);
+      const responseData = response.data as { event: Event };
+      setActiveEvent(responseData.event);
+    } catch (error) {
+      console.error('Error fetching active event:', error);
+    }
+  }, [locationId]);
+
+  const fetchRecentEvents = useCallback(async () => {
+    try {
+      const response = await api.get(`/events/location/${locationId}?limit=5`);
+      const responseData = response.data as { events: Event[] };
+      setRecentEvents(responseData.events || []);
+    } catch (error) {
+      console.error('Error fetching recent events:', error);
+    }
+  }, [locationId]);
 
   const createNewRound = async () => {
     if (!activeEvent) {
@@ -307,7 +328,7 @@ export const MasterPanel: React.FC<MasterPanelProps> = ({
       
       return () => clearInterval(interval);
     }
-  }, [activeTab, locationId]);
+  }, [activeTab, locationId, fetchActiveRound, fetchResolvedRounds]);
 
   // Load event data
   useEffect(() => {
@@ -323,28 +344,7 @@ export const MasterPanel: React.FC<MasterPanelProps> = ({
       
       return () => clearInterval(interval);
     }
-  }, [activeTab, locationId]);
-
-  // Event functions
-  const fetchActiveEvent = async () => {
-    try {
-      const response = await api.get(`/events/active/${locationId}`);
-      const responseData = response.data as { event: Event };
-      setActiveEvent(responseData.event);
-    } catch (error) {
-      console.error('Error fetching active event:', error);
-    }
-  };
-
-  const fetchRecentEvents = async () => {
-    try {
-      const response = await api.get(`/events/location/${locationId}?limit=5`);
-      const responseData = response.data as { events: Event[] };
-      setRecentEvents(responseData.events || []);
-    } catch (error) {
-      console.error('Error fetching recent events:', error);
-    }
-  };
+  }, [activeTab, locationId, fetchActiveEvent, fetchRecentEvents]);
 
   const createNewEvent = async () => {
     if (!eventForm.title || !eventForm.type) {

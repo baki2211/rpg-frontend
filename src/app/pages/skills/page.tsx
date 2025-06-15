@@ -40,7 +40,7 @@ export default function SkillsPage() {
     };
 
     fetchSkills();
-  }, [activeCharacter?.id]);
+  }, [activeCharacter]);
 
   const acquireSkill = async (skillId: number) => {
     if (!activeCharacter) return;

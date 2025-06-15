@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useState, useRef } from 'react';
+import React, { createContext, useContext, useEffect, useState, useRef, useCallback } from 'react';
 import { usePathname } from 'next/navigation';
 import axios from 'axios';
 import { useAuth } from '../utils/AuthContext';
@@ -52,7 +52,7 @@ export const PresenceProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const { user, isAuthenticated } = useAuth();
 
   // Initialize WebSocket connection
-  const initializeWebSocket = (userId: string, username: string) => {
+  const initializeWebSocket = useCallback((userId: string, username: string) => {
     // Clear any existing connection
     if (wsRef.current?.readyState === WebSocket.OPEN) {
       wsRef.current.close();
@@ -123,7 +123,7 @@ export const PresenceProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     } catch (error) {
       console.error('Error creating presence WebSocket:', error);
     }
-  };
+  }, [isAuthenticated, currentUser, pathname]);
 
   // Initialize user data and WebSocket when authentication changes
   useEffect(() => {
@@ -154,7 +154,7 @@ export const PresenceProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         reconnectTimeoutRef.current = null;
       }
     };
-  }, [isAuthenticated, user]);
+  }, [isAuthenticated, user, initializeWebSocket]);
 
   // Update location when pathname changes
   useEffect(() => {

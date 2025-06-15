@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import './EnginePanel.css';
 import { api } from '../../../services/apiClient';
 
@@ -50,11 +50,7 @@ export const EnginePanel: React.FC = () => {
     sortOrder: 0
   });
 
-  useEffect(() => {
-    fetchStats();
-  }, []);
-
-  const fetchStats = async () => {
+  const fetchStats = useCallback(async () => {
     setLoading(true);
     try {
       const response = await api.get('/stat-definitions/categories');
@@ -64,7 +60,11 @@ export const EnginePanel: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    fetchStats();
+  }, [fetchStats]);
 
   const showMessage = (type: 'success' | 'error', text: string) => {
     setMessage({ type, text });

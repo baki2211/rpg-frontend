@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import './admin.css';
 import { API_URL } from '../../../config/api';
 
@@ -26,11 +26,7 @@ export const RankPanel: React.FC = () => {
     hpPercent: 0
   });
 
-  useEffect(() => {
-    fetchRanks();
-  }, []);
-
-  const fetchRanks = async () => {
+  const fetchRanks = useCallback(async () => {
     setLoading(true);
     try {
       const res = await fetch(`${API_URL}/ranks`, { credentials: 'include' });
@@ -45,7 +41,11 @@ export const RankPanel: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    fetchRanks();
+  }, [fetchRanks]);
 
   const showMessage = (type: 'success' | 'error', text: string) => {
     setMessage({ type, text });

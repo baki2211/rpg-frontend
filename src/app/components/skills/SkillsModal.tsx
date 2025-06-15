@@ -90,7 +90,7 @@ export const SkillsModal: React.FC<SkillsModalProps> = ({ isOpen, onClose, onSel
     if (isOpen) {
       fetchSkills();
     }
-  }, [isOpen, activeCharacter?.id]);
+  }, [isOpen, activeCharacter]);
 
   // Check for active combat round
   useEffect(() => {

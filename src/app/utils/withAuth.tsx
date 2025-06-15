@@ -16,7 +16,7 @@ const withAuth = (WrappedComponent: React.ComponentType) => {
       };
 
       verifyToken();
-    }, []);
+    }, [router]);
 
     return <WrappedComponent {...props} />;
   };
