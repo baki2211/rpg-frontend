@@ -1,9 +1,8 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
 import './admin.css';
-import { API_URL } from '../../../config/api';
+import { api } from '../../../services/apiClient';
 
 interface StatDefinition {
   id: number;
@@ -76,30 +75,25 @@ const SkillSimulator: React.FC = () => {
     try {
       setLoading(true);
       const [statsResponse, skillsResponse, charactersResponse] = await Promise.all([
-        axios.get(`${API_URL}/stat-definitions/categories?activeOnly=true`, {
-          withCredentials: true,
-        }),
-        axios.get(`${API_URL}/skills`, {
-          withCredentials: true,
-        }),
-        axios.get(`${API_URL}/characters/all`, {
-          withCredentials: true,
-        })
+        api.get('/stat-definitions/categories?activeOnly=true'),
+        api.get('/skills'),
+        api.get('/characters/all')
       ]);
 
       // Flatten stat definitions from categories
+      const statsData = statsResponse.data as { primary_stat: StatDefinition[], resource: StatDefinition[], scaling_stat: StatDefinition[] };
       const allStats = [
-        ...statsResponse.data.primary_stat,
-        ...statsResponse.data.resource,
-        ...statsResponse.data.scaling_stat
+        ...statsData.primary_stat,
+        ...statsData.resource,
+        ...statsData.scaling_stat
       ];
       setStatDefinitions(allStats);
-      setSkills(skillsResponse.data);
-      setCharacters(charactersResponse.data);
+      setSkills(skillsResponse.data as Skill[]);
+      setCharacters(charactersResponse.data as Character[]);
 
       // Initialize custom stats with default values
       const initialStats: Record<string, number> = {};
-      statsResponse.data.primary_stat.forEach((stat: StatDefinition) => {
+      statsData.primary_stat.forEach((stat: StatDefinition) => {
         initialStats[stat.internalName] = stat.defaultValue;
       });
       setCustomStats(initialStats);

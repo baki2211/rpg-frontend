@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
 import './admin.css';
-import { API_URL } from '../../../config/api';
+import { api } from '../../../services/apiClient';
 
 interface SkillType {
   id: number;
@@ -23,10 +22,10 @@ const SkillTypeDashboard: React.FC = () => {
 
   const fetchTypes = async () => {
     try {
-      const response = await axios.get(`${API_URL}/skill-types`);
-      setTypes(response.data);
-    } catch (error) {
-      console.error('Error fetching skill types:', error);
+      const response = await api.get('/skill-types');
+      setTypes(response.data as SkillType[]);
+    } catch {
+      console.error('Error fetching skill types');
     }
   };
 
@@ -39,15 +38,15 @@ const SkillTypeDashboard: React.FC = () => {
     e.preventDefault();
     try {
       if (selectedType) {
-        await axios.put(`${API_URL}/skill-types/${selectedType.id}`, formData);
+        await api.put(`/skill-types/${selectedType.id}`, formData);
       } else {
-        await axios.post(`${API_URL}/skill-types`, formData);
+        await api.post('/skill-types', formData);
       }
       fetchTypes();
       setFormData({ name: '', description: '' });
       setSelectedType(null);
-    } catch (error) {
-      console.error('Error saving skill type:', error);
+    } catch {
+      console.error('Error saving skill type');
     }
   };
 
@@ -59,10 +58,10 @@ const SkillTypeDashboard: React.FC = () => {
   const handleDelete = async (id: number) => {
     if (window.confirm('Are you sure you want to delete this skill type?')) {
       try {
-        await axios.delete(`${API_URL}/skill-types/${id}`);
+        await api.delete(`/skill-types/${id}`);
         fetchTypes();
-      } catch (error) {
-        console.error('Error deleting skill type:', error);
+      } catch {
+        console.error('Error deleting skill type');
       }
     }
   };

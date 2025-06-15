@@ -4,9 +4,8 @@ import { SkillRow } from './SkillRow';
 import { Skill } from '@/app/hooks/useCharacter';
 import { useChatUsers, ChatUser } from '@/app/hooks/useChatUsers';
 import { useAuth } from '@/app/utils/AuthContext';
-import axios from 'axios';
+import { api } from '../../../services/apiClient';
 import './SkillsModal.css';
-import { API_URL } from '../../../config/api';
 
 interface SkillWithTarget extends Skill {
   selectedTarget?: ChatUser;
@@ -79,19 +78,8 @@ export const SkillsModal: React.FC<SkillsModalProps> = ({ isOpen, onClose, onSel
       if (!activeCharacter) return;
 
       try {
-        const response = await fetch(
-          `${API_URL}/character-skills/${activeCharacter.id}/acquired-skills?include=branch,type`,
-          {
-            credentials: 'include',
-          }
-        );
-
-        if (!response.ok) {
-          throw new Error('Failed to fetch skills');
-        }
-
-        const data = await response.json();
-        setSkills(data);
+        const response = await api.get(`/character-skills/${activeCharacter.id}/acquired-skills?include=branch,type`);
+        setSkills(response.data as Skill[]);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to fetch skills');
       } finally {
@@ -110,12 +98,10 @@ export const SkillsModal: React.FC<SkillsModalProps> = ({ isOpen, onClose, onSel
       if (!locationId) return;
       
       try {
-        const response = await axios.get(`${API_URL}/combat/rounds/active/${locationId}`, {
-          withCredentials: true
-        });
+        const response = await api.get(`/combat/rounds/active/${locationId}`);
         setActiveRound(response.data.round);
-      } catch (error) {
-        console.error('Error fetching active round:', error);
+      } catch {
+        console.error('Error fetching active round');
         setActiveRound(null);
       }
     };

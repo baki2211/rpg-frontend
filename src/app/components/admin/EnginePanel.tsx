@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import './EnginePanel.css';
-import { API_URL } from '../../../config/api';
+import { api } from '../../../services/apiClient';
 
 interface StatDefinition {
   id: number;
@@ -57,16 +57,8 @@ export const EnginePanel: React.FC = () => {
   const fetchStats = async () => {
     setLoading(true);
     try {
-      const response = await fetch(`${API_URL}/stat-definitions/categories`, {
-        credentials: 'include'
-      });
-      
-      if (response.ok) {
-        const data = await response.json();
-        setStats(data);
-      } else {
-        showMessage('error', 'Failed to fetch stat definitions');
-      }
+      const response = await api.get('/stat-definitions/categories');
+      setStats(response.data as StatsByCategory);
     } catch {
       showMessage('error', 'Error fetching stat definitions');
     } finally {
@@ -81,32 +73,21 @@ export const EnginePanel: React.FC = () => {
 
   const handleCreate = async () => {
     try {
-      const response = await fetch(`${API_URL}/stat-definitions`, {
-        method: 'POST',
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(newStat)
+      await api.post('/stat-definitions', newStat);
+      showMessage('success', 'Stat definition created successfully');
+      setShowCreateForm(false);
+      setNewStat({
+        internalName: '',
+        displayName: '',
+        description: '',
+        category: 'primary_stat',
+        defaultValue: 0,
+        maxValue: undefined,
+        minValue: 0,
+        isActive: true,
+        sortOrder: 0
       });
-
-      if (response.ok) {
-        showMessage('success', 'Stat definition created successfully');
-        setShowCreateForm(false);
-        setNewStat({
-          internalName: '',
-          displayName: '',
-          description: '',
-          category: 'primary_stat',
-          defaultValue: 0,
-          maxValue: undefined,
-          minValue: 0,
-          isActive: true,
-          sortOrder: 0
-        });
-        fetchStats();
-      } else {
-        const errorData = await response.json();
-        showMessage('error', errorData.error || 'Failed to create stat definition');
-      }
+      fetchStats();
     } catch {
       showMessage('error', 'Error creating stat definition');
     }
@@ -114,21 +95,10 @@ export const EnginePanel: React.FC = () => {
 
   const handleUpdate = async (id: number, updateData: Partial<StatDefinition>) => {
     try {
-      const response = await fetch(`${API_URL}/stat-definitions/${id}`, {
-        method: 'PUT',
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(updateData)
-      });
-
-      if (response.ok) {
-        showMessage('success', 'Stat definition updated successfully');
-        setEditingId(null);
-        fetchStats();
-      } else {
-        const errorData = await response.json();
-        showMessage('error', errorData.error || 'Failed to update stat definition');
-      }
+      await api.put(`/stat-definitions/${id}`, updateData);
+      showMessage('success', 'Stat definition updated successfully');
+      setEditingId(null);
+      fetchStats();
     } catch {
       showMessage('error', 'Error updating stat definition');
     }
@@ -140,18 +110,9 @@ export const EnginePanel: React.FC = () => {
     }
 
     try {
-      const response = await fetch(`${API_URL}/stat-definitions/${id}`, {
-        method: 'DELETE',
-        credentials: 'include'
-      });
-
-      if (response.ok) {
-        showMessage('success', 'Stat definition deleted successfully');
-        fetchStats();
-      } else {
-        const errorData = await response.json();
-        showMessage('error', errorData.error || 'Failed to delete stat definition');
-      }
+      await api.delete(`/stat-definitions/${id}`);
+      showMessage('success', 'Stat definition deleted successfully');
+      fetchStats();
     } catch {
       showMessage('error', 'Error deleting stat definition');
     }
@@ -163,19 +124,10 @@ export const EnginePanel: React.FC = () => {
     }
 
     try {
-      const response = await fetch(`${API_URL}/stat-definitions/initialize`, {
-        method: 'POST',
-        credentials: 'include'
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        showMessage('success', `Initialized ${data.createdStats} default stats`);
-        fetchStats();
-      } else {
-        const errorData = await response.json();
-        showMessage('error', errorData.error || 'Failed to initialize default stats');
-      }
+      const response = await api.post('/stat-definitions/initialize');
+      const data = response.data as { createdStats: number };
+      showMessage('success', `Initialized ${data.createdStats} default stats`);
+      fetchStats();
     } catch {
       showMessage('error', 'Error initializing default stats');
     }

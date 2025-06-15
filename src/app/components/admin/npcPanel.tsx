@@ -1,9 +1,8 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
 import './admin.css';
-import { API_URL } from '../../../config/api';
+import { api } from '../../../services/apiClient';
 
 interface StatDefinition {
   id: number;
@@ -81,18 +80,18 @@ const NPCPanel: React.FC = () => {
       setLoading(true);
       
       const [npcsResponse, racesResponse, statsResponse] = await Promise.all([
-        axios.get(`${API_URL}/characters/npcs`, { withCredentials: true }),
-        axios.get(`${API_URL}/admin/races`, { withCredentials: true }),
-        axios.get(`${API_URL}/stat-definitions?category=primary_stat&activeOnly=true`, { withCredentials: true })
+        api.get('/characters/npcs'),
+        api.get('/admin/races'),
+        api.get('/stat-definitions?category=primary_stat&activeOnly=true')
       ]);
 
-      setNpcs(npcsResponse.data);
-      setRaces(racesResponse.data);
-      setStatDefinitions(statsResponse.data);
+      setNpcs(npcsResponse.data as NPC[]);
+      setRaces(racesResponse.data as Race[]);
+      setStatDefinitions(statsResponse.data as StatDefinition[]);
 
       // Initialize form stats with default values
       const initialStats: Record<string, number> = {};
-      statsResponse.data.forEach((stat: StatDefinition) => {
+      (statsResponse.data as StatDefinition[]).forEach((stat: StatDefinition) => {
         initialStats[stat.internalName] = stat.defaultValue;
       });
       setFormData(prev => ({ ...prev, stats: initialStats }));
@@ -155,32 +154,20 @@ const NPCPanel: React.FC = () => {
 
       if (editingId) {
         // Update existing NPC
-        const response = await axios.put(
-          `${API_URL}/characters/npcs/${editingId}`, 
-          submitData, 
-          { withCredentials: true }
-        );
-        setNpcs(npcs.map(npc => npc.id === editingId ? response.data : npc));
+        const response = await api.put(`/characters/npcs/${editingId}`, submitData);
+        setNpcs(npcs.map(npc => npc.id === editingId ? response.data as NPC : npc));
         setEditingId(null);
       } else {
         // Create new NPC
-        const response = await axios.post(
-          `${API_URL}/characters/npcs`, 
-          submitData, 
-          { withCredentials: true }
-        );
-        setNpcs([...npcs, response.data]);
+        const response = await api.post('/characters/npcs', submitData);
+        setNpcs([...npcs, response.data as NPC]);
         setShowCreateForm(false);
       }
 
       resetForm();
       setError('');
-    } catch (error: unknown) {
-      if (axios.isAxiosError(error)) {
-        setError(error.response?.data?.error || 'Failed to save NPC');
-      } else {
-        setError('An unexpected error occurred');
-      }
+    } catch {
+      setError('Failed to save NPC');
     }
   };
 
@@ -207,25 +194,16 @@ const NPCPanel: React.FC = () => {
     if (!confirm('Are you sure you want to delete this NPC?')) return;
 
     try {
-      await axios.delete(`${API_URL}/characters/npcs/${id}`, {
-        withCredentials: true,
-      });
+      await api.delete(`/characters/npcs/${id}`);
       setNpcs(npcs.filter(npc => npc.id !== id));
-    } catch (error) {
-      console.error('Failed to delete NPC:', error);
-      if (axios.isAxiosError(error)) {
-        setError(error.response?.data?.error || 'Failed to delete NPC');
-      } else {
-        setError('Failed to delete NPC');
-      }
+    } catch {
+      setError('Failed to delete NPC');
     }
   };
 
   const handleActivate = async (id: number) => {
     try {
-      await axios.post(`${API_URL}/characters/npcs/${id}/activate`, {}, {
-        withCredentials: true,
-      });
+      await api.post(`/characters/npcs/${id}/activate`, {});
       
       // Update the NPCs list to reflect the activation
       setNpcs(npcs.map(npc => ({
@@ -234,21 +212,14 @@ const NPCPanel: React.FC = () => {
       })));
       
       setError('');
-    } catch (error) {
-      console.error('Failed to activate NPC:', error);
-      if (axios.isAxiosError(error)) {
-        setError(error.response?.data?.error || 'Failed to activate NPC');
-      } else {
-        setError('Failed to activate NPC');
-      }
+    } catch {
+      setError('Failed to activate NPC');
     }
   };
 
   const handleDeactivate = async (id: number) => {
     try {
-      await axios.post(`${API_URL}/characters/npcs/${id}/deactivate`, {}, {
-        withCredentials: true,
-      });
+      await api.post(`/characters/npcs/${id}/deactivate`, {});
       
       // Update the NPCs list to reflect the deactivation
       setNpcs(npcs.map(npc => 
@@ -256,13 +227,8 @@ const NPCPanel: React.FC = () => {
       ));
       
       setError('');
-    } catch (error) {
-      console.error('Failed to deactivate NPC:', error);
-      if (axios.isAxiosError(error)) {
-        setError(error.response?.data?.error || 'Failed to deactivate NPC');
-      } else {
-        setError('Failed to deactivate NPC');
-      }
+    } catch {
+      setError('Failed to deactivate NPC');
     }
   };
 
