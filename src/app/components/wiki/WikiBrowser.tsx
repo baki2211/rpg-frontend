@@ -192,7 +192,7 @@ export const WikiBrowser: React.FC = () => {
                 </div>
                 
                 <div className="entries-list">
-                  {section.entries.map((entry) => (
+                  {(section.entries || []).map((entry) => (
                     <div
                       key={entry.id}
                       className="entry-item"
@@ -205,7 +205,7 @@ export const WikiBrowser: React.FC = () => {
                     </div>
                   ))}
                   
-                  {section.entries.length === 0 && (
+                  {(!section.entries || section.entries.length === 0) && (
                     <div className="no-entries">No entries yet</div>
                   )}
                 </div>
@@ -216,7 +216,7 @@ export const WikiBrowser: React.FC = () => {
           <div className="tags-section">
             <h3>Browse by Tags</h3>
             <div className="tags-cloud">
-              {availableTags.map((tag) => (
+              {(availableTags || []).map((tag) => (
                 <button
                   key={tag}
                   className="tag-button"
@@ -248,9 +248,9 @@ export const WikiBrowser: React.FC = () => {
               </span>
             </div>
 
-            {currentEntry.tags.length > 0 && (
+            {currentEntry.tags && currentEntry.tags.length > 0 && (
               <div className="entry-tags">
-                {currentEntry.tags.map((tag) => (
+                {(currentEntry.tags || []).map((tag) => (
                   <button
                     key={tag}
                     className="tag"
@@ -284,7 +284,7 @@ export const WikiBrowser: React.FC = () => {
             </div>
           ) : (
             <div className="results-grid">
-              {searchResults.map((entry) => (
+              {(searchResults || []).map((entry) => (
                 <div
                   key={entry.id}
                   className="result-card"
@@ -301,7 +301,7 @@ export const WikiBrowser: React.FC = () => {
                   
                   <div className="result-meta">
                     <div className="result-tags">
-                      {entry.tags.slice(0, 3).map((tag) => (
+                      {(entry.tags || []).slice(0, 3).map((tag) => (
                         <span key={tag} className="tag">{tag}</span>
                       ))}
                     </div>
@@ -324,7 +324,7 @@ export const WikiBrowser: React.FC = () => {
             </div>
           ) : (
             <div className="results-grid">
-              {tagEntries.map((entry) => (
+              {(tagEntries || []).map((entry) => (
                 <div
                   key={entry.id}
                   className="result-card"
@@ -341,7 +341,7 @@ export const WikiBrowser: React.FC = () => {
                   
                   <div className="result-meta">
                     <div className="result-tags">
-                      {entry.tags.slice(0, 3).map((tag) => (
+                      {(entry.tags || []).slice(0, 3).map((tag) => (
                         <span key={tag} className="tag">{tag}</span>
                       ))}
                     </div>
