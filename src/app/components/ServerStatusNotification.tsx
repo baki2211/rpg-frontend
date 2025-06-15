@@ -5,14 +5,14 @@ import { usePresence } from '../contexts/PresenceContext';
 import './ServerStatusNotification.css';
 
 const ServerStatusNotification: React.FC = () => {
-  const { connectionStatus, serverMessage } = usePresence();
+  const { connectionStatus, serverMessage, resetConnection } = usePresence();
 
   if (!serverMessage || connectionStatus === 'connected') {
     return null;
   }
 
   const handleRetry = () => {
-    window.location.reload();
+    resetConnection();
   };
 
   const getStatusClass = () => {

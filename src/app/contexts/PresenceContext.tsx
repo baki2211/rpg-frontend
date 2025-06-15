@@ -35,6 +35,7 @@ interface PresenceContextType {
   connectionStatus: 'connected' | 'connecting' | 'disconnected' | 'error';
   serverMessage?: string;
   isPresenceEnabled: boolean;
+  resetConnection: () => void;
 }
 
 const PresenceContext = createContext<PresenceContextType>({
@@ -42,6 +43,7 @@ const PresenceContext = createContext<PresenceContextType>({
   currentUser: null,
   connectionStatus: 'disconnected',
   isPresenceEnabled: true,
+  resetConnection: () => {},
 });
 
 export const usePresence = () => useContext(PresenceContext);
@@ -59,7 +61,14 @@ export const PresenceProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const { user, isAuthenticated } = useAuth();
 
   const createWebSocketConnection = useCallback((userId: string, username: string) => {
+    // Check if there's already an active connection
+    if (wsRef.current && (wsRef.current.readyState === WebSocket.CONNECTING || wsRef.current.readyState === WebSocket.OPEN)) {
+      console.log('⚠️ WebSocket connection already exists, skipping new connection attempt');
+      return;
+    }
+
     try {
+      console.log(`🔌 Attempting WebSocket connection for user ${userId} (${username})`);
       setConnectionStatus('connecting');
       setServerMessage(undefined);
       
@@ -67,7 +76,7 @@ export const PresenceProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       wsRef.current = ws;
 
       ws.onopen = async () => {
-        console.log('Presence WebSocket connected');
+        console.log('✅ Presence WebSocket connected successfully');
         setConnectionStatus('connected');
         setServerMessage(undefined);
         retryCountRef.current = 0; // Reset retry count on successful connection
@@ -98,13 +107,13 @@ export const PresenceProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       };
 
       ws.onclose = (event) => {
-        console.log('Presence WebSocket closed', event.code, event.reason);
+        console.log(`🔌 Presence WebSocket closed - Code: ${event.code}, Reason: ${event.reason}`);
         wsRef.current = null;
         setConnectionStatus('disconnected');
         
         // Handle specific error codes
         if (event.code === 1006) {
-          console.warn('WebSocket closed abnormally - server may be experiencing resource issues');
+          console.warn('⚠️ WebSocket closed abnormally - server may be experiencing resource issues');
           setServerMessage('Server is experiencing high load. Presence features may be limited.');
         }
         
@@ -125,7 +134,7 @@ export const PresenceProvider: React.FC<{ children: React.ReactNode }> = ({ chil
             }
           }, delay);
         } else if (retryCountRef.current >= 3) {
-          console.warn('Max reconnection attempts reached for presence WebSocket. Server may be overloaded.');
+          console.warn('🚫 Max reconnection attempts reached for presence WebSocket. Server may be overloaded.');
           setConnectionStatus('error');
           setServerMessage('Server overloaded. Real-time features disabled, but core functionality remains available.');
           setIsPresenceEnabled(false); // Disable presence features when server is overloaded
@@ -255,8 +264,21 @@ export const PresenceProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     }
   }, [isPresenceEnabled, isAuthenticated, currentUser, startPollingFallback]);
 
+  // Reset connection function for manual retry
+  const resetConnection = useCallback(() => {
+    console.log('🔄 Manually resetting connection...');
+    retryCountRef.current = 0;
+    setIsPresenceEnabled(true);
+    setConnectionStatus('disconnected');
+    setServerMessage(undefined);
+    
+    if (currentUser) {
+      initializeWebSocket(currentUser.id, currentUser.username);
+    }
+  }, [currentUser, initializeWebSocket]);
+
   return (
-    <PresenceContext.Provider value={{ onlineUsers, currentUser, connectionStatus, serverMessage, isPresenceEnabled }}>
+    <PresenceContext.Provider value={{ onlineUsers, currentUser, connectionStatus, serverMessage, isPresenceEnabled, resetConnection }}>
       {children}
     </PresenceContext.Provider>
   );

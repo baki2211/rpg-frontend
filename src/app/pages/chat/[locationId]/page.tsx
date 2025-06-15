@@ -220,7 +220,7 @@ const ChatPage = () => {
       clearInterval(messageCheckInterval);
       hasAttemptedFirstConnect = false;
     };
-  }, [locationId, showError, showSuccess, showInfo]);
+  }, [locationId, showError, showSuccess, showInfo, user?.id, user?.username]);
 
   const sanitizeMessage = (message: string) => {
     // First, handle our special formatting
@@ -260,7 +260,7 @@ const ChatPage = () => {
     return () => {
       document.head.removeChild(styleSheet);
     };
-  }, []);
+  }, [styles]);
 
   // Function to format the message after sanitization
   const formatMessage = (message: string, skill?: Skill) => {
