@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../utils/AuthContext';
 import { useChatUsers } from '../../hooks/useChatUsers';
-import axios from 'axios';
 import './MasterPanel.css';
-import { API_URL } from '../../../config/api';
+import { api } from '../../../services/apiClient';
 
 interface SkillEngineLog {
   id: string;
@@ -131,12 +130,21 @@ export const MasterPanel: React.FC<MasterPanelProps> = ({
   // Fetch engine logs
   const fetchEngineLogs = async () => {
     try {
-      const response = await axios.get(`${API_URL}/engine-logs/location/${locationId}`, {
-        withCredentials: true
-      });
+      const response = await api.get(`/engine-logs/location/${locationId}`);
       
-      if (response.data.success) {
-        const logs = response.data.logs.map((log: {
+      const responseData = response.data as { success: boolean; logs: Array<{
+        id: string;
+        type: 'skill_use' | 'clash' | 'damage' | 'effect';
+        actor: string;
+        target?: string;
+        skill?: string;
+        damage?: number;
+        effects?: string[];
+        details: string;
+        createdAt: string;
+      }> };
+      if (responseData.success) {
+        const logs = responseData.logs.map((log: {
           id: string;
           type: 'skill_use' | 'clash' | 'damage' | 'effect';
           actor: string;
@@ -174,12 +182,11 @@ export const MasterPanel: React.FC<MasterPanelProps> = ({
   // Combat functions
   const fetchActiveRound = async () => {
     try {
-      const response = await axios.get(`${API_URL}/combat/rounds/active/${locationId}`, {
-        withCredentials: true
-      });
-      setActiveRound(response.data.round);
-      if (response.data.round) {
-        setRoundActions(response.data.round.actions || []);
+      const response = await api.get(`/combat/rounds/active/${locationId}`);
+      const responseData = response.data as { round: CombatRound & { actions?: CombatAction[] } };
+      setActiveRound(responseData.round);
+      if (responseData.round) {
+        setRoundActions(responseData.round.actions || []);
       }
     } catch (error) {
       console.error('Error fetching active round:', error);
@@ -188,10 +195,9 @@ export const MasterPanel: React.FC<MasterPanelProps> = ({
 
   const fetchResolvedRounds = async () => {
     try {
-      const response = await axios.get(`${API_URL}/combat/rounds/resolved/${locationId}?limit=5`, {
-        withCredentials: true
-      });
-      setResolvedRounds(response.data.rounds || []);
+      const response = await api.get(`/combat/rounds/resolved/${locationId}?limit=5`);
+      const responseData = response.data as { rounds: CombatRound[] };
+      setResolvedRounds(responseData.rounds || []);
     } catch (error) {
       console.error('Error fetching resolved rounds:', error);
     }
@@ -205,14 +211,13 @@ export const MasterPanel: React.FC<MasterPanelProps> = ({
 
     setIsCreatingRound(true);
     try {
-      const response = await axios.post(`${API_URL}/combat/rounds`, {
+      const response = await api.post('/combat/rounds', {
         locationId: parseInt(locationId),
         eventId: activeEvent.id  // Pass the event ID explicitly
-      }, {
-        withCredentials: true
       });
       
-      if (response.data.success) {
+      const responseData = response.data as { success: boolean };
+      if (responseData.success) {
         console.log(`⚔️ MASTER PANEL: Created round for event ${activeEvent.title}`);
         await fetchActiveRound();
       }
@@ -229,22 +234,21 @@ export const MasterPanel: React.FC<MasterPanelProps> = ({
     
     setIsResolvingRound(true);
     try {
-      const response = await axios.post(`${API_URL}/combat/rounds/${activeRound.id}/resolve`, {}, {
-        withCredentials: true
-      });
+      const response = await api.post(`/combat/rounds/${activeRound.id}/resolve`, {});
       
-      if (response.data.success) {
-        console.log(`⚔️ MASTER PANEL: Resolved round ${activeRound.roundNumber}`);
-        // Refresh all combat data
-        await Promise.all([
-          fetchActiveRound(),
-          fetchResolvedRounds()
-        ]);
-        // Trigger a refresh of engine logs to pick up new logs
-        if (activeTab === 'logs') {
-          await fetchEngineLogs();
+              const responseData = response.data as { success: boolean };
+        if (responseData.success) {
+          console.log(`⚔️ MASTER PANEL: Resolved round ${activeRound.roundNumber}`);
+          // Refresh all combat data
+          await Promise.all([
+            fetchActiveRound(),
+            fetchResolvedRounds()
+          ]);
+          // Trigger a refresh of engine logs to pick up new logs
+          if (activeTab === 'logs') {
+            await fetchEngineLogs();
+          }
         }
-      }
     } catch (error) {
       console.error('⚔️ MASTER PANEL: Error resolving round:', error);
       alert('Failed to resolve combat round');
@@ -257,14 +261,13 @@ export const MasterPanel: React.FC<MasterPanelProps> = ({
     if (!activeRound) return;
     
     try {
-      const response = await axios.post(`${API_URL}/combat/rounds/${activeRound.id}/cancel`, {}, {
-        withCredentials: true
-      });
+      const response = await api.post(`/combat/rounds/${activeRound.id}/cancel`, {});
       
-      if (response.data.success) {
-        setActiveRound(null);
-        setRoundActions([]);
-      }
+              const responseData = response.data as { success: boolean };
+        if (responseData.success) {
+          setActiveRound(null);
+          setRoundActions([]);
+        }
     } catch (error) {
       console.error('Error cancelling round:', error);
       alert('Failed to cancel combat round');
@@ -325,10 +328,9 @@ export const MasterPanel: React.FC<MasterPanelProps> = ({
   // Event functions
   const fetchActiveEvent = async () => {
     try {
-      const response = await axios.get(`${API_URL}/events/active/${locationId}`, {
-        withCredentials: true
-      });
-      setActiveEvent(response.data.event);
+      const response = await api.get(`/events/active/${locationId}`);
+      const responseData = response.data as { event: Event };
+      setActiveEvent(responseData.event);
     } catch (error) {
       console.error('Error fetching active event:', error);
     }
@@ -336,10 +338,9 @@ export const MasterPanel: React.FC<MasterPanelProps> = ({
 
   const fetchRecentEvents = async () => {
     try {
-      const response = await axios.get(`${API_URL}/events/location/${locationId}?limit=5`, {
-        withCredentials: true
-      });
-      setRecentEvents(response.data.events || []);
+      const response = await api.get(`/events/location/${locationId}?limit=5`);
+      const responseData = response.data as { events: Event[] };
+      setRecentEvents(responseData.events || []);
     } catch (error) {
       console.error('Error fetching recent events:', error);
     }
@@ -353,16 +354,15 @@ export const MasterPanel: React.FC<MasterPanelProps> = ({
 
     setIsCreatingEvent(true);
     try {
-      const response = await axios.post(`${API_URL}/events`, {
+      const response = await api.post('/events', {
         title: eventForm.title,
         type: eventForm.type,
         description: eventForm.description,
         locationId: parseInt(locationId)
-      }, {
-        withCredentials: true
       });
       
-      if (response.data.success) {
+      const responseData = response.data as { success: boolean };
+      if (responseData.success) {
         await fetchActiveEvent();
         setEventForm({ title: '', type: 'lore', description: '' });
       }
@@ -379,11 +379,10 @@ export const MasterPanel: React.FC<MasterPanelProps> = ({
     
     setIsClosingEvent(true);
     try {
-      const response = await axios.post(`${API_URL}/events/${activeEvent.id}/close`, {}, {
-        withCredentials: true
-      });
+      const response = await api.post(`/events/${activeEvent.id}/close`, {});
       
-      if (response.data.success) {
+      const responseData = response.data as { success: boolean };
+      if (responseData.success) {
         setActiveEvent(null);
         await fetchRecentEvents();
       }
@@ -400,11 +399,10 @@ export const MasterPanel: React.FC<MasterPanelProps> = ({
     
     setIsFreezingEvent(true);
     try {
-      const response = await axios.post(`${API_URL}/events/${activeEvent.id}/freeze`, {}, {
-        withCredentials: true
-      });
+      const response = await api.post(`/events/${activeEvent.id}/freeze`, {});
       
-      if (response.data.success) {
+      const responseData = response.data as { success: boolean };
+      if (responseData.success) {
         await fetchActiveEvent();
         alert('🧊 Event frozen! Session state has been saved and cleared.');
       }
@@ -421,11 +419,10 @@ export const MasterPanel: React.FC<MasterPanelProps> = ({
     
     setIsUnfreezingEvent(true);
     try {
-      const response = await axios.post(`${API_URL}/events/${activeEvent.id}/unfreeze`, {}, {
-        withCredentials: true
-      });
+      const response = await api.post(`/events/${activeEvent.id}/unfreeze`, {});
       
-      if (response.data.success) {
+      const responseData = response.data as { success: boolean };
+      if (responseData.success) {
         await fetchActiveEvent();
         alert('🔥 Event unfrozen! Session state has been restored.');
       }

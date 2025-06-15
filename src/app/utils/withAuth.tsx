@@ -1,7 +1,6 @@
 import React, { useEffect } from "react";
 import { useRouter } from "next/router";
-import axios from "axios";
-import { API_URL } from "../../config/api";
+import { api } from "../../services/apiClient";
 
 const withAuth = (WrappedComponent: React.ComponentType) => {
   const AuthComponent = (props: Record<string, unknown>) => {
@@ -10,7 +9,7 @@ const withAuth = (WrappedComponent: React.ComponentType) => {
     useEffect(() => {
       const verifyToken = async () => {
         try {
-          await axios.get(`${API_URL}/protected`, { withCredentials: true });
+          await api.get('/protected');
         } catch {
           router.push('/login');
         }

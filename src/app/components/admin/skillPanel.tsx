@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
 import './admin.css';
-import { API_URL } from '../../../config/api';
+import { api } from '../../../services/apiClient';
 
 interface StatDefinition {
   id: number;
@@ -90,14 +89,13 @@ const SkillDashboard: React.FC = () => {
 
   const fetchStatDefinitions = async () => {
     try {
-      const response = await axios.get(`${API_URL}/stat-definitions?category=primary_stat&activeOnly=true`, {
-        withCredentials: true,
-      });
-      setStatDefinitions(response.data);
+      const response = await api.get('/stat-definitions?category=primary_stat&activeOnly=true');
+      setStatDefinitions(response.data as StatDefinition[]);
       
       // Initialize required stats with all primary stats set to 0
       const initialRequiredStats: Record<string, number> = {};
-      response.data.forEach((stat: StatDefinition) => {
+      const statData = response.data as StatDefinition[];
+      statData.forEach((stat: StatDefinition) => {
         initialRequiredStats[stat.internalName] = 0;
       });
       
@@ -112,8 +110,8 @@ const SkillDashboard: React.FC = () => {
 
   const fetchBranches = async () => {
     try {
-      const response = await axios.get(`${API_URL}/skill-branches`);
-      setBranches(response.data);
+      const response = await api.get('/skill-branches');
+      setBranches(response.data as Branch[]);
     } catch (error) {
       console.error('Error fetching branches:', error);
     }
@@ -121,8 +119,8 @@ const SkillDashboard: React.FC = () => {
 
   const fetchTypes = async () => {
     try {
-      const response = await axios.get(`${API_URL}/skill-types`);
-      setTypes(response.data);
+      const response = await api.get('/skill-types');
+      setTypes(response.data as Type[]);
     } catch (error) {
       console.error('Error fetching types:', error);
     }
@@ -130,8 +128,8 @@ const SkillDashboard: React.FC = () => {
 
   const fetchSkills = async () => {
     try {
-      const response = await axios.get(`${API_URL}/skills`);
-      setSkills(response.data);
+      const response = await api.get('/skills');
+      setSkills(response.data as Skill[]);
     } catch (error) {
       console.error('Error fetching skills:', error);
     }
@@ -180,9 +178,9 @@ const SkillDashboard: React.FC = () => {
     e.preventDefault();
     try {
       if (selectedSkill) {
-        await axios.put(`${API_URL}/skills/${selectedSkill.id}`, formData);
+        await api.put(`/skills/${selectedSkill.id}`, formData);
       } else {
-        await axios.post(`${API_URL}/skills`, formData);
+        await api.post('/skills', formData);
       }
       fetchSkills();
       
@@ -233,7 +231,7 @@ const SkillDashboard: React.FC = () => {
 
   const handleDelete = async (id: number) => {
     try {
-      await axios.delete(`${API_URL}/skills/${id}`);
+      await api.delete(`/skills/${id}`);
       fetchSkills();
     } catch (error) {
       console.error('Error deleting skill:', error);

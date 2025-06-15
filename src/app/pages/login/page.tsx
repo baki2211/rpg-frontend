@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import axios from 'axios';
 import { useAuth } from '../../utils/AuthContext';
 import { api } from '../../../services/apiClient';
 import { tokenService } from '../../../services/tokenService';
@@ -52,11 +51,8 @@ const Login = () => {
         router.push('/pages/dashboard');
       }, 1000);
     } catch (error: unknown) {
-      if (axios.isAxiosError(error)) {
-        setMessage(error.response?.data?.message || 'Login failed.');
-      } else {
-        setMessage('Login failed.');
-      }
+      const axiosError = error as { response?: { data?: { message?: string } } };
+      setMessage(axiosError.response?.data?.message || 'Login failed.');
     } finally {
       setIsLoading(false);
     }

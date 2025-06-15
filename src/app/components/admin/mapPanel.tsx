@@ -1,13 +1,12 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '../../utils/AuthContext';
 import { Map, Location } from '../../../types/types';
 import './admin.css';
 import Image from 'next/image';
-import { API_URL } from '../../../config/api';
+import { api } from '../../../services/apiClient';
 
 const AdminMapPanel = () => {
   const router = useRouter();
@@ -35,15 +34,11 @@ const AdminMapPanel = () => {
 
   const fetchMapsAndLocations = async () => {
     try {
-      const response = await axios.get(`${API_URL}/maps`, {
-        withCredentials: true,
-      });
-      setMaps(response.data);
+      const response = await api.get('/maps');
+      setMaps(response.data as Map[]);
 
-      const mainMapResponse = await axios.get(`${API_URL}/maps/main`, {
-        withCredentials: true,
-      });
-      const mainMap = mainMapResponse.data;
+      const mainMapResponse = await api.get('/maps/main');
+      const mainMap = mainMapResponse.data as { locations: Location[] };
       setLocations(mainMap?.locations || []);
     } catch (error) {
       console.error('Error fetching maps or locations:', error);
@@ -63,10 +58,7 @@ const AdminMapPanel = () => {
     formData.append('name', mapName);
 
     try {
-      await axios.post(`${API_URL}/maps/new`, formData, {
-        headers: { 'Content-Type': 'multipart/form-data' },
-        withCredentials: true,
-      });
+      await api.post('/maps/new', formData);
       setMap(null);
       setMapName('');
       setErrorMessage('');
@@ -83,7 +75,7 @@ const AdminMapPanel = () => {
       return;
     }
     try {
-      await axios.put(`${API_URL}/maps/${mapId}/main`, {}, { withCredentials: true });
+      await api.put(`/maps/${mapId}/main`, {});
       fetchMapsAndLocations();
       setErrorMessage('');
     } catch (error) {
@@ -96,20 +88,14 @@ const AdminMapPanel = () => {
     e.preventDefault();
 
     try {
-      const mainMapResponse = await axios.get(`${API_URL}/maps/main`, {
-        withCredentials: true,
-      });
-      const mainMapId = mainMapResponse.data.id;
+      const mainMapResponse = await api.get('/maps/main');
+      const mainMapId = (mainMapResponse.data as { id: number }).id;
 
       if (selectedLocation) {
-        await axios.put(`${API_URL}/locations/${selectedLocation.id}`, selectedLocation, {
-          withCredentials: true,
-        });
+        await api.put(`/locations/${selectedLocation.id}`, selectedLocation);
         setSelectedLocation(null);
       } else {
-        await axios.post(`${API_URL}/locations/${mainMapId}/new`, locationData, {
-          withCredentials: true,
-        });
+        await api.post(`/locations/${mainMapId}/new`, locationData);
         setLocationData({ name: '', description: '', xCoordinate: 0, yCoordinate: 0 });
       }
 
@@ -124,9 +110,7 @@ const AdminMapPanel = () => {
   const handleDeleteLocation = async (locationId: number) => {
     if (window.confirm('Are you sure you want to delete this location?')) {
       try {
-        await axios.delete(`${API_URL}/locations/${locationId}`, {
-          withCredentials: true,
-        });
+        await api.delete(`/locations/${locationId}`);
         fetchMapsAndLocations();
         setErrorMessage('');
       } catch (error) {
@@ -141,9 +125,7 @@ const AdminMapPanel = () => {
     if (!confirm) return;
 
     try {
-      await axios.delete(`${API_URL}/maps/${mapId}`, {
-        withCredentials: true,
-      });
+      await api.delete(`/maps/${mapId}`);
       fetchMapsAndLocations();
       setErrorMessage('');
     } catch (error) {

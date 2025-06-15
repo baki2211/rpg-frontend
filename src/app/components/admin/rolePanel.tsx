@@ -1,9 +1,8 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
 import './admin.css';
-import { API_URL } from '../../../config/api';
+import { api } from '../../../services/apiClient';
 
 interface User {
   id: number;
@@ -25,10 +24,8 @@ const RolePanel: React.FC = () => {
   const fetchUsers = async () => {
     try {
       setLoading(true);
-      const response = await axios.get(`${API_URL}/user/all`, {
-        withCredentials: true
-      });
-      setUsers(response.data);
+      const response = await api.get('/user/all');
+      setUsers(response.data as User[]);
     } catch (error) {
       console.error('Error fetching users:', error);
       setError('Failed to fetch users. Make sure you have admin permissions.');
@@ -42,10 +39,7 @@ const RolePanel: React.FC = () => {
       setError(null);
       setSuccessMessage(null);
       
-      await axios.put(`${API_URL}/user/${userId}/role`, 
-        { role: newRole },
-        { withCredentials: true }
-      );
+      await api.put(`/user/${userId}/role`, { role: newRole });
       
       setSuccessMessage(`User role updated to ${newRole} successfully!`);
       fetchUsers(); // Refresh the list

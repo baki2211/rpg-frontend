@@ -1,14 +1,12 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import axios from 'axios';
 import { useRouter } from 'next/navigation';
 import CharacterCard from '../character/characterCard';
 import OnlineUsers from '../common/OnlineUsers';
 import SessionList from '../sessions/SessionList';
 import { useCharacters } from '../../hooks/useCharacter';
-import { API_URL } from '../../../config/api';
-import TokenDebug from '../debug/TokenDebug';
+import { api } from '../../../services/apiClient';
 
 const Dashboard = () => {
   const router = useRouter();
@@ -26,11 +24,10 @@ const Dashboard = () => {
   useEffect(() => {
     const fetchDashboard = async () => {
       try {
-        const response = await axios.get(`${API_URL}/user/dashboard`, {
-          withCredentials: true,
-        });
-        setUserData(response.data.user);
-        setMessage(response.data.message);
+        const response = await api.get('/user/dashboard');
+        const responseData = response.data as { user: UserData; message: string };
+        setUserData(responseData.user);
+        setMessage(responseData.message);
       } catch (error) {
         setMessage('You are not authorized to view this page. Redirecting...');
         console.error('Error fetching dashboard:', error);
@@ -53,7 +50,6 @@ const Dashboard = () => {
 
   return (
     <div className="dashboard-page">
-      <TokenDebug />
       <div className="page-container">
         <div className="page-header">
           <h1>Welcome back, {userData.username}!</h1>

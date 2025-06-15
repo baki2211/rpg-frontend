@@ -1,8 +1,7 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect } from "react";
-import axios from "axios";
-import { API_URL } from "../../config/api";
+import { api } from "../../services/apiClient";
 import { tokenService } from "../../services/tokenService";
 
 interface User {
@@ -39,43 +38,30 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         
         if (storedToken && storedUser) {
           // We have a stored token, let's verify it's still valid
-          const response = await axios.get(`${API_URL}/protected`, {
-            headers: {
-              Authorization: `Bearer ${storedToken}`
-            },
-            withCredentials: true,
-            timeout: 5000,
-          });
+          const response = await api.get('/protected');
+          const responseData = response.data as { user: User };
           
           setIsAuthenticated(true);
-          setUser(response.data.user);
+          setUser(responseData.user);
         } else {
-          // No stored token, try cookie-based auth (for local development)
-          const response = await axios.get(`${API_URL}/protected`, {
-            withCredentials: true,
-            timeout: 5000,
-          });
-          
-          setIsAuthenticated(true);
-          setUser(response.data.user);
+          // No stored token, clear auth state
+          setIsAuthenticated(false);
+          setUser(null);
         }
       } catch (error: unknown) {
         
         // Clear stored auth data on failure
         tokenService.clearAuth();
         
-        if (axios.isAxiosError(error)) {
-          if (error.code === 'ECONNREFUSED') {
-            setError('Cannot connect to server. Please make sure the backend is running.');
-          } else if (error.response?.status === 401) {
-            setError('Not authenticated. Please log in.');
-          } else if (error.code === 'ECONNABORTED') {
-            setError('Connection timeout. Please check your network connection.');
-          } else {
-            setError(error.message || 'Authentication check failed');
-          }
+        const axiosError = error as { code?: string; response?: { status: number }; message?: string };
+        if (axiosError.code === 'ECONNREFUSED') {
+          setError('Cannot connect to server. Please make sure the backend is running.');
+        } else if (axiosError.response?.status === 401) {
+          setError('Not authenticated. Please log in.');
+        } else if (axiosError.code === 'ECONNABORTED') {
+          setError('Connection timeout. Please check your network connection.');
         } else {
-          setError('An unexpected error occurred');
+          setError(axiosError.message || 'Authentication check failed');
         }
         
         setIsAuthenticated(false);

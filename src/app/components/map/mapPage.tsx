@@ -2,9 +2,9 @@
 
 import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
-import axios from 'axios';
 import { useRouter } from 'next/navigation';
-import { API_URL, BASE_URL } from '../../../config/api';
+import { BASE_URL } from '../../../config/api';
+import { api } from '../../../services/apiClient';
 
 interface Location {
   id: number;
@@ -16,15 +16,16 @@ interface Location {
 const MapPage = () => {
   const router = useRouter();
   const [mapUrl, setMapUrl] = useState('');
-  const [locations, setLocations] = useState([]);
+  const [locations, setLocations] = useState<Location[]>([]);
   const [imageError, setImageError] = useState(false);
 
   useEffect(() => {
     const fetchMapAndLocations = async () => {
       try {
-        const mainMapResponse = await axios.get(`${API_URL}/maps/main`, { withCredentials: true });
-        setMapUrl(`${BASE_URL}${mainMapResponse.data.imageUrl}`);
-        setLocations(mainMapResponse.data.locations || []);
+        const mainMapResponse = await api.get('/maps/main');
+        const responseData = mainMapResponse.data as { imageUrl: string; locations: Location[] };
+        setMapUrl(`${BASE_URL}${responseData.imageUrl}`);
+        setLocations(responseData.locations || []);
       } catch (error) {
         console.error('Failed to fetch main map and locations', error);
       }
