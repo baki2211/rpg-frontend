@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import { WS_URL } from '../../config/api';
 
 interface WebSocketOptions {
   locationId: string;
@@ -29,7 +30,7 @@ const useWebSocket = ({ locationId, username, onMessage, onError, onClose }: Web
       return;
     }
 
-      ws.current = new WebSocket(`ws://localhost:5001/ws/chat?locationId=${locationId}&username=${username}`);
+      ws.current = new WebSocket(`${WS_URL}/ws/chat?locationId=${locationId}&username=${username}`);
 
       setConnectionStatus('connecting');
       setErrorMessage('Connecting to WebSocket...');

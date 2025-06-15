@@ -1,8 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
-import { API_URL } from '../../../config/api';
+import { api } from '../../../services/apiClient';
 
 interface NPC {
   id: number;
@@ -42,14 +41,14 @@ const NPCSection: React.FC = () => {
       setLoading(true);
       
       const [npcsResponse, activeCharResponse] = await Promise.all([
-        axios.get(`${API_URL}/characters/npcs/available`, { withCredentials: true }),
-        axios.get(`${API_URL}/characters/`, { withCredentials: true })
+        api.get('/characters/npcs/available'),
+        api.get('/characters/')
       ]);
 
-      setAvailableNPCs(npcsResponse.data);
+      setAvailableNPCs(npcsResponse.data as NPC[]);
       
       // Find the active character
-      const activeChar = activeCharResponse.data.find((char: ActiveCharacter & { isActive: boolean }) => char.isActive);
+      const activeChar = (activeCharResponse.data as (ActiveCharacter & { isActive: boolean })[]).find((char: ActiveCharacter & { isActive: boolean }) => char.isActive);
       setActiveCharacter(activeChar || null);
       
     } catch (error) {
@@ -63,17 +62,16 @@ const NPCSection: React.FC = () => {
   const handleActivateNPC = async (npcId: number) => {
     try {
       setError('');
-      await axios.post(`${API_URL}/characters/npcs/${npcId}/activate`, {}, {
-        withCredentials: true
-      });
+      await api.post(`/characters/npcs/${npcId}/activate`, {});
       
       // Refresh data to show the newly activated NPC
       await fetchData();
       setSelectedNPC(null);
     } catch (error: unknown) {
       console.error('Error activating NPC:', error);
-      if (axios.isAxiosError(error)) {
-        setError(error.response?.data?.error || 'Failed to activate NPC');
+      if (error && typeof error === 'object' && 'response' in error) {
+        const axiosError = error as { response?: { data?: { error?: string } } };
+        setError(axiosError.response?.data?.error || 'Failed to activate NPC');
       } else {
         setError('Failed to activate NPC');
       }
@@ -85,16 +83,15 @@ const NPCSection: React.FC = () => {
     
     try {
       setError('');
-      await axios.post(`${API_URL}/characters/npcs/${activeCharacter.id}/deactivate`, {}, {
-        withCredentials: true
-      });
+      await api.post(`/characters/npcs/${activeCharacter.id}/deactivate`, {});
       
       // Refresh data
       await fetchData();
     } catch (error: unknown) {
       console.error('Error deactivating NPC:', error);
-      if (axios.isAxiosError(error)) {
-        setError(error.response?.data?.error || 'Failed to deactivate NPC');
+      if (error && typeof error === 'object' && 'response' in error) {
+        const axiosError = error as { response?: { data?: { error?: string } } };
+        setError(axiosError.response?.data?.error || 'Failed to deactivate NPC');
       } else {
         setError('Failed to deactivate NPC');
       }

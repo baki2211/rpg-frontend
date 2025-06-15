@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { usePathname } from 'next/navigation';
+import { WS_URL } from '../../config/api';
 
 export interface PresenceUser {
   username: string;
@@ -28,7 +29,7 @@ const usePresenceWebSocket = (
     if (!userId || !username) return;
 
     try {
-      const ws = new WebSocket(`ws://localhost:5001/ws/presence?userId=${userId}&username=${encodeURIComponent(username)}`);
+      const ws = new WebSocket(`${WS_URL}/ws/presence?userId=${userId}&username=${encodeURIComponent(username)}`);
       wsRef.current = ws;
 
       ws.onopen = () => {

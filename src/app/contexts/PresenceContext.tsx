@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useEffect, useState, useRef, useCallback } from 'react';
 import { usePathname } from 'next/navigation';
-import axios from 'axios';
+import { api } from '../../services/apiClient';
+import { WS_URL } from '../../config/api';
 import { useAuth } from '../utils/AuthContext';
 
 interface PresenceUser {
@@ -14,10 +15,8 @@ const getLocationFromPath = async (pathname: string): Promise<string> => {
   if (pathname.startsWith('/pages/chat/')) {
     const locationId = pathname.split('/pages/chat/')[1];
     try {
-      const response = await axios.get(`http://localhost:5001/api/location/${locationId}`, {
-        withCredentials: true,
-      });
-      return response.data.name || `Location ${locationId}`;
+      const response = await api.get(`/location/${locationId}`);
+      return (response.data as { name: string }).name || `Location ${locationId}`;
     } catch {
       return `Location ${locationId}`;
     }
@@ -65,7 +64,7 @@ export const PresenceProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     }
 
     try {
-      const ws = new WebSocket(`ws://localhost:5001/ws/presence?userId=${userId}&username=${encodeURIComponent(username)}`);
+      const ws = new WebSocket(`${WS_URL}/ws/presence?userId=${userId}&username=${encodeURIComponent(username)}`);
       wsRef.current = ws;
 
       ws.onopen = async () => {

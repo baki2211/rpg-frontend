@@ -1,10 +1,9 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import axios, { AxiosError } from 'axios';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '../../utils/AuthContext';
-import { API_URL } from '../../../config/api';
+import { api } from '../../../services/apiClient';
 import './register.css';
 
 const Register = () => {
@@ -40,7 +39,7 @@ const Register = () => {
     }
 
     try {
-      await axios.post(`${API_URL}/auth/register`, {
+      await api.post('/auth/register', {
         username,
         password,
       });
@@ -52,9 +51,10 @@ const Register = () => {
       setTimeout(() => {
         router.push('/pages/login');
       }, 2000);
-    } catch (error) {
-      if (error instanceof AxiosError) {
-        setMessage(error.response?.data?.message || 'Registration failed.');
+    } catch (error: unknown) {
+      if (error && typeof error === 'object' && 'response' in error) {
+        const axiosError = error as { response?: { data?: { message?: string } } };
+        setMessage(axiosError.response?.data?.message || 'Registration failed.');
       } else {
         setMessage('Registration failed.');
       }

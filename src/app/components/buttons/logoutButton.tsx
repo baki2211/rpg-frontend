@@ -1,11 +1,11 @@
 'use client';
 
 import React from "react";
-import axios from "axios";
 import { useRouter } from 'next/navigation';
 import { useAuth } from "../../utils/AuthContext";
 import { usePresence } from "../../contexts/PresenceContext";
-import { API_URL, WS_URL } from '../../../config/api';
+import { api } from '../../../services/apiClient';
+import { WS_URL } from '../../../config/api';
 
 const LogoutButton: React.FC = () => {
   const router = useRouter();
@@ -23,9 +23,7 @@ const LogoutButton: React.FC = () => {
         };
       }
 
-      await axios.post(`${API_URL}/auth/logout`, {}, {
-        withCredentials: true,
-      });
+      await api.post('/auth/logout', {});
 
       setIsAuthenticated(false); // Update global authentication state
       setUser(null); // Clear user data

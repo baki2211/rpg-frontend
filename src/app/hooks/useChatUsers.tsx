@@ -1,5 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../utils/AuthContext';
+import { api } from '../../services/apiClient';
+import { WS_URL } from '../../config/api';
 
 export interface ChatUser {
   userId: string;
@@ -65,10 +67,8 @@ export const useChatUsers = (locationId: string) => {
   }[], expectedLocationId: string) => {
     let expectedLocation = `Chat ${expectedLocationId}`;
     try {
-      const response = await fetch('http://localhost:5001/api/maps/main', {
-        credentials: 'include'
-      });
-      const mapData = await response.json();
+      const response = await api.get('/maps/main');
+      const mapData = response.data as { locations?: { id: number; name: string }[] };
       const location = mapData.locations?.find((loc: { id: number; name: string }) => 
         loc.id === parseInt(expectedLocationId)
       );
@@ -113,7 +113,7 @@ export const useChatUsers = (locationId: string) => {
     if (!currentUser || !mountedRef.current) return;
     
     const connectWebSocket = () => {
-      const wsUrl = `ws://localhost:5001/ws/presence?userId=${currentUser.id}&username=${encodeURIComponent(currentUser.username)}`;
+      const wsUrl = `${WS_URL}/ws/presence?userId=${currentUser.id}&username=${encodeURIComponent(currentUser.username)}`;
       const ws = new WebSocket(wsUrl) as ExtendedWebSocket;
 
       ws.onopen = () => {
@@ -207,10 +207,8 @@ export const useChatUsers = (locationId: string) => {
 
     try {
       // Get location name
-      const response = await fetch('http://localhost:5001/api/maps/main', {
-        credentials: 'include'
-      });
-      const data = await response.json();
+      const response = await api.get('/maps/main');
+      const data = response.data as { locations?: { id: number; name: string }[] };
       const location = data.locations?.find((loc: { id: number; name: string }) => 
         loc.id === parseInt(locId)
       );

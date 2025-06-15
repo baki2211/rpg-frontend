@@ -2,8 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import axios from 'axios';
-import { API_URL } from '../../../config/api';
+import { api } from '../../../services/apiClient';
 
 const ProtectedPage = () => {
   const router = useRouter();
@@ -13,7 +12,7 @@ const ProtectedPage = () => {
     const verifyAccess = async () => {
       try {
         // Verify the token using cookies
-        await axios.get(`${API_URL}/protected`, { withCredentials: true });
+        await api.get('/protected');
         setMessage('Welcome to the protected page!');
       } catch {
         // Redirect if unauthorized
