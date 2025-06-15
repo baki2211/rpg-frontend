@@ -5,13 +5,37 @@ import { tokenService } from '../../../services/tokenService';
 import { api } from '../../../services/apiClient';
 import { API_CONFIG } from '../../../config/api';
 
+interface DebugInfo {
+  storedToken: string | null;
+  storedUser: { id: number; username: string; role: string } | null;
+  isAuthenticated: boolean;
+  apiConfig: typeof API_CONFIG;
+  apiCallSuccess?: boolean;
+  apiResponse?: unknown;
+  apiError?: {
+    message: string;
+    status?: number;
+    data?: unknown;
+  };
+  directCallSuccess?: boolean;
+  directCallStatus?: number;
+  directCallData?: unknown;
+  directCallError?: string;
+  error?: string;
+}
+
 const TokenDebug = () => {
-  const [debugInfo, setDebugInfo] = useState<any>(null);
+  const [debugInfo, setDebugInfo] = useState<DebugInfo | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
   const runDebugTest = async () => {
     setIsLoading(true);
-    const info: any = {};
+    const info: DebugInfo = {
+      storedToken: null,
+      storedUser: null,
+      isAuthenticated: false,
+      apiConfig: API_CONFIG
+    };
 
     try {
       // Check stored token
@@ -21,18 +45,19 @@ const TokenDebug = () => {
       info.apiConfig = API_CONFIG;
 
       // Test API call
-      try {
-        const response = await api.get('/protected');
-        info.apiCallSuccess = true;
-        info.apiResponse = response.data;
-      } catch (error: any) {
-        info.apiCallSuccess = false;
-        info.apiError = {
-          message: error.message,
-          status: error.response?.status,
-          data: error.response?.data
-        };
-      }
+             try {
+         const response = await api.get('/protected');
+         info.apiCallSuccess = true;
+         info.apiResponse = response.data;
+       } catch (error: unknown) {
+         info.apiCallSuccess = false;
+         const axiosError = error as { message: string; response?: { status: number; data: unknown } };
+         info.apiError = {
+           message: axiosError.message || 'Unknown error',
+           status: axiosError.response?.status,
+           data: axiosError.response?.data
+         };
+       }
 
       // Test direct axios call with token
       if (info.storedToken) {
@@ -54,15 +79,17 @@ const TokenDebug = () => {
           } else {
             info.directCallError = await directResponse.text();
           }
-        } catch (error: any) {
-          info.directCallSuccess = false;
-          info.directCallError = error.message;
-        }
-      }
+                 } catch (error: unknown) {
+           info.directCallSuccess = false;
+           const fetchError = error as { message: string };
+           info.directCallError = fetchError.message || 'Unknown fetch error';
+         }
+       }
 
-    } catch (error: any) {
-      info.error = error.message;
-    }
+     } catch (error: unknown) {
+       const generalError = error as { message: string };
+       info.error = generalError.message || 'Unknown error occurred';
+     }
 
     setDebugInfo(info);
     setIsLoading(false);
