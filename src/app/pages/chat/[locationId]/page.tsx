@@ -125,6 +125,15 @@ const ChatPage = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
+  // Handle incoming skill engine logs from WebSocket
+  const handleSkillEngineLog = (logData: SkillEngineLogMessage) => {
+    if (isMaster && logData.type === 'skill_engine_log') {
+      // Master panel now fetches logs directly from API
+      // This WebSocket message could trigger a refresh if needed
+      console.log('Skill engine log received:', logData.log);
+    }
+  };
+
   useEffect(() => {
     let hasAttemptedFirstConnect = false;
     
@@ -214,13 +223,13 @@ const ChatPage = () => {
       },
     });
 
-    // Cleanup on unmount
     return () => {
-      webSocketServiceRef.current?.close();
+      if (webSocketServiceRef.current) {
+        webSocketServiceRef.current.close();
+      }
       clearInterval(messageCheckInterval);
-      hasAttemptedFirstConnect = false;
     };
-  }, [locationId, showError, showSuccess, showInfo, user?.id, user?.username]);
+  }, [locationId, user?.id, user?.username, showError, showInfo, showSuccess, handleSkillEngineLog]);
 
   const sanitizeMessage = (message: string) => {
     // First, handle our special formatting
@@ -310,15 +319,6 @@ const ChatPage = () => {
   const handleUnselectSkill = () => {
     setSelectedSkill(null);
     setIsSkillsModalOpen(false);
-  };
-
-  // Handle incoming skill engine logs from WebSocket
-  const handleSkillEngineLog = (logData: SkillEngineLogMessage) => {
-    if (isMaster && logData.type === 'skill_engine_log') {
-      // Master panel now fetches logs directly from API
-      // This WebSocket message could trigger a refresh if needed
-      console.log('Skill engine log received:', logData.log);
-    }
   };
 
   // Master Panel handlers

@@ -1,8 +1,8 @@
 import { useEffect, useState, useRef } from 'react';
-import { usePresence } from '../contexts/PresenceContext';
-import type { PresenceUser } from '../contexts/PresenceContext';
+import { usePresence, PresenceUser } from '../contexts/PresenceContext';
 
-type ChatUser = PresenceUser;
+// Export ChatUser type as an alias for PresenceUser
+export type ChatUser = PresenceUser;
 
 export const useChatUsers = (locationId: string | null) => {
   const [users, setUsers] = useState<ChatUser[]>([]);
