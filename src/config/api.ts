@@ -1,33 +1,30 @@
 // API Configuration - automatically detects environment
 const getApiConfig = () => {
-  // Multiple ways to detect production environment
-  const isNodeProduction = process.env.NODE_ENV === 'production';
-  const isDeployedDomain = typeof window !== 'undefined' && 
-                          !window.location.hostname.includes('localhost') &&
-                          !window.location.hostname.includes('127.0.0.1');
+  // Check if we're in a browser environment
+  const isBrowser = typeof window !== 'undefined';
   
-  // Override for manual testing (you can set this in browser console)
-  const manualOverride = typeof window !== 'undefined' && 
-                        (window as unknown as { __FORCE_PRODUCTION_API?: boolean }).__FORCE_PRODUCTION_API;
+  // For local development, we want to use the local backend
+  const isLocalDev = isBrowser && 
+    (window.location.hostname === 'localhost' || 
+     window.location.hostname === '127.0.0.1');
 
-  const isProduction = isNodeProduction || isDeployedDomain || manualOverride;
+  // Only use production URLs if we're actually in production
+  const isProduction = !isLocalDev && process.env.NODE_ENV === 'production';
 
-  const baseUrl = isProduction 
-    ? 'https://rpg-be.onrender.com'       // Production backend URL
-    : 'http://localhost:5001';            // Local development URL
+  const baseUrl = isLocalDev
+    ? 'http://localhost:5001'            // Local development URL
+    : 'https://rpg-be.onrender.com';     // Production backend URL
 
-  const wsUrl = isProduction
-    ? 'wss://rpg-be.onrender.com'         // Production WebSocket URL
-    : 'ws://localhost:5001';              // Local WebSocket URL
-
-
+  const wsUrl = isLocalDev
+    ? 'ws://localhost:5001'              // Local WebSocket URL
+    : 'wss://rpg-be.onrender.com';       // Production WebSocket URL
 
   return {
     baseUrl,
     wsUrl,
     apiUrl: `${baseUrl}/api`,
     uploadsUrl: `${baseUrl}/uploads`,
-    isProduction // Export this for debugging
+    isProduction
   };
 };
 
