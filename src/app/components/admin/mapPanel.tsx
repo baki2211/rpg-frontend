@@ -59,7 +59,11 @@ const AdminMapPanel = () => {
     formData.append('name', mapName);
 
     try {
-      await api.post('/maps/new', formData);
+      await api.post('/maps/new', formData, {
+        headers: {
+          'Content-Type': undefined
+        }
+      });
       setMap(null);
       setMapName('');
       setErrorMessage('');
