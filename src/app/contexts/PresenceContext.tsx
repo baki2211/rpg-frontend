@@ -20,6 +20,7 @@ interface PresenceContextType {
   setIsPresenceEnabled: (enabled: boolean) => void;
   refreshConnection: () => void;
   resetConnection: () => void;
+  currentUser: { id: string; username: string } | null;
 }
 
 const PresenceContext = createContext<PresenceContextType | undefined>(undefined);
@@ -228,8 +229,9 @@ export const PresenceProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     isPresenceEnabled,
     setIsPresenceEnabled,
     refreshConnection,
-    resetConnection
-  }), [onlineUsers, connectionStatus, serverMessage, isPresenceEnabled, setIsPresenceEnabled, refreshConnection, resetConnection]);
+    resetConnection,
+    currentUser
+  }), [onlineUsers, connectionStatus, serverMessage, isPresenceEnabled, setIsPresenceEnabled, refreshConnection, resetConnection, currentUser]);
 
   return (
     <PresenceContext.Provider value={value}>
