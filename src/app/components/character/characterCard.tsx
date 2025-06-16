@@ -38,21 +38,18 @@ const CharacterCard: React.FC<CharacterCardProps> = ({
       return `${UPLOADS_URL}/placeholder.jpg`;
     }
     
-    if (character.imageUrl) {
-      // If imageUrl already starts with http, use it as is
-      if (character.imageUrl.startsWith('http')) {
-        return character.imageUrl;
-      }
-      // If imageUrl already includes /uploads/, use it as is
-      if (character.imageUrl.startsWith('/uploads/')) {
-        return `${UPLOADS_URL}${character.imageUrl}`;
-      }
-      // Otherwise, prepend /uploads/
-      return `${UPLOADS_URL}/uploads/${character.imageUrl}`;
+    if (!character.imageUrl) {
+      return `${UPLOADS_URL}/placeholder.jpg`;
     }
     
-    // Default fallback
-    return `${UPLOADS_URL}/placeholder.jpg`;
+    // If it's already a full URL, use it as is
+    if (character.imageUrl.startsWith('http')) {
+      return character.imageUrl;
+    }
+    
+    // For all other cases, prepend UPLOADS_URL
+    // The backend stores paths like /uploads/filename.jpg
+    return `${UPLOADS_URL}${character.imageUrl}`;
   };
 
   return (

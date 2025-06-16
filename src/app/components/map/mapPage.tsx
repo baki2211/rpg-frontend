@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { BASE_URL, UPLOADS_URL } from '../../../config/api';
+import { UPLOADS_URL } from '../../../config/api';
 import { api } from '../../../services/apiClient';
 
 interface Location {
@@ -13,27 +13,47 @@ interface Location {
   yCoordinate: number;
 }
 
+interface MapData {
+  imageUrl: string;
+  locations: Location[];
+}
+
 const MapPage = () => {
   const router = useRouter();
-  const [mapUrl, setMapUrl] = useState('');
+  const [mapUrl, setMapUrl] = useState<string | null>(null);
   const [locations, setLocations] = useState<Location[]>([]);
   const [imageError, setImageError] = useState(false);
 
   useEffect(() => {
-    const fetchMapAndLocations = async () => {
+    const fetchMap = async () => {
       try {
-        const mainMapResponse = await api.get('/maps/main');
-        const responseData = mainMapResponse.data as { imageUrl: string; locations: Location[] };
-        setMapUrl(`${BASE_URL}${responseData.imageUrl}`);
-        setLocations(responseData.locations || []);
+        const response = await api.get('/maps/main');
+        const mapData = response.data as MapData;
+        setMapUrl(mapData.imageUrl);
+        setLocations(mapData.locations || []);
       } catch (error) {
-        console.error('Failed to fetch main map and locations', error);
+        console.error('Error fetching map:', error);
+        setImageError(true);
       }
     };
-  
-    fetchMapAndLocations();
+    fetchMap();
   }, []);
-  
+
+  const getImageUrl = () => {
+    if (imageError || !mapUrl) {
+      return `${UPLOADS_URL}/placeholder.jpg`;
+    }
+    
+    // If it's already a full URL, use it as is
+    if (mapUrl.startsWith('http')) {
+      return mapUrl;
+    }
+    
+    // For all other cases, prepend UPLOADS_URL
+    // The backend stores paths like /uploads/filename.jpg
+    return `${UPLOADS_URL}${mapUrl}`;
+  };
+
   const navigateToChat = (locationId: number) => {
     router.push(`/pages/chat/${locationId}`);
   };
@@ -43,7 +63,7 @@ const MapPage = () => {
       {mapUrl ? (
         <div style={{ position: 'relative' }}>
           <Image 
-            src={imageError ? `${UPLOADS_URL}/placeholder.jpg` : `${UPLOADS_URL}${mapUrl}`} 
+            src={getImageUrl()}
             alt="Game Map" 
             width={1200}
             height={800}
