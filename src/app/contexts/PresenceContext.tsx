@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useEffect, useState, useRef, useCallback } from 'react';
 import { usePathname } from 'next/navigation';
 import { api } from '../../services/apiClient';
-import { WS_URL } from '../../config/api';
+import { WS_URL, BASE_URL } from '../../config/api';
 import { useAuth } from '../utils/AuthContext';
 
 interface PresenceUser {
@@ -52,6 +52,7 @@ export const PresenceProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const [onlineUsers, setOnlineUsers] = useState<PresenceUser[]>([]);
   const [currentUser, setCurrentUser] = useState<{ id: string; username: string } | null>(null);
   const [connectionStatus, setConnectionStatus] = useState<'connected' | 'connecting' | 'disconnected' | 'error'>('disconnected');
+  const [connectionState, setConnectionState] = useState<'idle' | 'connecting' | 'connected' | 'failed'>('idle');
   const [serverMessage, setServerMessage] = useState<string | undefined>();
   const [isPresenceEnabled, setIsPresenceEnabled] = useState(true);
   const pathname = usePathname();
@@ -60,7 +61,24 @@ export const PresenceProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const retryCountRef = useRef(0);
   const { user, isAuthenticated } = useAuth();
 
-  const createWebSocketConnection = useCallback((userId: string, username: string) => {
+  // Check server health before reconnecting
+  const checkServerHealth = useCallback(async (): Promise<boolean> => {
+    try {
+      const response = await fetch(`${BASE_URL}/api/health`);
+      const health = await response.json();
+      return health.memory.usage_percent < 70 && health.connections.total < 8;
+    } catch {
+      return false;
+    }
+  }, []);
+
+  const createWebSocketConnection = useCallback(async (userId: string, username: string) => {
+    // Prevent connection overlaps with state tracking
+    if (connectionState !== 'idle' && connectionState !== 'failed') {
+      console.log('⚠️ WebSocket connection already in progress, skipping new connection attempt');
+      return;
+    }
+
     // Check if there's already an active connection
     if (wsRef.current && (wsRef.current.readyState === WebSocket.CONNECTING || wsRef.current.readyState === WebSocket.OPEN)) {
       console.log('⚠️ WebSocket connection already exists, skipping new connection attempt');
@@ -69,6 +87,7 @@ export const PresenceProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
     try {
       console.log(`🔌 Attempting WebSocket connection for user ${userId} (${username})`);
+      setConnectionState('connecting');
       setConnectionStatus('connecting');
       setServerMessage(undefined);
       
@@ -77,6 +96,7 @@ export const PresenceProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
       ws.onopen = async () => {
         console.log('✅ Presence WebSocket connected successfully');
+        setConnectionState('connected');
         setConnectionStatus('connected');
         setServerMessage(undefined);
         retryCountRef.current = 0; // Reset retry count on successful connection
@@ -106,43 +126,76 @@ export const PresenceProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         }
       };
 
-      ws.onclose = (event) => {
+      ws.onclose = async (event) => {
         console.log(`🔌 Presence WebSocket closed - Code: ${event.code}, Reason: ${event.reason}`);
         wsRef.current = null;
+        setConnectionState('failed');
         setConnectionStatus('disconnected');
         
-        // Handle specific error codes
-        if (event.code === 1006) {
-          console.warn('⚠️ WebSocket closed abnormally - server may be experiencing resource issues');
-          setServerMessage('Server is experiencing high load. Presence features may be limited.');
+        // Handle resource constraint errors (1006, 1013) with immediate graceful degradation
+        if (event.code === 1006 || event.code === 1013) {
+          console.warn('🚨 Server resource constraints detected - disabling real-time features');
+          setServerMessage('Server is busy. Real-time features temporarily disabled. Core functionality remains available.');
+          setIsPresenceEnabled(false);
+          setConnectionStatus('error');
+          
+          // Don't retry automatically for resource errors - require manual reset
+          // This prevents overwhelming the server
+          return;
         }
         
-        // Only attempt reconnection if we're still authenticated and haven't exceeded retry limit
-        // Don't reconnect immediately on resource errors (1006) - wait longer
-        if (isAuthenticated && retryCountRef.current < 3) { // Reduced retry attempts
-          const baseDelay = event.code === 1006 ? 30000 : 1000; // 30s delay for resource errors
-          const delay = Math.min(baseDelay * Math.pow(2, retryCountRef.current), 60000); // Max 60s
+        // Handle other error codes with conservative retry logic
+        if (event.code === 1008) { // Policy violation (rate limit, missing params)
+          console.warn('⚠️ Connection rejected by server - check parameters');
+          setServerMessage('Connection rejected. Please refresh the page.');
+          setConnectionStatus('error');
+          return;
+        }
+        
+        // Only attempt reconnection for normal disconnections if we're still authenticated
+        // and haven't exceeded retry limit (reduced to 1 attempt)
+        if (isAuthenticated && retryCountRef.current < 1) {
+          // Check server health before attempting reconnection
+          const serverHealthy = await checkServerHealth();
+          
+          if (!serverHealthy) {
+            console.log('🏥 Server health check failed - postponing reconnection');
+            setServerMessage('Server overloaded. Will retry when server capacity improves.');
+            
+            // Try again in 5 minutes if server is unhealthy
+            reconnectTimeoutRef.current = setTimeout(async () => {
+              if (isAuthenticated && currentUser) {
+                console.log('🔄 Retrying connection after server health delay...');
+                createWebSocketConnection(currentUser.id, currentUser.username);
+              }
+            }, 300000); // 5 minutes
+            return;
+          }
+          
+          const delay = 5000; // 5 second delay for normal disconnections
           retryCountRef.current++;
           
-          console.log(`Will attempt to reconnect presence WebSocket in ${delay/1000}s (attempt ${retryCountRef.current})`);
-          setServerMessage(`Reconnecting in ${Math.ceil(delay/1000)}s... (${retryCountRef.current}/3)`);
+          console.log(`Will attempt to reconnect presence WebSocket in ${delay/1000}s (attempt ${retryCountRef.current}/1)`);
+          setServerMessage(`Reconnecting in ${Math.ceil(delay/1000)}s...`);
           
           reconnectTimeoutRef.current = setTimeout(() => {
             if (isAuthenticated && currentUser) {
               console.log(`Attempting to reconnect presence WebSocket (attempt ${retryCountRef.current})`);
+              setConnectionState('idle'); // Reset state for retry
               createWebSocketConnection(currentUser.id, currentUser.username);
             }
           }, delay);
-        } else if (retryCountRef.current >= 3) {
-          console.warn('🚫 Max reconnection attempts reached for presence WebSocket. Server may be overloaded.');
+        } else if (retryCountRef.current >= 1) {
+          console.warn('🚫 Max reconnection attempts reached for presence WebSocket.');
           setConnectionStatus('error');
-          setServerMessage('Server overloaded. Real-time features disabled, but core functionality remains available.');
-          setIsPresenceEnabled(false); // Disable presence features when server is overloaded
+          setServerMessage('Connection failed. Real-time features disabled. Click "Retry Connection" to try again.');
+          setIsPresenceEnabled(false);
         }
       };
 
       ws.onerror = (error) => {
         console.error('Presence WebSocket error:', error);
+        setConnectionState('failed');
         setConnectionStatus('error');
         // Don't immediately try to reconnect on error - let onclose handle it
       };
@@ -150,10 +203,11 @@ export const PresenceProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       return ws;
     } catch (error) {
       console.error('Error creating presence WebSocket:', error);
+      setConnectionState('failed');
       setConnectionStatus('error');
       setServerMessage('Failed to establish connection to server.');
     }
-  }, [pathname, isAuthenticated, currentUser]);
+  }, [pathname, isAuthenticated, currentUser, connectionState, checkServerHealth]);
 
   // Initialize WebSocket connection
   const initializeWebSocket = useCallback((userId: string, username: string) => {
@@ -268,6 +322,7 @@ export const PresenceProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const resetConnection = useCallback(() => {
     console.log('🔄 Manually resetting connection...');
     retryCountRef.current = 0;
+    setConnectionState('idle');
     setIsPresenceEnabled(true);
     setConnectionStatus('disconnected');
     setServerMessage(undefined);
