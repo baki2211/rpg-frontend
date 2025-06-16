@@ -12,7 +12,7 @@ import { ChatUser, useChatUsers } from '@/app/hooks/useChatUsers';
 import { useToast } from '@/app/contexts/ToastContext';
 import './chat.css';
 import { API_URL, WS_URL } from '../../../../config/api';
-import { api } from '../../../utils/api';
+import { api } from '../../../../services/apiClient';
 
 interface SkillEngineLogMessage {
   type: 'skill_engine_log';
@@ -35,6 +35,7 @@ interface ChatMessage {
   createdAt: string;
   message: string;
   skill?: Skill;
+  formattedMessage?: string;
 }
 
 const ChatPage = () => {
@@ -140,19 +141,13 @@ const ChatPage = () => {
     
     if (!locationId) return;
 
-    // Fetch messages from the database
     const fetchMessages = async () => {
       try {
-        const response = await api.get(`/chat/${locationId}`);
-        if (!response.ok) throw new Error('Failed to fetch messages');
-        const data = await response.json();
-        // Add formattedMessage to each message
-        const formatted = data.map((msg: { username: string; createdAt: string; message: string; skill?: Skill }) => {
-          return {
-            ...msg,
-            formattedMessage: `${new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - ${msg.username}`,
-          };
-        });
+        const response = await api.get<ChatMessage[]>(`/chat/${locationId}`);
+        const formatted = response.data.map(msg => ({
+          ...msg,
+          formattedMessage: `${new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - ${msg.username}`,
+        }));
         setMessages(formatted);
         scrollToBottom();
       } catch (error) {
@@ -162,59 +157,41 @@ const ChatPage = () => {
     };
 
     fetchMessages();
+    const messageCheckInterval = setInterval(fetchMessages, 10000);
 
-    // Set up interval to periodically check for restored messages (when session is unfrozen)
-    const messageCheckInterval = setInterval(fetchMessages, 10000); // Check every 10 seconds
-
-    // Initialize WebSocket connection
-    const wsUrl = `${WS_URL}/ws/chat?locationId=${locationId}&userId=${user?.id || ''}&username=${encodeURIComponent(user?.username || '')}`;
+    const token = localStorage.getItem('auth_token');
+    const wsUrl = `${WS_URL}/ws/chat?locationId=${locationId}&userId=${user?.id || ''}&username=${encodeURIComponent(user?.username || '')}&token=${token}`;
+    
     webSocketServiceRef.current = new WebSocketService({
       url: wsUrl,
-      onMessage: (message) => {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const messageData = message as any;
+      onMessage: (message: JSON) => {
+        const messageData = message as unknown as ChatMessage | SkillEngineLogMessage;
         
-        // Handle skill engine logs for masters
-        if (messageData && typeof messageData === 'object' && messageData.type === 'skill_engine_log') {
-          const skillLogMessage: SkillEngineLogMessage = messageData;
-          handleSkillEngineLog(skillLogMessage);
+        if ('type' in messageData && messageData.type === 'skill_engine_log') {
+          handleSkillEngineLog(messageData);
           return;
         }
         
-        // Handle regular chat messages - validate required fields
-        if (!messageData || typeof messageData !== 'object' || 
-            typeof messageData.username !== 'string' || 
-            typeof messageData.createdAt !== 'string' || 
-            messageData.message === undefined) {
+        if (!('username' in messageData) || !('createdAt' in messageData) || !('message' in messageData)) {
           return;
         }
         
-        const typedMessage: ChatMessage = {
-          username: messageData.username,
-          createdAt: messageData.createdAt,
-          message: messageData.message,
-          skill: messageData.skill
-        };
         const formattedMessage = {
-          ...typedMessage,
-          formattedMessage: `${new Date(typedMessage.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - ${typedMessage.username}`,
+          ...messageData,
+          formattedMessage: `${new Date(messageData.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - ${messageData.username}`,
         };
-        setMessages((prev) => [...prev, formattedMessage]);
+        setMessages(prev => [...prev, formattedMessage]);
         scrollToBottom();
       },
       onError: (error) => {
         if (!hasAttemptedFirstConnect) {
           hasAttemptedFirstConnect = true;
-          return; 
+          return;
         }
-        if (error instanceof Event) {
-          showError('Chat connection interrupted, attempting to reconnect...');
-        } else {
-          showError('Chat connection error');
-        }
+        showError(error instanceof Event ? 'Chat connection interrupted, attempting to reconnect...' : 'Chat connection error');
       },
       onClose: (event) => {
-        if (event.code !== 1000) { // Normal closure
+        if (event.code !== 1000) {
           showInfo('Chat disconnected');
         }
       },
