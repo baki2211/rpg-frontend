@@ -6,10 +6,11 @@ import { useAuth } from "../../utils/AuthContext";
 import { usePresence } from "../../contexts/PresenceContext";
 import { api } from '../../../services/apiClient';
 import { WS_URL } from '../../../config/api';
+import { tokenService } from '../../../services/tokenService';
 
 const LogoutButton: React.FC = () => {
   const router = useRouter();
-  const { setIsAuthenticated, setUser } = useAuth(); // Add setUser to clear user data
+  const { setIsAuthenticated, setUser } = useAuth();
   const { currentUser } = usePresence();
 
   const handleLogout = async () => {
@@ -25,11 +26,22 @@ const LogoutButton: React.FC = () => {
 
       await api.post('/auth/logout', {});
 
-      setIsAuthenticated(false); // Update global authentication state
-      setUser(null); // Clear user data
-      router.push('/pages/login'); // Redirect to login page
+      // Clear token and user data from localStorage
+      tokenService.clearAuth();
+      
+      // Update global state
+      setIsAuthenticated(false);
+      setUser(null);
+      
+      // Redirect to login page
+      router.push('/pages/login');
     } catch (error) {
       console.error('Error logging out:', error);
+      // Even if the API call fails, clear local state
+      tokenService.clearAuth();
+      setIsAuthenticated(false);
+      setUser(null);
+      router.push('/pages/login');
     }
   };
 
