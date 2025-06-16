@@ -4,7 +4,7 @@ export const getLocationFromPath = async (pathname: string): Promise<string> => 
   if (pathname.startsWith('/pages/chat/')) {
     const locationId = pathname.split('/pages/chat/')[1];
     try {
-      const response = await api.get(`/location/${locationId}`);
+      const response = await api.get(`/locations/${locationId}`);
       return (response.data as { name: string }).name || `Location ${locationId}`;
     } catch {
       return `Location ${locationId}`;
