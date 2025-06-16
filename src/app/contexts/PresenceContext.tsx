@@ -60,13 +60,18 @@ export const PresenceProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const retryCountRef = useRef(0);
   const { user, isAuthenticated } = useAuth();
+  const retryDelayRef = useRef(5000); // Start with 5 second delay
+  const maxRetryDelay = 30000; // Maximum 30 second delay
+  const consecutiveFailuresRef = useRef(0);
+  const lastRetryTimeRef = useRef(0);
 
   // Check server health before reconnecting
   const checkServerHealth = useCallback(async (): Promise<boolean> => {
     try {
       const response = await fetch(`${BASE_URL}/api/health`);
       const health = await response.json();
-      return health.memory.usage_percent < 70 && health.connections.total < 8;
+      // More conservative health check
+      return health.memory.usage_percent < 60 && health.connections.total < 5;
     } catch {
       return false;
     }
@@ -79,23 +84,40 @@ export const PresenceProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       return;
     }
 
+    // Check if we've had too many consecutive failures
+    const now = Date.now();
+    if (consecutiveFailuresRef.current >= 3 && (now - lastRetryTimeRef.current) < maxRetryDelay) {
+      console.log('🚫 Too many consecutive failures, waiting longer before retry');
+      setServerMessage('Server is busy. Will retry automatically when capacity improves.');
+      setConnectionStatus('error');
+      return;
+    }
+
     // Ensure any existing connection is fully closed
     if (wsRef.current) {
       console.log('🔌 Closing existing WebSocket connection before new attempt');
       wsRef.current.close(1000, 'Connection refresh');
       wsRef.current = null;
       // Add a delay to ensure the old connection is fully closed
-      await new Promise(resolve => setTimeout(resolve, 500));
+      await new Promise(resolve => setTimeout(resolve, 1000));
     }
 
     try {
+      // Check server health before attempting connection
+      const serverHealthy = await checkServerHealth();
+      if (!serverHealthy) {
+        console.log('🏥 Server health check failed - postponing connection');
+        setServerMessage('Server is busy. Will retry when capacity improves.');
+        setConnectionStatus('error');
+        consecutiveFailuresRef.current++;
+        lastRetryTimeRef.current = now;
+        return;
+      }
+
       console.log(`🔌 Attempting WebSocket connection for user ${userId} (${username})`);
       setConnectionState('connecting');
       setConnectionStatus('connecting');
       setServerMessage(undefined);
-      
-      // Add a small delay before attempting new connection
-      await new Promise(resolve => setTimeout(resolve, 100));
       
       const ws = new WebSocket(`${WS_URL}/ws/presence?userId=${userId}&username=${encodeURIComponent(username)}`);
       wsRef.current = ws;
@@ -138,21 +160,37 @@ export const PresenceProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         setConnectionState('failed');
         setConnectionStatus('disconnected');
         
-        // Handle resource constraint errors (1006, 1013) with immediate graceful degradation
+        // Handle resource constraint errors (1006, 1013)
         if (event.code === 1006 || event.code === 1013) {
-          console.warn('🚨 Server resource constraints detected - waiting before retry');
-          setServerMessage('Server is busy. Waiting before retry...');
+          console.warn('🚨 Server resource constraints detected');
+          consecutiveFailuresRef.current++;
+          lastRetryTimeRef.current = now;
+          
+          // Calculate exponential backoff delay
+          const delay = Math.min(retryDelayRef.current * 1.5, maxRetryDelay);
+          retryDelayRef.current = delay;
+          
+          setServerMessage(`Server is busy. Will retry in ${Math.ceil(delay/1000)}s...`);
           setConnectionStatus('error');
           
-          // Wait 5 seconds before retrying for resource errors
-          await new Promise(resolve => setTimeout(resolve, 5000));
-          if (isAuthenticated && currentUser) {
-            console.log('🔄 Retrying connection after resource error...');
-            setConnectionState('idle');
-            createWebSocketConnection(currentUser.id, currentUser.username);
+          // Only retry if we haven't had too many consecutive failures
+          if (consecutiveFailuresRef.current < 3) {
+            await new Promise(resolve => setTimeout(resolve, delay));
+            if (isAuthenticated && currentUser) {
+              console.log(`🔄 Retrying connection after ${Math.ceil(delay/1000)}s delay...`);
+              setConnectionState('idle');
+              createWebSocketConnection(currentUser.id, currentUser.username);
+            }
+          } else {
+            console.log('🚫 Max consecutive failures reached, waiting for manual retry');
+            setServerMessage('Connection failed. Click "Retry Connection" to try again.');
           }
           return;
         }
+        
+        // Reset retry delay on successful connection or non-resource errors
+        retryDelayRef.current = 5000;
+        consecutiveFailuresRef.current = 0;
         
         // Handle other error codes with conservative retry logic
         if (event.code === 1008) { // Policy violation (rate limit, missing params)
@@ -216,6 +254,8 @@ export const PresenceProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       setConnectionState('failed');
       setConnectionStatus('error');
       setServerMessage('Failed to establish connection to server.');
+      consecutiveFailuresRef.current++;
+      lastRetryTimeRef.current = now;
     }
   }, [pathname, isAuthenticated, currentUser, connectionState, checkServerHealth]);
 
@@ -332,6 +372,9 @@ export const PresenceProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const resetConnection = useCallback(() => {
     console.log('🔄 Manually resetting connection...');
     retryCountRef.current = 0;
+    retryDelayRef.current = 5000;
+    consecutiveFailuresRef.current = 0;
+    lastRetryTimeRef.current = 0;
     setConnectionState('idle');
     setIsPresenceEnabled(true);
     setConnectionStatus('disconnected');
