@@ -43,8 +43,12 @@ const CharacterCard: React.FC<CharacterCardProps> = ({
       if (character.imageUrl.startsWith('http')) {
         return character.imageUrl;
       }
-      // Otherwise, prepend the uploads URL
-      return `${UPLOADS_URL}${character.imageUrl}`;
+      // If imageUrl already includes /uploads/, use it as is
+      if (character.imageUrl.startsWith('/uploads/')) {
+        return `${UPLOADS_URL}${character.imageUrl}`;
+      }
+      // Otherwise, prepend /uploads/
+      return `${UPLOADS_URL}/uploads/${character.imageUrl}`;
     }
     
     // Default fallback

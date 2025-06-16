@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { BASE_URL } from '../../../config/api';
+import { BASE_URL, UPLOADS_URL } from '../../../config/api';
 import { api } from '../../../services/apiClient';
 
 interface Location {
@@ -43,7 +43,7 @@ const MapPage = () => {
       {mapUrl ? (
         <div style={{ position: 'relative' }}>
           <Image 
-            src={imageError ? `${BASE_URL}/uploads/placeholder.jpg` : mapUrl} 
+            src={imageError ? `${UPLOADS_URL}/placeholder.jpg` : `${UPLOADS_URL}${mapUrl}`} 
             alt="Game Map" 
             width={1200}
             height={800}
