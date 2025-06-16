@@ -5,11 +5,13 @@ import { getLocationFromPath } from '../../utils/locationUtils';
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL;
 
-interface PresenceUser {
+// Export the PresenceUser interface
+export interface PresenceUser {
   userId: string;
   username: string;
-  characterName: string | null;
+  characterName?: string;
   location: string;
+  lastSeen: string;
 }
 
 interface PresenceContextType {
