@@ -79,10 +79,13 @@ export const PresenceProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       return;
     }
 
-    // Check if there's already an active connection
-    if (wsRef.current && (wsRef.current.readyState === WebSocket.CONNECTING || wsRef.current.readyState === WebSocket.OPEN)) {
-      console.log('⚠️ WebSocket connection already exists, skipping new connection attempt');
-      return;
+    // Ensure any existing connection is fully closed
+    if (wsRef.current) {
+      console.log('🔌 Closing existing WebSocket connection before new attempt');
+      wsRef.current.close(1000, 'Connection refresh');
+      wsRef.current = null;
+      // Add a delay to ensure the old connection is fully closed
+      await new Promise(resolve => setTimeout(resolve, 500));
     }
 
     try {
@@ -90,6 +93,9 @@ export const PresenceProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       setConnectionState('connecting');
       setConnectionStatus('connecting');
       setServerMessage(undefined);
+      
+      // Add a small delay before attempting new connection
+      await new Promise(resolve => setTimeout(resolve, 100));
       
       const ws = new WebSocket(`${WS_URL}/ws/presence?userId=${userId}&username=${encodeURIComponent(username)}`);
       wsRef.current = ws;
@@ -134,13 +140,17 @@ export const PresenceProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         
         // Handle resource constraint errors (1006, 1013) with immediate graceful degradation
         if (event.code === 1006 || event.code === 1013) {
-          console.warn('🚨 Server resource constraints detected - disabling real-time features');
-          setServerMessage('Server is busy. Real-time features temporarily disabled. Core functionality remains available.');
-          setIsPresenceEnabled(false);
+          console.warn('🚨 Server resource constraints detected - waiting before retry');
+          setServerMessage('Server is busy. Waiting before retry...');
           setConnectionStatus('error');
           
-          // Don't retry automatically for resource errors - require manual reset
-          // This prevents overwhelming the server
+          // Wait 5 seconds before retrying for resource errors
+          await new Promise(resolve => setTimeout(resolve, 5000));
+          if (isAuthenticated && currentUser) {
+            console.log('🔄 Retrying connection after resource error...');
+            setConnectionState('idle');
+            createWebSocketConnection(currentUser.id, currentUser.username);
+          }
           return;
         }
         
