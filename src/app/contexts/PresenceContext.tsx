@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { usePathname } from 'next/navigation';
 import { useAuth } from '../utils/AuthContext';
 import { getLocationFromPath } from '../../utils/locationUtils';
@@ -14,11 +14,12 @@ interface PresenceUser {
 
 interface PresenceContextType {
   onlineUsers: PresenceUser[];
-  connectionStatus: 'connected' | 'disconnected';
-  serverMessage?: string;
+  connectionStatus: 'connected' | 'connecting' | 'disconnected' | 'error';
+  serverMessage: string | null;
   isPresenceEnabled: boolean;
   setIsPresenceEnabled: (enabled: boolean) => void;
   refreshConnection: () => void;
+  resetConnection: () => void;
 }
 
 const PresenceContext = createContext<PresenceContextType | undefined>(undefined);
@@ -34,8 +35,8 @@ export const usePresence = () => {
 export const PresenceProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [onlineUsers, setOnlineUsers] = useState<PresenceUser[]>([]);
   const [currentUser, setCurrentUser] = useState<{ id: string; username: string } | null>(null);
-  const [connectionStatus, setConnectionStatus] = useState<'connected' | 'disconnected'>('disconnected');
-  const [serverMessage, setServerMessage] = useState<string | undefined>();
+  const [connectionStatus, setConnectionStatus] = useState<'connected' | 'connecting' | 'disconnected' | 'error'>('disconnected');
+  const [serverMessage, setServerMessage] = useState<string | null>(null);
   const [isPresenceEnabled, setIsPresenceEnabled] = useState(true);
   const pathname = usePathname();
   const eventSourceRef = useRef<EventSource | null>(null);
@@ -76,7 +77,7 @@ export const PresenceProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     try {
       console.log(`Connecting to presence system for user ${userId}`);
       setConnectionStatus('disconnected');
-      setServerMessage(undefined);
+      setServerMessage(null);
 
       const eventSource = new EventSource(`${BASE_URL}/api/presence/events?userId=${userId}&username=${encodeURIComponent(username)}`);
       eventSourceRef.current = eventSource;
@@ -87,7 +88,7 @@ export const PresenceProvider: React.FC<{ children: React.ReactNode }> = ({ chil
           if (data.type === 'onlineUsers') {
             setOnlineUsers(data.users);
             setConnectionStatus('connected');
-            setServerMessage(undefined);
+            setServerMessage(null);
           }
         } catch (error) {
           console.error('Error parsing SSE message:', error);
@@ -210,15 +211,28 @@ export const PresenceProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     }
   }, [isAuthenticated, currentUser, isPresenceEnabled, connect]);
 
+  const resetConnection = useCallback(() => {
+    if (eventSourceRef.current) {
+      eventSourceRef.current.close();
+      eventSourceRef.current = null;
+    }
+    setConnectionStatus('disconnected');
+    setServerMessage(null);
+    // The useEffect will handle reconnection
+  }, []);
+
+  const value = useMemo(() => ({
+    onlineUsers,
+    connectionStatus,
+    serverMessage,
+    isPresenceEnabled,
+    setIsPresenceEnabled,
+    refreshConnection,
+    resetConnection
+  }), [onlineUsers, connectionStatus, serverMessage, isPresenceEnabled, setIsPresenceEnabled, refreshConnection, resetConnection]);
+
   return (
-    <PresenceContext.Provider value={{
-      onlineUsers,
-      connectionStatus,
-      serverMessage,
-      isPresenceEnabled,
-      setIsPresenceEnabled,
-      refreshConnection
-    }}>
+    <PresenceContext.Provider value={value}>
       {children}
     </PresenceContext.Provider>
   );
