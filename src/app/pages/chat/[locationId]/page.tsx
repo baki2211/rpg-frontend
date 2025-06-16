@@ -38,6 +38,15 @@ interface ChatMessage {
   formattedMessage?: string;
 }
 
+interface CombatRound {
+  id: number;
+  roundNumber: number;
+}
+
+interface CombatRoundResponse {
+  round: CombatRound | null;
+}
+
 const ChatPage = () => {
   const { user } = useAuth();
   const { showError, showSuccess, showInfo } = useToast();
@@ -68,15 +77,8 @@ const ChatPage = () => {
       if (!locationId) return;
       
       try {
-        const response = await fetch(`${API_URL}/combat/rounds/active/${locationId}`, {
-          credentials: 'include',
-        });
-        if (response.ok) {
-          const data = await response.json();
-          setActiveRound(data.round);
-        } else {
-          setActiveRound(null);
-        }
+        const response = await api.get<CombatRoundResponse>(`/combat/rounds/active/${locationId}`);
+        setActiveRound(response.data.round);
       } catch (error) {
         console.error('Error fetching active round:', error);
         setActiveRound(null);
@@ -84,8 +86,7 @@ const ChatPage = () => {
     };
 
     fetchActiveRound();
-    // Check periodically for active rounds
-    const interval = setInterval(fetchActiveRound, 10000); // Check every 10 seconds
+    const interval = setInterval(fetchActiveRound, 10000);
     return () => clearInterval(interval);
   }, [locationId]);
 
@@ -250,11 +251,8 @@ const ChatPage = () => {
 
   // Function to format the message after sanitization
   const formatMessage = (message: string, skill?: Skill) => {
-    console.log('Formatting message with skill:', { message, skill });
-    
-    // Guard against undefined message
+    // Remove debug logging
     if (!message || typeof message !== 'string') {
-      console.warn('formatMessage called with invalid message:', message);
       return 'Invalid message';
     }
     
