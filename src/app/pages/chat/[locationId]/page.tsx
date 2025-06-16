@@ -12,6 +12,7 @@ import { ChatUser, useChatUsers } from '@/app/hooks/useChatUsers';
 import { useToast } from '@/app/contexts/ToastContext';
 import './chat.css';
 import { API_URL, WS_URL } from '../../../../config/api';
+import { api } from '../../../utils/api';
 
 interface SkillEngineLogMessage {
   type: 'skill_engine_log';
@@ -142,9 +143,7 @@ const ChatPage = () => {
     // Fetch messages from the database
     const fetchMessages = async () => {
       try {
-        const response = await fetch(`${API_URL}/chat/${locationId}`, {
-          credentials: 'include',
-        });
+        const response = await api.get(`/chat/${locationId}`);
         if (!response.ok) throw new Error('Failed to fetch messages');
         const data = await response.json();
         // Add formattedMessage to each message
@@ -156,7 +155,8 @@ const ChatPage = () => {
         });
         setMessages(formatted);
         scrollToBottom();
-      } catch {
+      } catch (error) {
+        console.error('Error fetching messages:', error);
         showError('Failed to load chat messages');
       }
     };
@@ -224,12 +224,12 @@ const ChatPage = () => {
     });
 
     return () => {
+      clearInterval(messageCheckInterval);
       if (webSocketServiceRef.current) {
         webSocketServiceRef.current.close();
       }
-      clearInterval(messageCheckInterval);
     };
-  }, [locationId, user?.id, user?.username, showError, showInfo, showSuccess, handleSkillEngineLog]);
+  }, [locationId, user?.id, user?.username, showError, showInfo, showSuccess]);
 
   const sanitizeMessage = (message: string) => {
     // First, handle our special formatting
