@@ -87,18 +87,35 @@ const UserCard: React.FC<UserCardProps> = ({ username, location, isCurrentUser }
 const OnlineUsers: React.FC = () => {
   const { onlineUsers, currentUser } = usePresence();
 
+  // Create a Map to ensure only one entry per unique user (by userId)
+  // This will automatically handle duplicates by keeping the last entry
+  const userMap = new Map();
+  
+  onlineUsers.forEach(user => {
+    const key = String(user.userId); // Normalize to string to handle type mismatches
+    const existing = userMap.get(key);
+    
+    // If no existing user or this user has a more recent lastSeen, update the entry
+    if (!existing || new Date(user.lastSeen) > new Date(existing.lastSeen)) {
+      userMap.set(key, user);
+    }
+  });
+  
+  // Convert Map back to array
+  const uniqueUsers = Array.from(userMap.values());
+
   return (
     <div className="online-users">
-      <h3>🌐 Online Users ({onlineUsers.length})</h3>
+      <h3>🌐 Online Users ({uniqueUsers.length})</h3>
       <div style={{ maxHeight: '400px', overflowY: 'auto' }}>
-        {onlineUsers.length === 0 ? (
+        {uniqueUsers.length === 0 ? (
           <div className="card" style={{ textAlign: 'center' }}>
             <p style={{ color: 'rgba(255, 255, 255, 0.7)' }}>No users online</p>
           </div>
         ) : (
-          onlineUsers.map((user) => (
+          uniqueUsers.map((user, index) => (
             <UserCard
-              key={user.username}
+              key={`${user.userId}-${user.username}-${index}`}
               username={user.username}
               location={user.location}
               isCurrentUser={user.username === currentUser?.username}

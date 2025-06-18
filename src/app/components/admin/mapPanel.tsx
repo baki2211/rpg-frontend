@@ -402,7 +402,9 @@ const AdminMapPanel = () => {
             </div>
             <div className="map-preview-content">
               <Image
-                src={`${UPLOADS_URL}${selectedMapForPreview.imageUrl}`}
+                src={selectedMapForPreview.imageUrl.startsWith('/uploads/') 
+                  ? `${UPLOADS_URL.replace('/uploads', '')}${selectedMapForPreview.imageUrl}`
+                  : `${UPLOADS_URL}${selectedMapForPreview.imageUrl}`}
                 alt={selectedMapForPreview.name}
                 width={800}
                 height={600}

@@ -47,8 +47,12 @@ const CharacterCard: React.FC<CharacterCardProps> = ({
       return character.imageUrl;
     }
     
+    // If the imageUrl starts with /uploads/, use baseUrl instead of UPLOADS_URL
+    if (character.imageUrl.startsWith('/uploads/')) {
+      return `${UPLOADS_URL.replace('/uploads', '')}${character.imageUrl}`;
+    }
+    
     // For all other cases, prepend UPLOADS_URL
-    // The backend stores paths like /uploads/filename.jpg
     return `${UPLOADS_URL}${character.imageUrl}`;
   };
 

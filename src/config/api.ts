@@ -3,21 +3,35 @@ const getApiConfig = () => {
   // Check if we're in a browser environment
   const isBrowser = typeof window !== 'undefined';
   
-  // For local development, we want to use the local backend
-  const isLocalDev = isBrowser && 
-    (window.location.hostname === 'localhost' || 
-     window.location.hostname === '127.0.0.1' ||
-     window.location.hostname.includes('.local') ||
-     process.env.NEXT_PUBLIC_USE_LOCAL_BACKEND === 'true');
+  // Check for explicit local backend setting first
+  const useLocalBackend = process.env.NEXT_PUBLIC_USE_LOCAL_BACKEND === 'true';
+  
+  // Check if we're in development mode
+  const isDevelopment = process.env.NODE_ENV === 'development';
+  
+  // Check if we're running on a local hostname
+  const isLocalHostname = isBrowser && (
+    window.location.hostname === 'localhost' || 
+    window.location.hostname === '127.0.0.1' ||
+    window.location.hostname.startsWith('192.168.') ||
+    window.location.hostname.startsWith('10.') ||
+    window.location.hostname.includes('.local')
+  );
+  
+  // Check if we're running on development ports
+  const isLocalPort = isBrowser && (
+    window.location.port === '3000' ||
+    window.location.port === '3001'
+  );
+  
+  // Use local backend if any of these conditions are true
+  const shouldUseLocal = useLocalBackend || isDevelopment || isLocalHostname || isLocalPort;
 
-  // Only use production URLs if we're actually in production
-  const isProduction = !isLocalDev && process.env.NODE_ENV === 'production';
-
-  const baseUrl = isLocalDev
+  const baseUrl = shouldUseLocal
     ? (process.env.NEXT_PUBLIC_LOCAL_BACKEND_URL || 'http://localhost:5001')  // Local development URL
     : 'https://rpg-be.onrender.com';     // Production backend URL
 
-  const wsUrl = isLocalDev
+  const wsUrl = shouldUseLocal
     ? (process.env.NEXT_PUBLIC_LOCAL_WS_URL || 'ws://localhost:5001')  // Local WebSocket URL
     : 'wss://rpg-be.onrender.com';       // Production WebSocket URL
 
@@ -26,7 +40,7 @@ const getApiConfig = () => {
     wsUrl,
     apiUrl: `${baseUrl}/api`,
     uploadsUrl: `${baseUrl}/uploads`,
-    isProduction
+    isProduction: !shouldUseLocal
   };
 };
 

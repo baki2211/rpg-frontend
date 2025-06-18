@@ -2,8 +2,7 @@ import React, { createContext, useContext, useState, useEffect, useCallback, use
 import { usePathname } from 'next/navigation';
 import { useAuth } from '../utils/AuthContext';
 import { getLocationFromPath } from '../../utils/locationUtils';
-
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL;
+import { API_CONFIG } from '../../config/api';
 
 // Export the PresenceUser interface
 export interface PresenceUser {
@@ -82,7 +81,7 @@ export const PresenceProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       setConnectionStatus('disconnected');
       setServerMessage(null);
 
-      const eventSource = new EventSource(`${BASE_URL}/api/presence/events?userId=${userId}&username=${encodeURIComponent(username)}`);
+      const eventSource = new EventSource(`${API_CONFIG.baseUrl}/api/presence/events?userId=${userId}&username=${encodeURIComponent(username)}`);
       eventSourceRef.current = eventSource;
 
       eventSource.onmessage = (event) => {
@@ -126,7 +125,7 @@ export const PresenceProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       heartbeatIntervalRef.current = setInterval(async () => {
         if (isAuthenticated && currentUser) {
           try {
-            const response = await fetch(`${BASE_URL}/api/presence/heartbeat`, {
+            const response = await fetch(`${API_CONFIG.baseUrl}/api/presence/heartbeat`, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ userId: currentUser.id })
@@ -153,7 +152,7 @@ export const PresenceProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
       // Update location
       const location = await getLocationFromPath(pathname);
-      await fetch(`${BASE_URL}/api/presence/location`, {
+      await fetch(`${API_CONFIG.baseUrl}/api/presence/location`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ userId, username, location })
@@ -170,7 +169,7 @@ export const PresenceProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   useEffect(() => {
     if (isAuthenticated && currentUser && connectionStatus === 'connected') {
       getLocationFromPath(pathname).then((location: string) => {
-        fetch(`${BASE_URL}/api/presence/location`, {
+        fetch(`${API_CONFIG.baseUrl}/api/presence/location`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ 

@@ -49,8 +49,12 @@ const MapPage = () => {
       return mapUrl;
     }
     
+    // If the mapUrl starts with /uploads/, use baseUrl instead of UPLOADS_URL
+    if (mapUrl.startsWith('/uploads/')) {
+      return `${UPLOADS_URL.replace('/uploads', '')}${mapUrl}`;
+    }
+    
     // For all other cases, prepend UPLOADS_URL
-    // The backend stores paths like /uploads/filename.jpg
     return `${UPLOADS_URL}${mapUrl}`;
   };
 
