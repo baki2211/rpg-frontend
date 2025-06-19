@@ -10,8 +10,9 @@ import { MasterPanel } from '@/app/components/master/MasterPanel';
 import { Skill } from '@/app/hooks/useCharacter';
 import { ChatUser, useChatUsers } from '@/app/hooks/useChatUsers';
 import { useToast } from '@/app/contexts/ToastContext';
+import { usePresence } from '@/app/contexts/PresenceContext';
 import './chat.css';
-import { API_URL, WS_URL } from '../../../../config/api';
+import { API_URL, WS_URL, API_CONFIG } from '../../../../config/api';
 import { api } from '../../../../services/apiClient';
 
 interface SkillEngineLogMessage {
@@ -50,6 +51,7 @@ interface CombatRoundResponse {
 const ChatPage = () => {
   const { user } = useAuth();
   const { showError, showSuccess, showInfo } = useToast();
+  const { currentUser } = usePresence();
   const params = useParams();
   const locationId = params?.locationId as string;
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -63,13 +65,87 @@ const ChatPage = () => {
   const [selectedSkill, setSelectedSkill] = useState<(Skill & { selectedTarget?: ChatUser }) | null>(null);
 
   // Fetch users in this location
-  const { users: chatUsers, loading: usersLoading, refreshing: usersRefreshing, refreshUsers } = useChatUsers(locationId);
+  const { users: chatUsers, loading: usersLoading, refreshing: usersRefreshing, refreshUsers, locationName } = useChatUsers(locationId);
 
   // Check if user has master permissions
   const isMaster = user?.role === 'master' || user?.role === 'admin';
 
   // Track active combat round
   const [activeRound, setActiveRound] = useState<{ id: number; roundNumber: number } | null>(null);
+  
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as Element;
+      if (isPresencePanelOpen && !target.closest('.presence-dropdown')) {
+        setIsPresencePanelOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isPresencePanelOpen]);
+
+  // Update presence location when entering chat
+  useEffect(() => {
+    const updateLocation = async () => {
+      if (!locationId || !currentUser) {
+        return;
+      }
+
+      try {
+        // Get the location name from the API
+        const response = await api.get(`/locations/byId/${locationId}`);
+        
+        const fetchedLocationName = (response.data as { location: { name: string } }).location?.name || 
+                                   (response.data as { name: string }).name || 
+                                   `Location ${locationId}`;
+
+        // Update presence system with the specific location
+        const presenceResponse = await fetch(`${API_CONFIG.baseUrl}/api/presence/location`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ 
+            userId: currentUser.id, 
+            username: currentUser.username,
+            location: fetchedLocationName
+          })
+        });
+
+        if (!presenceResponse.ok) {
+          const errorText = await presenceResponse.text();
+          console.error('Presence update failed:', { status: presenceResponse.status, error: errorText });
+        }
+        
+        // The useChatUsers hook will now handle filtering properly with the location name
+      } catch (error) {
+        console.error('Error updating location for presence:', error);
+        // Fallback to generic location name
+        const fallbackName = `Location ${locationId}`;
+        
+        // Still try to update presence with fallback
+        if (currentUser) {
+          try {
+            await fetch(`${API_CONFIG.baseUrl}/api/presence/location`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ 
+                userId: currentUser.id, 
+                username: currentUser.username,
+                location: fallbackName
+              })
+            });
+          } catch (presenceError) {
+            console.error('Failed to update presence with fallback location:', presenceError);
+          }
+        }
+      }
+    };
+
+    updateLocation();
+  }, [locationId, currentUser]);
 
   // Check for active combat round
   useEffect(() => {
@@ -347,62 +423,6 @@ const ChatPage = () => {
 
   return (
     <div className="chat-page">
-      {/* Online Presence Panel */}
-      <div className={`presence-panel ${isPresencePanelOpen ? 'open' : ''}`}>
-        <div className="presence-header">
-          <h3>Online in this location ({chatUsers.length})</h3>
-          <div className="presence-header-actions">
-            <button 
-              onClick={refreshUsers}
-              className="refresh-presence-button"
-              title="Refresh user list"
-              disabled={usersRefreshing}
-            >
-              {usersRefreshing ? '⏳' : '🔄'}
-            </button>
-            <button 
-              onClick={() => setIsPresencePanelOpen(false)}
-              className="close-presence-button"
-            >
-              ×
-            </button>
-          </div>
-        </div>
-        <div className="presence-list">
-          {usersLoading ? (
-            <div className="presence-loading">Loading users...</div>
-          ) : chatUsers.length === 0 ? (
-            <div className="no-users">No users in this location</div>
-          ) : (
-            chatUsers.map((chatUser) => (
-              <div key={`${chatUser.username}-${chatUser.characterName}`} className="presence-user">
-                <div className="user-avatar">
-                  {(chatUser.characterName || chatUser.username).charAt(0).toUpperCase()}
-                </div>
-                <div className="user-info">
-                  <div className="user-character">
-                    {chatUser.characterName || 'No active character'}
-                  </div>
-                  <div className="user-name">@{chatUser.username}</div>
-                </div>
-                {chatUser.username === user?.username && (
-                  <div className="you-indicator">You</div>
-                )}
-              </div>
-            ))
-          )}
-        </div>
-      </div>
-
-      {/* Presence Toggle Button */}
-      <button 
-        className="presence-toggle"
-        onClick={() => setIsPresencePanelOpen(!isPresencePanelOpen)}
-        title="Show online users"
-      >
-        👥 {chatUsers.length}
-      </button>
-
       <div className="chat-messages">
         {messages.map((msg, index) => (
           <div key={index} className="message">
@@ -417,6 +437,58 @@ const ChatPage = () => {
         <div ref={messagesEndRef} />
       </div>
       <form onSubmit={handleSendMessage} className="chat-input-form">
+        {/* Online Users Dropdown */}
+        <div className="presence-dropdown">
+          <button 
+            type="button"
+            className="presence-dropdown-toggle"
+            onClick={() => setIsPresencePanelOpen(!isPresencePanelOpen)}
+            title={`Online users in ${locationName || `Location ${locationId}`}`}
+          >
+            👥 {chatUsers.length}
+          </button>
+          {isPresencePanelOpen && (
+            <div className="presence-dropdown-menu">
+              <div className="presence-dropdown-header">
+                <span>Online in {locationName || `Location ${locationId}`}</span>
+                <button 
+                  type="button"
+                  onClick={refreshUsers}
+                  className="refresh-users-btn"
+                  disabled={usersRefreshing}
+                  title="Refresh user list"
+                >
+                  {usersRefreshing ? '⏳' : '🔄'}
+                </button>
+              </div>
+              <div className="presence-dropdown-list">
+                {usersLoading ? (
+                  <div className="dropdown-loading">Loading...</div>
+                ) : chatUsers.length === 0 ? (
+                  <div className="dropdown-no-users">No users here</div>
+                ) : (
+                  chatUsers.map((chatUser) => (
+                    <div key={`${chatUser.username}-${chatUser.characterName}`} className="dropdown-user">
+                      <div className="dropdown-user-avatar">
+                        {(chatUser.characterName || chatUser.username).charAt(0).toUpperCase()}
+                      </div>
+                      <div className="dropdown-user-info">
+                        <div className="dropdown-user-character">
+                          {chatUser.characterName || 'No character'}
+                        </div>
+                        <div className="dropdown-user-name">@{chatUser.username}</div>
+                      </div>
+                      {chatUser.username === user?.username && (
+                        <div className="dropdown-you-indicator">You</div>
+                      )}
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+          )}
+        </div>
+
         <input
           type="text"
           value={newMessage}
