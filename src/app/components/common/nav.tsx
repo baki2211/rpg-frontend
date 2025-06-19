@@ -23,6 +23,9 @@ const NavMenu: React.FC = () => {
       </Link>
       
       <div className="navbar-links">
+        {/* Wiki is always accessible to everyone */}
+        <a href="/pages/wiki" className="navbar-link">📚 Wiki</a>
+        
         {!isAuthenticated && (
           <>
             <a href="/pages/register" className="navbar-link">Register</a>
@@ -35,7 +38,6 @@ const NavMenu: React.FC = () => {
             <a href="/pages/characters" className="navbar-link">Characters</a>
             <a href="/pages/skills" className="navbar-link">Skills</a>
             <a href="/pages/map" className="navbar-link">Map</a>
-            <a href="/pages/wiki" className="navbar-link">Wiki</a>
             <a href="/pages/logs" className="navbar-link">Logs</a>
             {user?.role === 'admin' && (
               <a href="/pages/admin/dashboard" className="navbar-link admin">Admin Dashboard</a>
