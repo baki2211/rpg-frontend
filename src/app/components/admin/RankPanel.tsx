@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import './admin.css';
-import { API_URL } from '../../../config/api';
+import { api } from '../../../services/apiClient';
 
 interface Rank {
   level: number;
@@ -29,15 +29,11 @@ export const RankPanel: React.FC = () => {
   const fetchRanks = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await fetch(`${API_URL}/ranks`, { credentials: 'include' });
-      if (res.ok) {
-        const data = await res.json();
-        setRanks(data);
-      } else {
-        showMessage('error', 'Failed to fetch ranks');
-      }
-    } catch {
-      showMessage('error', 'Error fetching ranks');
+      const response = await api.get<Rank[]>('/ranks');
+      setRanks(response.data);
+    } catch (error) {
+      console.error('Error fetching ranks:', error);
+      showMessage('error', 'Failed to fetch ranks');
     } finally {
       setLoading(false);
     }
@@ -55,43 +51,35 @@ export const RankPanel: React.FC = () => {
   const handleSave = async (rank: Rank) => {
     try {
       const existing = ranks.find(r=>r.level===rank.level);
-      const method = existing ? 'PUT' : 'POST';
-      const url = existing ? `${API_URL}/ranks/${rank.level}` : `${API_URL}/ranks`;
-      const res = await fetch(url, {
-        method,
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(rank)
-      });
-      if (res.ok) {
-        showMessage('success', 'Rank saved');
-        setEditingLevel(null);
-        fetchRanks();
+      
+      if (existing) {
+        // Update existing rank
+        await api.put(`/ranks/${rank.level}`, rank);
       } else {
-        const err = await res.json();
-        showMessage('error', err.error || 'Failed to save');
+        // Create new rank
+        await api.post('/ranks', rank);
       }
-    } catch {
-      showMessage('error', 'Error saving rank');
+      
+      showMessage('success', 'Rank saved');
+      setEditingLevel(null);
+      fetchRanks();
+    } catch (error: unknown) {
+      console.error('Error saving rank:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Failed to save';
+      showMessage('error', errorMessage);
     }
   };
 
   const handleDelete = async (level: number) => {
     if (!confirm('Delete this rank?')) return;
     try {
-      const res = await fetch(`${API_URL}/ranks/delete/${level}`, {
-        method: 'DELETE',
-        credentials: 'include'
-      });
-      if (res.ok) {
-        showMessage('success', 'Deleted');
-        fetchRanks();
-      } else {
-        const err = await res.json();
-        showMessage('error', err.error || 'Failed to delete');
-      }
-    } catch {
-      showMessage('error', 'Error deleting rank');
+      await api.delete(`/ranks/delete/${level}`);
+      showMessage('success', 'Deleted');
+      fetchRanks();
+    } catch (error: unknown) {
+      console.error('Error deleting rank:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Failed to delete';
+      showMessage('error', errorMessage);
     }
   };
 
