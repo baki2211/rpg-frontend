@@ -23,20 +23,75 @@ interface WikiEntryDetail extends WikiEntry {
   content: string;
 }
 
+interface WikiNavigationEntry {
+  id: number;
+  title: string;
+  slug: string;
+  excerpt?: string;
+  level: number;
+  children?: WikiNavigationEntry[];
+}
+
 interface WikiNavigation {
   sections: Array<{
     id: number;
     name: string;
     slug: string;
     description?: string;
-    entries: Array<{
-      id: number;
-      title: string;
-      slug: string;
-      excerpt?: string;
-    }>;
+    entries: WikiNavigationEntry[];
   }>;
 }
+
+// Recursive component for rendering hierarchical entries
+const HierarchicalEntryList: React.FC<{
+  entries: WikiNavigationEntry[];
+  sectionSlug: string;
+  currentEntryId?: number;
+  onEntryClick: (sectionSlug: string, entrySlug: string) => void;
+  level?: number;
+}> = ({ entries, sectionSlug, currentEntryId, onEntryClick, level = 1 }) => {
+  return (
+    <div className={`entry-level-${level}`}>
+      {entries.map((entry) => (
+        <div key={entry.id} className="entry-item-container">
+          <div
+            className={`nav-entry level-${entry.level} ${currentEntryId === entry.id ? 'active' : ''}`}
+            onClick={() => onEntryClick(sectionSlug, entry.slug)}
+            style={{ marginLeft: `${(entry.level - 1) * 16}px` }}
+          >
+            {entry.title}
+          </div>
+          {entry.children && entry.children.length > 0 && (
+            <HierarchicalEntryList
+              entries={entry.children}
+              sectionSlug={sectionSlug}
+              currentEntryId={currentEntryId}
+              onEntryClick={onEntryClick}
+              level={level + 1}
+            />
+          )}
+        </div>
+      ))}
+    </div>
+  );
+};
+
+// Flatten entries for grid view
+const flattenEntries = (entries: WikiNavigationEntry[]): WikiNavigationEntry[] => {
+  const flattened: WikiNavigationEntry[] = [];
+  
+  const flatten = (entryList: WikiNavigationEntry[]) => {
+    entryList.forEach(entry => {
+      flattened.push(entry);
+      if (entry.children && entry.children.length > 0) {
+        flatten(entry.children);
+      }
+    });
+  };
+  
+  flatten(entries);
+  return flattened;
+};
 
 export const WikiBrowser: React.FC = () => {
   const [navigation, setNavigation] = useState<WikiNavigation | null>(null);
@@ -199,16 +254,14 @@ export const WikiBrowser: React.FC = () => {
                 
                 {expandedSections.has(section.id) && (
                   <div className="section-entries">
-                    {(section.entries || []).map((entry) => (
-                      <div
-                        key={entry.id}
-                        className={`nav-entry ${currentEntry?.id === entry.id ? 'active' : ''}`}
-                        onClick={() => fetchEntry(section.slug, entry.slug)}
-                      >
-                        {entry.title}
-                      </div>
-                    ))}
-                    {(!section.entries || section.entries.length === 0) && (
+                    {(section.entries || []).length > 0 ? (
+                      <HierarchicalEntryList
+                        entries={section.entries}
+                        sectionSlug={section.slug}
+                        currentEntryId={currentEntry?.id}
+                        onEntryClick={fetchEntry}
+                      />
+                    ) : (
                       <div className="no-entries">No entries</div>
                     )}
                   </div>
@@ -263,20 +316,21 @@ export const WikiBrowser: React.FC = () => {
                   </div>
                   
                   <div className="entries-list">
-                    {(section.entries || []).map((entry) => (
-                      <div
-                        key={entry.id}
-                        className="entry-item"
-                        onClick={() => fetchEntry(section.slug, entry.slug)}
-                      >
-                        <h4>{entry.title}</h4>
-                        {entry.excerpt && (
-                          <p className="entry-excerpt">{entry.excerpt}</p>
-                        )}
-                      </div>
-                    ))}
-                    
-                    {(!section.entries || section.entries.length === 0) && (
+                    {(section.entries || []).length > 0 ? (
+                      flattenEntries(section.entries).map((entry) => (
+                        <div
+                          key={entry.id}
+                          className={`entry-item level-${entry.level}`}
+                          onClick={() => fetchEntry(section.slug, entry.slug)}
+                          style={{ marginLeft: `${(entry.level - 1) * 20}px` }}
+                        >
+                          <h4>{entry.title}</h4>
+                          {entry.excerpt && (
+                            <p className="entry-excerpt">{entry.excerpt}</p>
+                          )}
+                        </div>
+                      ))
+                    ) : (
                       <div className="no-entries">No entries yet</div>
                     )}
                   </div>
