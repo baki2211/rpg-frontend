@@ -40,7 +40,7 @@
 .close-button {
   background: none;
   border: none;
-  color: white;
+  color: rgb(0, 0, 0);
   font-size: 2rem;
   cursor: pointer;
   padding: 0;
