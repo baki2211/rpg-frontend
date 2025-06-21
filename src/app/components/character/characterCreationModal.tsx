@@ -107,11 +107,11 @@ const CharacterCreationModalPanel: React.FC<CharacterCreationModalPanelProps> = 
 
   const fetchRaces = async () => {
     try {
-      const response = await api.get<Race[]>('/races');
+      const response = await api.get<Race[]>('/races/playable');
       setRaces(response.data);
     } catch (error) {
-      console.error('Failed to fetch races:', error);
-      setErrorMessage('Failed to fetch races');
+      console.error('Failed to fetch playable races:', error);
+      setErrorMessage('Failed to fetch playable races');
     }
   };
 

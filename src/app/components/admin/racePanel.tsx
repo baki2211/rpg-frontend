@@ -22,6 +22,7 @@ interface Race {
   name: string;
   description: string;
   image: string;
+  isPlayable: boolean;
   // Legacy bonuses (keeping for backward compatibility)
   healthBonus: number;
   manaBonus: number;
@@ -33,7 +34,7 @@ interface Race {
   instinctBonus?: number;
   presenceBonus?: number;
   forceBonus?: number;
-  [key: string]: string | number | undefined;
+  [key: string]: string | number | boolean | undefined;
 }
 
 const RacePanel: React.FC = () => {
@@ -75,6 +76,14 @@ const RacePanel: React.FC = () => {
     setNewRace(prev => ({
       ...prev,
       [name]: parsedValue,
+    }));
+  };
+
+  const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, checked } = e.target;
+    setNewRace(prev => ({
+      ...prev,
+      [name]: checked,
     }));
   };
 
@@ -137,6 +146,17 @@ const RacePanel: React.FC = () => {
             <label>Image URL:</label>
             <input type="text" name="image" value={newRace.image || ''} onChange={handleInputChange} className="form-control" />
           </div>
+          <div className="form-group">
+            <label>
+              <input 
+                type="checkbox" 
+                name="isPlayable" 
+                checked={newRace.isPlayable ?? true} 
+                onChange={handleCheckboxChange} 
+              />
+              Available for Player Characters
+            </label>
+          </div>
           <div className="form-group form-full-width">
             <label>Description:</label>
             <textarea name="description" value={newRace.description || ''} onChange={handleInputChange} className="form-control" required />
@@ -169,7 +189,7 @@ const RacePanel: React.FC = () => {
                   <input 
                     type="number" 
                     name={`${stat.internalName}Bonus`} 
-                    value={newRace[`${stat.internalName}Bonus`] || ''} 
+                    value={(newRace[`${stat.internalName}Bonus`] as number) || ''} 
                     onChange={handleInputChange} 
                   />
                 </div>
@@ -202,6 +222,16 @@ const RacePanel: React.FC = () => {
                   <label>Image URL:</label>
                   <input type="text" value={editData.image||''} onChange={e=>setEditData({...editData,image:e.target.value})} />
                 </div>
+                <div className="form-row">
+                  <label>
+                    <input 
+                      type="checkbox" 
+                      checked={editData.isPlayable ?? true} 
+                      onChange={e=>setEditData({...editData,isPlayable:e.target.checked})} 
+                    />
+                    Available for Player Characters
+                  </label>
+                </div>
                 
                 <h4>Resource Bonuses</h4>
                 <div className="bonus-grid">
@@ -226,7 +256,7 @@ const RacePanel: React.FC = () => {
                       <label>{stat.displayName}:</label>
                       <input 
                         type="number" 
-                        value={editData[`${stat.internalName}Bonus`] ?? ''} 
+                        value={(editData[`${stat.internalName}Bonus`] as number) ?? ''} 
                         onChange={e=>setEditData({...editData,[`${stat.internalName}Bonus`]:parseInt(e.target.value)||0})}
                       />
                     </div>
@@ -240,8 +270,11 @@ const RacePanel: React.FC = () => {
               </div>
             ) : (
               <>
-                <h3>{race.name}</h3>
+                <h3>{race.name} {!race.isPlayable && <span className="npc-only-badge">NPC Only</span>}</h3>
                 <p>{race.description}</p>
+                <div className="race-info">
+                  <p><strong>Playable by Players:</strong> {race.isPlayable ? 'Yes' : 'No'}</p>
+                </div>
                 <button onClick={() => deleteRace(race.id)} className="btn btn-sm btn-danger">Delete</button>
                 <button onClick={() => startEdit(race)} className="btn btn-sm btn-secondary">Edit</button>
               </>
