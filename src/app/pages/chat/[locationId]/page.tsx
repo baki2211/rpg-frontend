@@ -12,7 +12,7 @@ import { ChatUser, useChatUsers } from '@/app/hooks/useChatUsers';
 import { useToast } from '@/app/contexts/ToastContext';
 import { usePresence } from '@/app/contexts/PresenceContext';
 import './chat.css';
-import { API_URL, WS_URL, API_CONFIG } from '../../../../config/api';
+import { WS_URL, API_CONFIG } from '../../../../config/api';
 import { api } from '../../../../services/apiClient';
 
 interface SkillEngineLogMessage {
@@ -175,28 +175,19 @@ const ChatPage = () => {
         targetId = skill.selectedTarget.userId;
       }
 
-      const response = await fetch(`${API_URL}/combat/rounds/${round.id}/actions`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
-        body: JSON.stringify({
-          skillId: skill.id,
-          targetId
-        })
+      const response = await api.post(`/combat/rounds/${round.id}/actions`, {
+        skillId: skill.id,
+        targetId
       });
 
-      if (response.ok) {
+      if (response.status === 200 || response.status === 201) {
         console.log('Skill submitted to combat round successfully');
         showSuccess(`${skill.name} submitted to combat round ${round.roundNumber}!`);
-      } else {
-        const errorData = await response.json();
-        showError(`Failed to submit to combat: ${errorData.error || 'Unknown error'}`);
       }
     } catch (error) {
       console.error('Error submitting skill to combat:', error);
-      showError('Failed to submit skill to combat round');
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      showError(`Failed to submit skill to combat round: ${errorMessage}`);
     }
   };
 
