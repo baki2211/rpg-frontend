@@ -209,7 +209,6 @@ const ChatPage = () => {
     if (isMaster && logData.type === 'skill_engine_log') {
       // Master panel now fetches logs directly from API
       // This WebSocket message could trigger a refresh if needed
-      console.log('Skill engine log received:', logData.log);
     }
   };
 
@@ -390,7 +389,6 @@ const ChatPage = () => {
     if (!user || !newMessage.trim()) return;
 
     const sanitizedMessage = sanitizeMessage(newMessage);
-    console.log('Selected skill before sending:', selectedSkill);
     
     const message = {
       locationId,
@@ -408,7 +406,6 @@ const ChatPage = () => {
       } : null
     };
     
-    console.log('Sending message with skill data:', message);
     webSocketServiceRef.current?.sendMessage(message as unknown as JSON);
     
     // If there's an active round and a skill is selected, submit to combat as well

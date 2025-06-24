@@ -52,53 +52,36 @@ const getTypeName = (type?: string | { name: string }): string => {
   return type.name || 'Unknown';
 };
 
+// Helper function to format the result
+const formatResult = (skill: ExtendedSkill | SimplifiedSkill): string => {
+  if (skill.output !== undefined) {
+    return `Output: ${skill.output}`;
+  }
+  if (skill.roll) {
+    return `Roll: ${skill.roll}`;
+  }
+  return 'Ready';
+};
+
 export const MiniSkillRow: React.FC<MiniSkillRowProps> = ({ skill }) => {
   const skillRank = calculateSkillRank(skill.uses || 0);
-  const scalingStatsText = skill.scalingStats && skill.scalingStats.length > 0 
-    ? skill.scalingStats.join(', ') 
-    : 'None';
-
   const branchName = getBranchName(skill.branch);
   const typeName = getTypeName(skill.type);
+  const result = formatResult(skill);
 
   return (
     <div className="mini-skill-row" title={skill.description || 'No description available'}>
-      <div className="mini-skill-header">
+      <div className="mini-skill-content">
         <span className="mini-skill-name">{skill.name}</span>
-        <div className="mini-skill-badges">
-          <span className={`mini-skill-rank rank-${skillRank.level}`}>Rank {skillRank.rank}</span>
-          <span className="mini-skill-type">{typeName}</span>
-        </div>
+        <span className="mini-skill-separator"> - </span>
+        <span className="mini-skill-branch">{branchName}</span>
+        <span className="mini-skill-separator"> - </span>
+        <span className={`mini-skill-rank rank-${skillRank.level}`}>Rank {skillRank.rank}</span>
+        <span className="mini-skill-separator"> - </span>
+        <span className="mini-skill-type">{typeName}</span>
+        <span className="mini-skill-separator"> - </span>
+        <span className="mini-skill-result">{result}</span>
       </div>
-      
-      <div className="mini-skill-details">
-        <div className="mini-skill-info-row">
-          <span className="mini-skill-label">Branch:</span>
-          <span className="mini-skill-branch">{branchName}</span>
-        </div>
-        
-        <div className="mini-skill-info-row">
-          <span className="mini-skill-label">Scaling:</span>
-          <span className="mini-skill-scaling">{scalingStatsText}</span>
-        </div>
-        
-        {skill.selectedTarget && (
-          <div className="mini-skill-info-row">
-            <span className="mini-skill-label">Target:</span>
-            <span className="skill-target">
-              {skill.selectedTarget.characterName || skill.selectedTarget.username}
-            </span>
-          </div>
-        )}
-      </div>
-
-      {/* Show final result for self/none/any target skills (hide only for "other" target skills) */}
-      {skill.target !== 'other' && (skill.output || skill.roll) && (
-        <div className="mini-skill-output">
-          {skill.output && <span className="output-value">Final Output: {skill.output}</span>}
-          {skill.roll && <span className="roll-result">Roll: {skill.roll}</span>}
-        </div>
-      )}
     </div>
   );
 }; 
