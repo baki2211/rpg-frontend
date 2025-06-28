@@ -1,5 +1,8 @@
 import { useState, useEffect } from "react";
 import { api } from "../../services/apiClient";
+import { useToast } from "../contexts/ToastContext";
+
+
 
 export interface Race {
   id: number;
@@ -54,7 +57,7 @@ export const useCharacters = () => {
   const [races, setRaces] = useState<Race[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string>("");
-
+  const { showSuccess, showError } = useToast();
   useEffect(() => {
     fetchCharacters();
     fetchActiveNPCs();
@@ -131,7 +134,7 @@ export const useCharacters = () => {
   };
 
   const activateCharacter = async (characterId: number) => {
-    console.log('Activating character:', characterId);
+    showSuccess(`Activating character: ${characterId}`);
 
     try {
       await api.put(`/characters/${characterId}/activate`, {});
@@ -139,8 +142,8 @@ export const useCharacters = () => {
       await fetchCharacters();
       await fetchActiveNPCs();
     } catch (error) {
-      console.error("Failed to activate character:", error);
-      throw error; // Re-throw so the component can handle it
+      showError(`Failed to activate character: ${characterId}`);
+      throw error;
     }
   };
 
@@ -153,9 +156,8 @@ export const useCharacters = () => {
         setCharacters(prev => prev.filter(char => char.id !== characterId));
       }
     } catch (error) {
-      console.error("Failed to delete character:", error);
-      setError("Failed to delete character");
-      throw error; // Re-throw so the component can handle it if needed
+      showError(`Failed to delete character: ${characterId}`);
+      throw error;
     }
   };
 

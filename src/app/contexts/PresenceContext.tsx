@@ -59,13 +59,11 @@ export const PresenceProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   // Connect to SSE endpoint
   const connect = useCallback(async (userId: string, username: string) => {
     if (!isPresenceEnabled) {
-      console.log('Presence system is disabled');
       return;
     }
 
     // Close existing connection if any
     if (eventSourceRef.current) {
-      console.log('Closing existing SSE connection');
       eventSourceRef.current.close();
       eventSourceRef.current = null;
     }
@@ -77,7 +75,6 @@ export const PresenceProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     }
 
     try {
-      console.log(`Connecting to presence system for user ${userId}`);
       setConnectionStatus('disconnected');
       setServerMessage(null);
 
@@ -115,7 +112,6 @@ export const PresenceProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         // Try to reconnect after 5 seconds
         setTimeout(() => {
           if (isAuthenticated && currentUser && isPresenceEnabled) {
-            console.log('Attempting to reconnect to presence system...');
             connect(currentUser.id, currentUser.username);
           }
         }, 5000);
@@ -208,7 +204,6 @@ export const PresenceProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   // Manual refresh function
   const refreshConnection = useCallback(() => {
     if (isAuthenticated && currentUser && isPresenceEnabled) {
-      console.log('Manually refreshing presence connection...');
       connect(currentUser.id, currentUser.username);
     }
   }, [isAuthenticated, currentUser, isPresenceEnabled, connect]);

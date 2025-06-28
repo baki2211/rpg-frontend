@@ -79,23 +79,10 @@ const SessionList = () => {
 
     try {
       const newStatus = currentStatus === 'frozen' ? 'open' : 'frozen';
-      const action = newStatus === 'frozen' ? 'Freezing' : 'Unfreezing';
-      
-      const response = await api.put(`/sessions/${sessionId}/status`, { status: newStatus });
-      console.log(`✅ Session ${action.toLowerCase()} successful:`, response.data);
-      
-      // Show user feedback
-      if (newStatus === 'frozen') {
-        alert('🧊 Session frozen! Chat state has been saved and cleared.');
-      } else {
-        alert('🔥 Session unfrozen! Chat state has been restored.');
-      }
-
-      // Refresh sessions list
+      await api.put(`/sessions/${sessionId}/status`, { status: newStatus });
       await fetchSessions();
     } catch (error) {
-      console.error(`❌ Error ${currentStatus === 'frozen' ? 'unfreezing' : 'freezing'} session:`, error);
-      alert(`Failed to ${currentStatus === 'frozen' ? 'unfreeze' : 'freeze'} session`);
+      alert(`Failed to ${currentStatus === 'frozen' ? 'unfreeze' : 'freeze'} session: ${error}`);
     }
   };
 
@@ -109,18 +96,10 @@ const SessionList = () => {
       // If closing (currentIsActive is true), set status to 'closed'
       // If opening (currentIsActive is false), set status to 'open'
       const newStatus = currentIsActive ? 'closed' : 'open';
-      
-      console.log(`🔄 Updating session ${sessionId} from ${currentIsActive ? 'active' : 'inactive'} to status: ${newStatus}`);
-      
-      const response = await api.put(`/sessions/${sessionId}/status`, { status: newStatus });
-      console.log('✅ Session updated successfully:', response.data);
-      
-      // Refresh sessions list
-      console.log('🔄 Refreshing sessions list...');
+      await api.put(`/sessions/${sessionId}/status`, { status: newStatus });
       await fetchSessions();
     } catch (error) {
-      console.error('❌ Error updating session status:', error);
-      alert('Failed to update session status');
+      alert(`Failed to update session status: ${error}`);
     }
   };
 

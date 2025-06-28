@@ -37,14 +37,12 @@ const useWebSocket = ({ locationId, username, onMessage, onError, onClose }: Web
 
 
       ws.current.onopen = () => {
-        console.log(`WebSocket connection established for location: ${locationId}`);
         setConnectionStatus('open');
       };
 
       ws.current.onmessage = (event) => {
         const message = JSON.parse(event.data);
         const formattedMessage = `${new Date(message.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - ${message.senderName}`;
-        console.log('Message received:', formattedMessage);
         onMessage({ ...message, formattedMessage }); // Call the onMessage callback with formatted message
       };
 

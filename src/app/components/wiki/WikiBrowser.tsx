@@ -113,7 +113,6 @@ export const WikiBrowser: React.FC = () => {
   const fetchNavigation = async () => {
     try {
       const response = await api.get<{success: boolean, data: WikiNavigation}>('/wiki/navigation');
-      console.log('Navigation response:', response.data); // Debug log
       
       if (response.data && response.data.data && response.data.data.sections) {
         setNavigation(response.data.data);

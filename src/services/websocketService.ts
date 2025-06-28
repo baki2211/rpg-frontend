@@ -25,7 +25,6 @@ export class WebSocketService {
     this.ws = new WebSocket(this.url);
 
     this.ws.onopen = (event) => {
-      console.log('WebSocket connected:', this.url);
       this.config.onOpen?.(event);
     };
 
@@ -34,7 +33,6 @@ export class WebSocketService {
     };
 
     this.ws.onclose = (event) => {
-      console.log('WebSocket disconnected:', this.url);
       this.config.onClose?.(event);
     };
 

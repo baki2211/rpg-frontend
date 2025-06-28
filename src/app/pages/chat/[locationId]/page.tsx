@@ -39,14 +39,7 @@ interface ChatMessage {
   formattedMessage?: string;
 }
 
-interface CombatRound {
-  id: number;
-  roundNumber: number;
-}
 
-interface CombatRoundResponse {
-  round: CombatRound | null;
-}
 
 const ChatPage = () => {
   const { user } = useAuth();
@@ -70,9 +63,6 @@ const ChatPage = () => {
   // Check if user has master permissions
   const isMaster = user?.role === 'master' || user?.role === 'admin';
 
-  // Track active combat round
-  const [activeRound, setActiveRound] = useState<{ id: number; roundNumber: number } | null>(null);
-  
   // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -147,49 +137,7 @@ const ChatPage = () => {
     updateLocation();
   }, [locationId, currentUser]);
 
-  // Check for active combat round
-  useEffect(() => {
-    const fetchActiveRound = async () => {
-      if (!locationId) return;
-      
-      try {
-        const response = await api.get<CombatRoundResponse>(`/combat/rounds/active/${locationId}`);
-        setActiveRound(response.data.round);
-      } catch (error) {
-        console.error('Error fetching active round:', error);
-        setActiveRound(null);
-      }
-    };
 
-    fetchActiveRound();
-    const interval = setInterval(fetchActiveRound, 10000);
-    return () => clearInterval(interval);
-  }, [locationId]);
-
-  // Submit skill to combat round
-  const handleSubmitSkillToCombat = async (skill: Skill & { selectedTarget?: ChatUser }, round: { id: number; roundNumber: number }) => {
-    try {
-      // Find target character ID if needed
-      let targetId = null;
-      if ((skill.target === 'other' || skill.target === 'any') && skill.selectedTarget) {
-        targetId = skill.selectedTarget.userId;
-      }
-
-      const response = await api.post(`/combat/rounds/${round.id}/actions`, {
-        skillId: skill.id,
-        targetId
-      });
-
-      if (response.status === 200 || response.status === 201) {
-        console.log('Skill submitted to combat round successfully');
-        showSuccess(`${skill.name} submitted to combat round ${round.roundNumber}!`);
-      }
-    } catch (error) {
-      console.error('Error submitting skill to combat:', error);
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      showError(`Failed to submit skill to combat round: ${errorMessage}`);
-    }
-  };
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -364,15 +312,15 @@ const ChatPage = () => {
 
   // Master Panel handlers
   const handleApplyDamage = (characterId: string, damage: number) => {
-    console.log(`Applied ${damage} damage to character ${characterId}`);
+    showSuccess(`Applied ${damage} damage to character ${characterId}`);
   };
 
   const handleApplyHealing = (characterId: string, healing: number) => {
-    console.log(`Applied ${healing} healing to character ${characterId}`);
+    showSuccess(`Applied ${healing} healing to character ${characterId}`);
   };
 
   const handleApplyStatus = (characterId: string, status: { id: string; name: string; type: string; duration: number; effects: Record<string, number> }) => {
-    console.log(`Applied ${status.name} status effect to character ${characterId} for ${status.duration} turns`);
+    showSuccess(`Applied ${status.name} status effect to character ${characterId} for ${status.duration} turns`);
   };
 
   const handleSendMessage = (e: React.FormEvent) => {
@@ -397,13 +345,7 @@ const ChatPage = () => {
       } : null
     };
     
-    webSocketServiceRef.current?.sendMessage(message as unknown as JSON);
-    
-    // If there's an active round and a skill is selected, submit to combat as well
-    if (selectedSkill && activeRound) {
-      handleSubmitSkillToCombat(selectedSkill, activeRound);
-    }
-    
+    webSocketServiceRef.current?.sendMessage(message as unknown as JSON);  
     setNewMessage('');
     setCharCount(0);
     setSelectedSkill(null); // Reset selected skill after sending

@@ -154,7 +154,6 @@ export class WebSocketService extends EventEmitter {
       if (this.reconnectTimeout) {
         clearTimeout(this.reconnectTimeout);
       }
-      console.log(`Retrying WebSocket connection in ${this.retryDelay / 1000} seconds...`);
       this.reconnectTimeout = setTimeout(() => this.connect(), this.retryDelay);
       this.retryDelay = Math.min(this.retryDelay * 2, this.maxRetryDelay);
       this.retryCount += 1;

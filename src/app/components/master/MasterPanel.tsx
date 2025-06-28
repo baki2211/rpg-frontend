@@ -239,7 +239,6 @@ export const MasterPanel: React.FC<MasterPanelProps> = ({
       
       const responseData = response.data as { success: boolean };
       if (responseData.success) {
-        console.log(`⚔️ MASTER PANEL: Created round for event ${activeEvent.title}`);
         await fetchActiveRound();
       }
     } catch (error) {
@@ -259,7 +258,6 @@ export const MasterPanel: React.FC<MasterPanelProps> = ({
       
               const responseData = response.data as { success: boolean };
         if (responseData.success) {
-          console.log(`⚔️ MASTER PANEL: Resolved round ${activeRound.roundNumber}`);
           // Refresh all combat data
           await Promise.all([
             fetchActiveRound(),
