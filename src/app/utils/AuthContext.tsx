@@ -17,6 +17,7 @@ interface AuthContextType {
   setUser: React.Dispatch<React.SetStateAction<User | null>>; // Setter for user
   isLoading: boolean; // Add loading state
   error: string | null; // Add error state
+  retryAuth: () => void; // Add retry function
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -27,55 +28,78 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    const checkAuthStatus = async () => {
-      try {
-        setIsLoading(true);
-        setError(null);
-        // First check if we have a stored token
-        const storedToken = tokenService.getToken();
-        const storedUser = tokenService.getUser();
+  const checkAuthStatus = async (retryCount = 0): Promise<void> => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      
+      // First check if we have a stored token
+      const storedToken = tokenService.getToken();
+      const storedUser = tokenService.getUser();
+      
+      if (storedToken && storedUser) {
+        // We have a stored token, let's verify it's still valid
+        const response = await api.get('/protected');
+        const responseData = response.data as { user: User };
         
-        if (storedToken && storedUser) {
-          // We have a stored token, let's verify it's still valid
-          const response = await api.get('/protected');
-          const responseData = response.data as { user: User };
-          
-          setIsAuthenticated(true);
-          setUser(responseData.user);
-        } else {
-          // No stored token, clear auth state
-          setIsAuthenticated(false);
-          setUser(null);
-        }
-      } catch (error: unknown) {
-        
-        // Clear stored auth data on failure
-        tokenService.clearAuth();
-        
-        const axiosError = error as { code?: string; response?: { status: number }; message?: string };
-        if (axiosError.code === 'ECONNREFUSED') {
-          setError('Cannot connect to server. Please make sure the backend is running.');
-        } else if (axiosError.response?.status === 401) {
-          setError('Not authenticated. Please log in.');
-        } else if (axiosError.code === 'ECONNABORTED') {
-          setError('Connection timeout. Please check your network connection.');
-        } else {
-          setError(axiosError.message || 'Authentication check failed');
-        }
-        
+        setIsAuthenticated(true);
+        setUser(responseData.user);
+      } else {
+        // No stored token, clear auth state
         setIsAuthenticated(false);
         setUser(null);
-      } finally {
+      }
+    } catch (error: unknown) {
+      const axiosError = error as { code?: string; response?: { status: number }; message?: string };
+      
+      // Only clear auth on actual authentication failures
+      if (axiosError.response?.status === 401 || axiosError.response?.status === 403) {
+        tokenService.clearAuth();
+        setIsAuthenticated(false);
+        setUser(null);
+        setError('Session expired. Please log in again.');
+      } else if (axiosError.code === 'ECONNREFUSED' || axiosError.code === 'ECONNABORTED' || 
+                 axiosError.message?.includes('Network Error') || axiosError.message?.includes('timeout')) {
+        // Network errors - don't clear auth, but show appropriate message
+        if (retryCount < 3) {
+          // Retry with exponential backoff
+          const delay = Math.pow(2, retryCount) * 1000; // 1s, 2s, 4s
+          setError(`Connection issue. Retrying in ${delay/1000}s...`);
+          setTimeout(() => checkAuthStatus(retryCount + 1), delay);
+          return;
+        } else {
+          setError('Connection lost. Your session is preserved. Check your network connection.');
+          // Keep current auth state - user might still be authenticated when connection returns
+        }
+      } else {
+        // Other errors - keep auth state but show error
+        setError(axiosError.message || 'Authentication check failed. Your session is preserved.');
+      }
+    } finally {
+      if (retryCount === 0) { // Only set loading false on initial call, not retries
         setIsLoading(false);
       }
-    };
+    }
+  };
 
+  const retryAuth = () => {
+    checkAuthStatus();
+  };
+
+  useEffect(() => {
     checkAuthStatus();
   }, []); // Run once on initialization
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated, setIsAuthenticated, user, setUser, isLoading, error }}>
+    <AuthContext.Provider value={{ 
+      isAuthenticated, 
+      setIsAuthenticated, 
+      user, 
+      setUser, 
+      isLoading, 
+      error,
+      retryAuth 
+    }}>
       {children}
     </AuthContext.Provider>
   );
