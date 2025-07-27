@@ -1,6 +1,25 @@
 import React, { useState, useEffect, useRef } from 'react';
 import './WikiPanel.css';
 import { api } from '../../../services/apiClient';
+import {
+  DndContext,
+  DragEndEvent,
+  DragOverlay,
+  DragStartEvent,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+} from '@dnd-kit/core';
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+  useSortable,
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 
 interface WikiSection {
   id: number;
@@ -44,6 +63,151 @@ interface WikiStats {
   totalViews: number;
   popularTags: Array<{ tag: string; count: number }>;
 }
+
+// Sortable Section Component
+const SortableSection: React.FC<{
+  section: WikiSection;
+  onEdit: (section: WikiSection) => void;
+  onDelete: (id: number) => void;
+  isDragging?: boolean;
+}> = ({ section, onEdit, onDelete, isDragging }) => {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging: isSortableDragging,
+  } = useSortable({ id: section.id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging || isSortableDragging ? 0.5 : 1,
+  };
+
+  return (
+    <div 
+      ref={setNodeRef} 
+      style={style} 
+      className={`section-card ${isDragging || isSortableDragging ? 'dragging' : ''}`}
+    >
+      <div className="section-header">
+        <div className="drag-handle" {...attributes} {...listeners} title="Drag to reorder">
+          ⋮⋮
+        </div>
+        <div className="section-info">
+          <h4>{section.name}</h4>
+          <div className="section-meta">
+            <span className={`status ${section.isActive ? 'active' : 'inactive'}`}>
+              {section.isActive ? 'Active' : 'Inactive'}
+            </span>
+            <span className="entry-count">{section.entryCount} entries</span>
+            <span className="position">Position: {section.position}</span>
+          </div>
+        </div>
+      </div>
+      {section.description && (
+        <div className="section-description">
+          {section.description}
+        </div>
+      )}
+      <div className="section-actions">
+        <button
+          className="btn btn-sm btn-primary"
+          onClick={() => onEdit(section)}
+        >
+          Edit
+        </button>
+        <button
+          className="btn btn-sm btn-danger"
+          onClick={() => onDelete(section.id)}
+        >
+          Delete
+        </button>
+      </div>
+    </div>
+  );
+};
+
+// Sortable Entry Component
+const SortableEntry: React.FC<{
+  entry: WikiEntry;
+  onEdit: (entry: WikiEntry) => void;
+  onDelete: (id: number) => void;
+  onAddChild: (parentEntry: WikiEntry) => void;
+  isDragging?: boolean;
+}> = ({ entry, onEdit, onDelete, onAddChild, isDragging }) => {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging: isSortableDragging,
+  } = useSortable({ id: entry.id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging || isSortableDragging ? 0.5 : 1,
+  };
+
+  return (
+    <div 
+      ref={setNodeRef} 
+      style={style} 
+      className={`entry-card ${isDragging || isSortableDragging ? 'dragging' : ''}`}
+    >
+      <div className="entry-header">
+        <div className="drag-handle" {...attributes} {...listeners} title="Drag to reorder">
+          ⋮⋮
+        </div>
+        <div className="entry-info">
+          <h4>{entry.title}</h4>
+          <div className="entry-meta">
+            {entry.section && <span className="section-name">{entry.section.name}</span>}
+            {entry.level > 1 && <span className="level-indicator">Level {entry.level}</span>}
+            <span className={`status ${entry.isPublished ? 'published' : 'draft'}`}>
+              {entry.isPublished ? 'Published' : 'Draft'}
+            </span>
+            <span className="views">{entry.viewCount} views</span>
+          </div>
+        </div>
+      </div>
+      <div className="entry-excerpt">
+        {entry.excerpt || 'No excerpt available'}
+      </div>
+      <div className="entry-tags">
+        {entry.tags.map(tag => (
+          <span key={tag} className="tag">{tag}</span>
+        ))}
+      </div>
+      <div className="entry-actions">
+        {entry.level < 4 && (
+          <button
+            className="btn btn-sm btn-secondary"
+            onClick={() => onAddChild(entry)}
+          >
+            Add Sub-Entry
+          </button>
+        )}
+        <button
+          className="btn btn-sm btn-primary"
+          onClick={() => onEdit(entry)}
+        >
+          Edit
+        </button>
+        <button
+          className="btn btn-sm btn-danger"
+          onClick={() => onDelete(entry.id)}
+        >
+          Delete
+        </button>
+      </div>
+    </div>
+  );
+};
 
 // Rich Text Toolbar Component
 const RichTextToolbar: React.FC<{
@@ -291,6 +455,23 @@ export const WikiPanel: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   
+  // Drag and drop state
+  const [activeDragId, setActiveDragId] = useState<string | number | null>(null);
+  const [draggedSection, setDraggedSection] = useState<WikiSection | null>(null);
+  const [draggedEntry, setDraggedEntry] = useState<WikiEntry | null>(null);
+  
+  // Sensors for drag and drop
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8,
+      },
+    }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
+  
   // Section form state
   const [sectionForm, setSectionForm] = useState({
     name: '',
@@ -489,6 +670,91 @@ export const WikiPanel: React.FC = () => {
     setEditingEntryId(null);
   };
 
+  // Drag and drop handlers
+  const handleDragStart = (event: DragStartEvent) => {
+    const { active } = event;
+    setActiveDragId(active.id);
+    
+    if (activeTab === 'sections') {
+      const section = sections.find(s => s.id === active.id);
+      setDraggedSection(section || null);
+    } else if (activeTab === 'entries') {
+      const entry = filteredEntries.find(e => e.id === active.id);
+      setDraggedEntry(entry || null);
+    }
+  };
+
+  const handleDragEnd = async (event: DragEndEvent) => {
+    const { active, over } = event;
+    
+    setActiveDragId(null);
+    setDraggedSection(null);
+    setDraggedEntry(null);
+    
+    if (!over || active.id === over.id) {
+      return;
+    }
+
+    if (activeTab === 'sections') {
+      const oldIndex = sections.findIndex(section => section.id === active.id);
+      const newIndex = sections.findIndex(section => section.id === over.id);
+      
+      if (oldIndex !== -1 && newIndex !== -1) {
+        const newSections = arrayMove(sections, oldIndex, newIndex);
+        setSections(newSections);
+        
+        // Create reorder data for API
+        const sectionOrder = newSections.map((section, index) => ({
+          id: section.id,
+          position: index + 1
+        }));
+        
+        try {
+          await api.put('/wiki/admin/sections/reorder', { sectionOrder });
+          showMessage('success', 'Sections reordered successfully');
+          fetchSections(); // Refresh to get updated positions
+        } catch (error) {
+          console.error('Error reordering sections:', error);
+          showMessage('error', 'Failed to reorder sections');
+          fetchSections(); // Revert on error
+        }
+      }
+    } else if (activeTab === 'entries' && selectedSectionId) {
+      const oldIndex = filteredEntries.findIndex(entry => entry.id === active.id);
+      const newIndex = filteredEntries.findIndex(entry => entry.id === over.id);
+      
+      if (oldIndex !== -1 && newIndex !== -1) {
+        const newEntries = arrayMove(filteredEntries, oldIndex, newIndex);
+        
+        // Update the main entries array
+        const updatedEntries = entries.map(entry => {
+          if (entry.sectionId === selectedSectionId) {
+            const updatedEntry = newEntries.find(e => e.id === entry.id);
+            return updatedEntry || entry;
+          }
+          return entry;
+        });
+        setEntries(updatedEntries);
+        
+        // Create reorder data for API
+        const entryOrder = newEntries.map((entry, index) => ({
+          id: entry.id,
+          position: index + 1
+        }));
+        
+        try {
+          await api.put(`/wiki/admin/sections/${selectedSectionId}/entries/reorder`, { entryOrder });
+          showMessage('success', 'Entries reordered successfully');
+          fetchEntries(); // Refresh to get updated positions
+        } catch (error) {
+          console.error('Error reordering entries:', error);
+          showMessage('error', 'Failed to reorder entries');
+          fetchEntries(); // Revert on error
+        }
+      }
+    }
+  };
+
   // Get entries for the selected section (filtered or hierarchical)
   const filteredEntries = selectedSectionId 
     ? (entries || []).filter(entry => entry.sectionId === selectedSectionId)
@@ -601,41 +867,42 @@ export const WikiPanel: React.FC = () => {
 
           <div className="sections-list">
             <h3>Sections</h3>
-            <div className="sections-container">
-              {(sections || []).map(section => (
-                <div key={section.id} className="section-card">
-                  <div className="section-header">
-                    <h4>{section.name}</h4>
-                    <div className="section-meta">
-                      <span className={`status ${section.isActive ? 'active' : 'inactive'}`}>
-                        {section.isActive ? 'Active' : 'Inactive'}
-                      </span>
-                      <span className="entry-count">{section.entryCount} entries</span>
-                      <span className="position">Position: {section.position}</span>
-                    </div>
-                  </div>
-                  {section.description && (
-                    <div className="section-description">
-                      {section.description}
-                    </div>
-                  )}
-                  <div className="section-actions">
-                    <button
-                      className="btn btn-sm btn-primary"
-                      onClick={() => handleEditSection(section)}
-                    >
-                      Edit
-                    </button>
-                    <button
-                      className="btn btn-sm btn-danger"
-                      onClick={() => handleDeleteSection(section.id)}
-                    >
-                      Delete
-                    </button>
-                  </div>
-                </div>
-              ))}
+            <div className="drag-info">
+              <small>💡 Drag the ⋮⋮ handle to reorder sections</small>
             </div>
+            <DndContext
+              sensors={sensors}
+              collisionDetection={closestCenter}
+              onDragStart={handleDragStart}
+              onDragEnd={handleDragEnd}
+            >
+              <SortableContext
+                items={sections.map(s => s.id)}
+                strategy={verticalListSortingStrategy}
+              >
+                <div className="sections-container">
+                  {(sections || []).map(section => (
+                    <SortableSection
+                      key={section.id}
+                      section={section}
+                      onEdit={handleEditSection}
+                      onDelete={handleDeleteSection}
+                      isDragging={activeDragId === section.id}
+                    />
+                  ))}
+                </div>
+              </SortableContext>
+              <DragOverlay>
+                {activeDragId && draggedSection ? (
+                  <SortableSection
+                    section={draggedSection}
+                    onEdit={() => {}}
+                    onDelete={() => {}}
+                    isDragging={true}
+                  />
+                ) : null}
+              </DragOverlay>
+            </DndContext>
           </div>
         </div>
       )}
@@ -775,6 +1042,21 @@ export const WikiPanel: React.FC = () => {
 
           <div className="entries-list">
             <h3>Entries</h3>
+            {selectedSectionId && !showHierarchy && (
+              <div className="drag-info">
+                <small>💡 Drag the ⋮⋮ handle to reorder entries within this section</small>
+              </div>
+            )}
+            {showHierarchy && (
+              <div className="drag-info">
+                <small>ℹ️ Reordering is only available in flat list view</small>
+              </div>
+            )}
+            {!selectedSectionId && (
+              <div className="drag-info">
+                <small>ℹ️ Select a section to enable entry reordering</small>
+              </div>
+            )}
             {loading ? (
               <div className="loading">Loading entries...</div>
             ) : (
@@ -793,20 +1075,59 @@ export const WikiPanel: React.FC = () => {
                       />
                     ))}
                   </div>
+                ) : selectedSectionId ? (
+                  // Flat list view with drag and drop (only when section is selected)
+                  <DndContext
+                    sensors={sensors}
+                    collisionDetection={closestCenter}
+                    onDragStart={handleDragStart}
+                    onDragEnd={handleDragEnd}
+                  >
+                    <SortableContext
+                      items={filteredEntries.map(e => e.id)}
+                      strategy={verticalListSortingStrategy}
+                    >
+                      <div className="entries-flat">
+                        {filteredEntries.map(entry => (
+                          <SortableEntry
+                            key={entry.id}
+                            entry={entry}
+                            onEdit={handleEditEntry}
+                            onDelete={handleDeleteEntry}
+                            onAddChild={handleAddChildEntry}
+                            isDragging={activeDragId === entry.id}
+                          />
+                        ))}
+                      </div>
+                    </SortableContext>
+                    <DragOverlay>
+                      {activeDragId && draggedEntry ? (
+                        <SortableEntry
+                          entry={draggedEntry}
+                          onEdit={() => {}}
+                          onDelete={() => {}}
+                          onAddChild={() => {}}
+                          isDragging={true}
+                        />
+                      ) : null}
+                    </DragOverlay>
+                  </DndContext>
                 ) : (
-                  // Flat list view
+                  // Flat list view without drag and drop (when no section selected)
                   <div className="entries-flat">
                     {filteredEntries.map(entry => (
                       <div key={entry.id} className="entry-card">
                         <div className="entry-header">
-                          <h4>{entry.title}</h4>
-                          <div className="entry-meta">
-                            {entry.section && <span className="section-name">{entry.section.name}</span>}
-                            {entry.level > 1 && <span className="level-indicator">Level {entry.level}</span>}
-                            <span className={`status ${entry.isPublished ? 'published' : 'draft'}`}>
-                              {entry.isPublished ? 'Published' : 'Draft'}
-                            </span>
-                            <span className="views">{entry.viewCount} views</span>
+                          <div className="entry-info">
+                            <h4>{entry.title}</h4>
+                            <div className="entry-meta">
+                              {entry.section && <span className="section-name">{entry.section.name}</span>}
+                              {entry.level > 1 && <span className="level-indicator">Level {entry.level}</span>}
+                              <span className={`status ${entry.isPublished ? 'published' : 'draft'}`}>
+                                {entry.isPublished ? 'Published' : 'Draft'}
+                              </span>
+                              <span className="views">{entry.viewCount} views</span>
+                            </div>
                           </div>
                         </div>
                         <div className="entry-excerpt">

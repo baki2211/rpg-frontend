@@ -48,6 +48,131 @@
   border: 1px solid #f5c6cb;
 }
 
+/* Drag and Drop Styles */
+.drag-handle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  margin-right: 12px;
+  cursor: grab;
+  color: #6c757d;
+  font-size: 16px;
+  font-weight: bold;
+  background: #f8f9fa;
+  border: 1px solid #dee2e6;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.drag-handle:hover {
+  background: #e9ecef;
+  color: #495057;
+  border-color: #ced4da;
+}
+
+.drag-handle:active {
+  cursor: grabbing;
+}
+
+/* Section card modifications for drag and drop */
+.section-card {
+  position: relative;
+  transition: all 0.2s ease;
+}
+
+.section-card.dragging {
+  opacity: 0.5;
+  transform: rotate(5deg);
+  z-index: 1000;
+}
+
+.section-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.section-info {
+  flex: 1;
+}
+
+/* Entry card modifications for drag and drop */
+.entry-card {
+  position: relative;
+  transition: all 0.2s ease;
+}
+
+.entry-card.dragging {
+  opacity: 0.5;
+  transform: rotate(2deg);
+  z-index: 1000;
+}
+
+.entry-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.entry-info {
+  flex: 1;
+}
+
+/* Sortable context styling */
+.sections-container,
+.entries-flat {
+  position: relative;
+}
+
+/* Drop zone indicators */
+.sections-container::before,
+.entries-flat::before {
+  content: '';
+  position: absolute;
+  top: -2px;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: transparent;
+  border-radius: 2px;
+  transition: background-color 0.2s ease;
+  pointer-events: none;
+}
+
+/* Visual feedback during drag operations */
+.section-card:hover:not(.dragging),
+.entry-card:hover:not(.dragging) {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Drag overlay styling */
+.section-card.dragging,
+.entry-card.dragging {
+  background: white;
+  border: 2px dashed #007bff;
+  box-shadow: 0 8px 25px rgba(0, 123, 255, 0.15);
+}
+
+/* Drag info styling */
+.drag-info {
+  margin-bottom: 1rem;
+  padding: 0.5rem 1rem;
+  background: #e3f2fd;
+  border: 1px solid #bbdefb;
+  border-radius: 6px;
+  text-align: center;
+}
+
+.drag-info small {
+  color: #1565c0;
+  font-weight: 500;
+  font-size: 0.9rem;
+}
+
 .wiki-tabs {
   display: flex;
   gap: 0.5rem;
