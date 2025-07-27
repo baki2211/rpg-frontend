@@ -43,17 +43,17 @@ const MapPage = () => {
     if (imageError || !mapUrl) {
       return `${UPLOADS_URL}/placeholder.jpg`;
     }
-    
+
     // If it's already a full URL, use it as is
     if (mapUrl.startsWith('http')) {
       return mapUrl;
     }
-    
+
     // If the mapUrl starts with /uploads/, use baseUrl instead of UPLOADS_URL
     if (mapUrl.startsWith('/uploads/')) {
       return `${UPLOADS_URL.replace('/uploads', '')}${mapUrl}`;
     }
-    
+
     // For all other cases, prepend UPLOADS_URL
     return `${UPLOADS_URL}${mapUrl}`;
   };
@@ -66,9 +66,9 @@ const MapPage = () => {
     <div style={{ position: 'relative', padding: '2rem', backgroundColor: '#b7abab' }}>
       {mapUrl ? (
         <div style={{ position: 'relative' }}>
-          <Image 
+          <Image
             src={getImageUrl()}
-            alt="Game Map" 
+            alt="Game Map"
             width={1200}
             height={800}
             style={{ width: '100%', height: 'auto' }}
@@ -87,8 +87,9 @@ const MapPage = () => {
                 border: 'none',
                 borderRadius: '50%',
                 padding: '5px',
+                cursor: 'pointer',
               }}
-              
+
               onClick={() => navigateToChat(location.id)}
             >
               {location.name}
