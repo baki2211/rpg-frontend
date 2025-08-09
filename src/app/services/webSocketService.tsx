@@ -18,6 +18,7 @@ export class WebSocketService extends EventEmitter {
   private isConnecting = false;
   private reconnectTimeout: NodeJS.Timeout | null = null;
   private connectionTimeout: NodeJS.Timeout | null = null;
+  private isDevelopment = process.env.NODE_ENV === 'development';
 
   constructor(private options: WebSocketOptions) {
     super();
@@ -67,7 +68,11 @@ export class WebSocketService extends EventEmitter {
       // Set a connection timeout
       this.connectionTimeout = setTimeout(() => {
         if (this.socket?.readyState !== WebSocket.OPEN) {
-          console.warn('WebSocket connection timeout');
+          if (this.isDevelopment) {
+            console.warn('WebSocket connection timeout - this is normal if the WebSocket server is not running in development');
+          } else {
+            console.warn('WebSocket connection timeout');
+          }
           this.cleanup();
           this.handleReconnect();
         }
@@ -96,7 +101,13 @@ export class WebSocketService extends EventEmitter {
       };
 
       this.socket.onerror = (event) => {
-        console.error('WebSocket error:', event);
+        // In development, only log the first error to avoid spam
+        if (this.isDevelopment && this.retryCount === 0) {
+          console.warn('WebSocket connection failed - this is normal if the WebSocket server is not running in development');
+        } else if (!this.isDevelopment) {
+          console.error('WebSocket error:', event);
+        }
+        
         this.cleanup();
         
         if (this.options.onError) {
@@ -119,7 +130,13 @@ export class WebSocketService extends EventEmitter {
       };
 
       this.socket.onclose = (event) => {
-        console.warn('WebSocket connection closed:', event);
+        // In development, only log the first close event to avoid spam
+        if (this.isDevelopment && this.retryCount === 0) {
+          console.warn('WebSocket connection closed - this is normal if the WebSocket server is not running in development');
+        } else if (!this.isDevelopment) {
+          console.warn('WebSocket connection closed:', event);
+        }
+        
         this.cleanup();
         
         if (this.options.onClose) {
@@ -158,7 +175,11 @@ export class WebSocketService extends EventEmitter {
       this.retryDelay = Math.min(this.retryDelay * 2, this.maxRetryDelay);
       this.retryCount += 1;
     } else {
-      console.error('Max retry attempts reached. Unable to reconnect WebSocket.');
+      if (this.isDevelopment) {
+        console.warn('Max retry attempts reached. WebSocket server may not be running in development.');
+      } else {
+        console.error('Max retry attempts reached. Unable to reconnect WebSocket.');
+      }
     }
   }
 
@@ -170,7 +191,11 @@ export class WebSocketService extends EventEmitter {
         console.error('Error sending message:', error);
       }
     } else {
-      console.warn('WebSocket is not open. Unable to send message.');
+      if (this.isDevelopment) {
+        console.warn('WebSocket is not open. Messages will be queued when connection is established.');
+      } else {
+        console.warn('WebSocket is not open. Unable to send message.');
+      }
     }
   }
 

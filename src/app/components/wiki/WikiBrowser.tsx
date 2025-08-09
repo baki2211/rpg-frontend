@@ -103,12 +103,19 @@ export const WikiBrowser: React.FC = () => {
   // const [availableTags, setAvailableTags] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
   const [view, setView] = useState<'navigation' | 'entry' | 'search' | 'tag'>('navigation');
-  const [expandedSections, setExpandedSections] = useState<Set<number>>(new Set());
+  const [expandedSections, setExpandedSections] = useState<number[]>([]);
+  const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
-    fetchNavigation();
-    // fetchTags();
+    setIsClient(true);
   }, []);
+
+  useEffect(() => {
+    if (isClient) {
+      fetchNavigation();
+      // fetchTags();
+    }
+  }, [isClient]);
 
   const fetchNavigation = async () => {
     try {
@@ -118,7 +125,7 @@ export const WikiBrowser: React.FC = () => {
         setNavigation(response.data.data);
         // Expand all sections by default
         const allSectionIds = response.data.data.sections.map(s => s.id);
-        setExpandedSections(new Set(allSectionIds));
+        setExpandedSections(allSectionIds);
       } else {
         console.warn('Navigation data structure unexpected:', response.data);
         setNavigation({ sections: [] });
@@ -194,13 +201,13 @@ export const WikiBrowser: React.FC = () => {
   };
 
   const toggleSection = (sectionId: number) => {
-    const newExpanded = new Set(expandedSections);
-    if (newExpanded.has(sectionId)) {
-      newExpanded.delete(sectionId);
-    } else {
-      newExpanded.add(sectionId);
-    }
-    setExpandedSections(newExpanded);
+    setExpandedSections(prev => {
+      if (prev.includes(sectionId)) {
+        return prev.filter(id => id !== sectionId);
+      } else {
+        return [...prev, sectionId];
+      }
+    });
   };
 
   const formatDate = (dateString: string) => {
@@ -220,6 +227,15 @@ export const WikiBrowser: React.FC = () => {
       .replace(/\*(.*)\*/gim, '<em>$1</em>')
       .replace(/\n/gim, '<br>');
   };
+
+  // Don't render anything until client-side hydration is complete
+  if (!isClient) {
+    return (
+      <div className="wiki-browser loading">
+        <div className="loading-spinner">Loading...</div>
+      </div>
+    );
+  }
 
   if (loading && !navigation) {
     return (
@@ -245,13 +261,13 @@ export const WikiBrowser: React.FC = () => {
                   className="section-title"
                   onClick={() => toggleSection(section.id)}
                 >
-                  <span className={`section-toggle ${expandedSections.has(section.id) ? 'expanded' : ''}`}>
+                  <span className={`section-toggle ${expandedSections.includes(section.id) ? 'expanded' : ''}`}>
                     ▶
                   </span>
                   {section.name}
                 </div>
                 
-                {expandedSections.has(section.id) && (
+                {expandedSections.includes(section.id) && (
                   <div className="section-entries">
                     {(section.entries || []).length > 0 ? (
                       <HierarchicalEntryList
