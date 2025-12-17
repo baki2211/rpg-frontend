@@ -50,5 +50,5 @@ jobs:
         fi
         cd rpg
         git add frontend
-        git commit -m "🔁 Sync frontend from commit $GITHUB_SHA" || echo "No changes to commit"
-        git push origin main --force
+        git commit -m "Sync frontend from commit $GITHUB_SHA" || echo "No changes to commit"
+        git push origin main
