@@ -72,7 +72,7 @@ const Login = () => {
       
       <div className="login-card">
         <div className="login-header">
-          <h1>🏰 Welcome Back</h1>
+          <h1>Welcome Back</h1>
           <p>Enter your credentials to access Arcane Realms</p>
         </div>
 
@@ -115,7 +115,7 @@ const Login = () => {
               </>
             ) : (
               <>
-                🔑 Login
+                Login
               </>
             )}
           </button>
