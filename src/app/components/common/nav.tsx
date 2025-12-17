@@ -19,7 +19,7 @@ const NavMenu: React.FC = () => {
   return (
     <nav className="navbar">
       <Link href="/" className="navbar-brand">
-        🏰 Arcane Realms
+        Arcane Realms
       </Link>
       
       <div className="navbar-links">
