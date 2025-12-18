@@ -29,11 +29,11 @@ const getApiConfig = () => {
 
   const baseUrl = shouldUseLocal
     ? (process.env.NEXT_PUBLIC_LOCAL_BACKEND_URL || 'http://localhost:5001')  // Local development URL
-    : 'https://rpg-be.onrender.com';     // Production backend URL
+    : 'https://arcanerealms.org';     // Production backend URL
 
   const wsUrl = shouldUseLocal
     ? (process.env.NEXT_PUBLIC_LOCAL_WS_URL || 'ws://localhost:5001')  // Local WebSocket URL
-    : 'wss://rpg-be.onrender.com';       // Production WebSocket URL
+    : 'wss://arcanerealms.org';       // Production WebSocket URL
 
   return {
     baseUrl,
