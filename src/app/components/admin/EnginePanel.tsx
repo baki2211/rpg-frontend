@@ -248,7 +248,7 @@ export const EnginePanel: React.FC = () => {
   return (
     <div className="engine-panel">
       <div className="panel-header">
-        <h2>🔧 Engine Panel</h2>
+        <h2>Engine Panel</h2>
         <p>Configure character stats, resources, and scaling parameters</p>
         
         {message && (

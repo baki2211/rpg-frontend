@@ -375,7 +375,7 @@ const ChatPage = () => {
             onClick={() => setIsPresencePanelOpen(!isPresencePanelOpen)}
             title={`Online users in ${locationName || `Location ${locationId}`}`}
           >
-            👥 {chatUsers.length}
+            {chatUsers.length}
           </button>
           {isPresencePanelOpen && (
             <div className="presence-dropdown-menu">
@@ -388,7 +388,7 @@ const ChatPage = () => {
                   disabled={usersRefreshing}
                   title="Refresh user list"
                 >
-                  {usersRefreshing ? '⏳' : '🔄'}
+                  {usersRefreshing ? '...' : 'Refresh'}
                 </button>
               </div>
               <div className="presence-dropdown-list">
@@ -448,7 +448,7 @@ const ChatPage = () => {
             className="master-button"
             title="Master Panel"
           >
-            🎭
+            Master
           </button>
         )}
         <button 

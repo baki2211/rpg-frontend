@@ -118,10 +118,10 @@ const SessionList = () => {
     return (
       <div className="session-container">
         <div className="error-container">
-          <h3>❌ Error Loading Sessions</h3>
+          <h3>Error Loading Sessions</h3>
           <p>{error}</p>
           <button onClick={fetchSessions} className="retry-button">
-            🔄 Try Again
+            Try Again
           </button>
         </div>
       </div>
@@ -131,11 +131,11 @@ const SessionList = () => {
   return (
     <div className="session-container">
       <div className="session-header">
-        <h2>🎮 Session Management</h2>
+        <h2>Session Management</h2>
         <p>Manage active gaming sessions and participants</p>
         {!isMaster && (
           <div className="role-notice">
-            <span className="role-badge">👤 User</span>
+            <span className="role-badge">User</span>
             <span>Limited to &ldquo;Go Here&rdquo; action only</span>
           </div>
         )}
@@ -143,7 +143,7 @@ const SessionList = () => {
 
       {sessions.length === 0 ? (
         <div className="no-sessions">
-          <div className="no-sessions-icon">🏰</div>
+          <div className="no-sessions-icon"></div>
           <h3>No Active Sessions</h3>
           <p>Active sessions will appear here once they are created.</p>
           <p className="no-sessions-subtitle">Visit different locations to start or join conversations!</p>
@@ -175,7 +175,7 @@ const SessionList = () => {
                     <div className="session-type">
                       {session.isEvent ? (
                         <div className="event-badge">
-                          <span className="event-icon">📅</span>
+                          <span className="event-icon"></span>
                           <div className="event-info">
                             <span className="event-type">Event</span>
                             {session.event && (
@@ -185,7 +185,7 @@ const SessionList = () => {
                         </div>
                       ) : (
                         <div className="free-role-badge">
-                          <span className="free-role-icon">🎭</span>
+                          <span className="free-role-icon"></span>
                           <span className="free-role-type">Free Role</span>
                         </div>
                       )}
@@ -193,7 +193,7 @@ const SessionList = () => {
                   </td>
                   <td className="participants-cell">
                     <div className="participants-info">
-                      <span className="participant-count">👥 {session.participantCount}</span>
+                      <span className="participant-count">{session.participantCount}</span>
                       {session.participants && session.participants.length > 0 && (
                         <div className="participant-names">
                           {session.participants.slice(0, 3).map((participant, index) => (
@@ -225,7 +225,7 @@ const SessionList = () => {
                             className={`action-button freeze-button ${session.status === 'frozen' ? 'frozen' : ''}`}
                             title={session.status === 'frozen' ? 'Unfreeze session' : 'Freeze session'}
                           >
-                            {session.status === 'frozen' ? '🔥 Unfreeze' : '❄️ Freeze'}
+                            {session.status === 'frozen' ? 'Unfreeze' : 'Freeze'}
                           </button>
                           
                           <button
@@ -233,7 +233,7 @@ const SessionList = () => {
                             className={`action-button active-button ${session.isActive ? 'active' : 'inactive'}`}
                             title={session.isActive ? 'Close session' : 'Open session'}
                           >
-                            {session.isActive ? '🔒 Close' : '🔓 Open'}
+                            {session.isActive ? 'Close' : 'Open'}
                           </button>
                         </>
                       )}
@@ -243,7 +243,7 @@ const SessionList = () => {
                         className="action-button go-button"
                         title="Go to this location"
                       >
-                        🚀 Go Here
+                        Go Here
                       </button>
                     </div>
                   </td>

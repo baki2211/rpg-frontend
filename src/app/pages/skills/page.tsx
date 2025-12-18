@@ -87,21 +87,21 @@ export default function SkillsPage() {
     return (
       <div className="warning-container">
         <div className="warning-message">
-          <h3>🎭 No Active Character</h3>
+          <h3>No Active Character</h3>
           <p>You need an active character to browse and acquire skills.</p>
           <div className="warning-actions">
             {characters.length > 0 ? (
               <>
                 <p>You have {characters.length} character{characters.length > 1 ? 's' : ''} available. Please activate one to continue:</p>
                 <a href="/pages/characters" className="btn btn-primary">
-                  🏛️ Manage Characters
+                  Manage Characters
                 </a>
               </>
             ) : (
               <>
                 <p>Create your first character to start learning skills and abilities:</p>
                 <a href="/pages/characters" className="btn btn-primary">
-                  ✨ Create Character
+                  Create Character
                 </a>
               </>
             )}

@@ -256,7 +256,7 @@ const RichTextToolbar: React.FC<{
           {'```'}
         </button>
         <button type="button" onClick={() => onFormat('link')} title="Link">
-          🔗
+          Link
         </button>
       </div>
     </div>
@@ -868,7 +868,7 @@ export const WikiPanel: React.FC = () => {
           <div className="sections-list">
             <h3>Sections</h3>
             <div className="drag-info">
-              <small>💡 Drag the ⋮⋮ handle to reorder sections</small>
+              <small>Drag the ⋮⋮ handle to reorder sections</small>
             </div>
             <DndContext
               sensors={sensors}
@@ -1044,17 +1044,17 @@ export const WikiPanel: React.FC = () => {
             <h3>Entries</h3>
             {selectedSectionId && !showHierarchy && (
               <div className="drag-info">
-                <small>💡 Drag the ⋮⋮ handle to reorder entries within this section</small>
+                <small>Drag the ⋮⋮ handle to reorder entries within this section</small>
               </div>
             )}
             {showHierarchy && (
               <div className="drag-info">
-                <small>ℹ️ Reordering is only available in flat list view</small>
+                <small>Reordering is only available in flat list view</small>
               </div>
             )}
             {!selectedSectionId && (
               <div className="drag-info">
-                <small>ℹ️ Select a section to enable entry reordering</small>
+                <small>Select a section to enable entry reordering</small>
               </div>
             )}
             {loading ? (

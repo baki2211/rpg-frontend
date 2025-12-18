@@ -337,12 +337,12 @@ const CharacterCreationModalPanel: React.FC<CharacterCreationModalPanelProps> = 
           </div>
         </div>
 
-        <button 
-          type="submit" 
+        <button
+          type="submit"
           className="character-submit-button"
           disabled={remainingPoints < 0 || allocatedPoints === 0}
         >
-          ✨ Create Character
+          Create Character
         </button>
       </form>
     </div>

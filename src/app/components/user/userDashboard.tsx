@@ -60,7 +60,7 @@ const Dashboard = () => {
       <div className="dashboard-grid">
         {/* User Info & Active Characters */}
         <div className="dashboard-section">
-          <h3>🏛️ Active Characters</h3>
+          <h3>Active Characters</h3>
           {activeCharacters.length > 0 ? (
             <div>
               {activeCharacters.map((character) => (
@@ -87,7 +87,7 @@ const Dashboard = () => {
 
         {/* Current Games - Now showing actual session table */}
         <div className="dashboard-section">
-          <h3>🎮 Active Sessions</h3>
+          <h3>Active Sessions</h3>
           <div className="session-dashboard-container">
             <SessionList />
           </div>

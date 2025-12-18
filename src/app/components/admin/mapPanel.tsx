@@ -188,7 +188,7 @@ const AdminMapPanel = () => {
             
             <div className="form-full-width">
               <button type="submit" className="btn btn-primary">
-                📁 Upload Map
+                Upload Map
               </button>
             </div>
           </form>
@@ -211,14 +211,14 @@ const AdminMapPanel = () => {
                     disabled={mapItem.isMainMap}
                     className={`btn ${mapItem.isMainMap ? 'btn-secondary' : 'btn-primary'}`}
                   >
-                    {mapItem.isMainMap ? '⭐ Main Map' : '🔄 Set as Main'}
+                    {mapItem.isMainMap ? 'Main Map' : 'Set as Main'}
                   </button>
                   
                   <button
                     onClick={() => setSelectedMapForPreview(mapItem)}
                     className="btn btn-info"
                   >
-                    👁️ Preview
+                    Preview
                   </button>
                   
                   <button
@@ -226,7 +226,7 @@ const AdminMapPanel = () => {
                     disabled={mapItem.isMainMap || maps.length <= 1}
                     className="btn btn-danger"
                   >
-                    🗑️ Delete
+                    Delete
                   </button>
                 </div>
               </div>
@@ -322,7 +322,7 @@ const AdminMapPanel = () => {
             
             <div className="form-full-width">
               <button type="submit" className="btn btn-primary">
-                {selectedLocation ? '✓ Update Location' : '+ Add Location'}
+                {selectedLocation ? 'Update Location' : 'Add Location'}
               </button>
               {selectedLocation && (
                 <button 
@@ -365,13 +365,13 @@ const AdminMapPanel = () => {
                       onClick={() => setSelectedLocation(location)} 
                       className="btn btn-success"
                     >
-                      ✏️ Edit
+                      Edit
                     </button>
                     <button
                       onClick={() => handleDeleteLocation(location.id)}
                       className="btn btn-danger"
                     >
-                      🗑️ Delete
+                      Delete
                     </button>
                   </td>
                 </tr>
@@ -397,7 +397,7 @@ const AdminMapPanel = () => {
                 onClick={() => setSelectedMapForPreview(null)}
                 className="btn btn-secondary"
               >
-                ✕ Close
+                Close
               </button>
             </div>
             <div className="map-preview-content">

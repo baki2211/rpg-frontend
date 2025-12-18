@@ -24,7 +24,7 @@ const NavMenu: React.FC = () => {
       
       <div className="navbar-links">
         {/* Wiki is always accessible to everyone */}
-        <a href="/pages/wiki" className="navbar-link">📚 Wiki</a>
+        <a href="/pages/wiki" className="navbar-link">Wiki</a>
         
         {!isAuthenticated && (
           <>

@@ -46,7 +46,7 @@ const ServerStatusNotification: React.FC = () => {
       <span className="status-icon">{getStatusIcon()}</span>
       <span className="status-message">{serverMessage}</span>
       {connectionStatus === 'error' && (
-        <button 
+        <button
           onClick={handleRetry}
           className="retry-button"
           title="Refresh page to retry connection"

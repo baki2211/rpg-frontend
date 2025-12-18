@@ -273,7 +273,7 @@ const LogList = () => {
         <body>
           <div class="container">
             <div class="header">
-              <h1>📜 ${session.name}</h1>
+              <h1>${session.name}</h1>
               <div class="header-info">
                 <div class="info-card">
                   <div class="info-value">${session.location?.name || `Location #${session.locationId}`}</div>
@@ -295,7 +295,7 @@ const LogList = () => {
             </div>
             
             <div class="participants-section">
-              <h3 class="section-title">👥 Session Participants</h3>
+              <h3 class="section-title">Session Participants</h3>
               ${session.participants && session.participants.length > 0 
                 ? session.participants.map(participant => `
                   <div class="participant">
@@ -308,7 +308,7 @@ const LogList = () => {
             </div>
             
             <div class="messages-section">
-              <h3 class="section-title">💬 Chat History</h3>
+              <h3 class="section-title">Chat History</h3>
               ${messages.length > 0 
                 ? messages.map((message: Message) => `
                   <div class="message">
@@ -319,7 +319,7 @@ const LogList = () => {
                     <div class="message-content">${message.message}</div>
                     ${message.skill ? `
                       <div class="message-skill">
-                        🎯 Used skill: <strong>${message.skill.name}</strong> (${message.skill.type})
+                        Used skill: <strong>${message.skill.name}</strong> (${message.skill.type})
                       </div>
                     ` : ''}
                   </div>
@@ -328,7 +328,7 @@ const LogList = () => {
               }
             </div>
             
-            <button class="close-btn" onclick="window.close()">✖️ Close Log</button>
+            <button class="close-btn" onclick="window.close()">Close Log</button>
           </div>
         </body>
         </html>
@@ -360,10 +360,10 @@ const LogList = () => {
     return (
       <div className="log-container">
         <div className="error-container">
-          <h3>❌ Error Loading Session Logs</h3>
+          <h3>Error Loading Session Logs</h3>
           <p>{error}</p>
           <button onClick={fetchClosedSessions} className="retry-button">
-            🔄 Try Again
+            Try Again
           </button>
         </div>
       </div>
@@ -373,13 +373,13 @@ const LogList = () => {
   return (
     <div className="log-container">
       <div className="log-header">
-        <h2>📜 Session Logs</h2>
+        <h2>Session Logs</h2>
         <p>Browse closed session archives and chat history</p>
       </div>
 
       {sessions.length === 0 ? (
         <div className="no-logs">
-          <div className="no-logs-icon">📚</div>
+          <div className="no-logs-icon"></div>
           <h3>No Closed Sessions</h3>
           <p>Closed session logs will appear here once sessions are completed.</p>
           <p className="no-logs-subtitle">Active sessions can be found on the Sessions page!</p>
@@ -421,7 +421,7 @@ const LogList = () => {
                     </td>
                     <td className="participants-cell">
                       <div className="participants-info">
-                        <span className="participant-count">👥 {session.participantCount}</span>
+                        <span className="participant-count">{session.participantCount}</span>
                         {session.participants && session.participants.length > 0 && (
                           <div className="participant-preview">
                             {session.participants.slice(0, 2).map((participant, index) => (
@@ -450,7 +450,7 @@ const LogList = () => {
                         className="action-button log-button"
                         title="Open session log"
                       >
-                        📖 Open Log
+                        Open Log
                       </button>
                     </td>
                   </tr>

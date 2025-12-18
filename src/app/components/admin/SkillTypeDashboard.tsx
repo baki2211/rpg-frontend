@@ -106,7 +106,7 @@ const SkillTypeDashboard: React.FC = () => {
             
             <div className="form-full-width">
               <button type="submit" className="btn btn-primary">
-                {selectedType ? '✓ Update Type' : '+ Create Type'}
+                {selectedType ? 'Update Type' : 'Create Type'}
               </button>
               {selectedType && (
                 <button 
@@ -142,10 +142,10 @@ const SkillTypeDashboard: React.FC = () => {
                   <td>{type.description}</td>
                   <td>
                     <button onClick={() => handleEdit(type)} className="btn btn-success">
-                      ✏️ Edit
+                      Edit
                     </button>
                     <button onClick={() => handleDelete(type.id)} className="btn btn-danger">
-                      🗑️ Delete
+                      Delete
                     </button>
                   </td>
                 </tr>

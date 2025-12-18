@@ -10,7 +10,7 @@ const PresenceIndicator: React.FC = () => {
   if (!isPresenceEnabled) {
     return (
       <div className="presence-indicator disabled">
-        <span className="presence-icon">👥</span>
+        <span className="presence-icon"></span>
         <span className="presence-text">Presence offline</span>
       </div>
     );
@@ -19,7 +19,7 @@ const PresenceIndicator: React.FC = () => {
   if (connectionStatus !== 'connected') {
     return (
       <div className="presence-indicator connecting">
-        <span className="presence-icon">🔄</span>
+        <span className="presence-icon"></span>
         <span className="presence-text">Connecting...</span>
       </div>
     );
@@ -27,7 +27,7 @@ const PresenceIndicator: React.FC = () => {
 
   return (
     <div className="presence-indicator connected">
-      <span className="presence-icon">👥</span>
+      <span className="presence-icon"></span>
       <span className="presence-text">
         {onlineUsers.length} online
       </span>

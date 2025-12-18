@@ -95,7 +95,7 @@ const CharacterCard: React.FC<CharacterCardProps> = ({
           backgroundColor: character.isActive ? '#4ecdc4' : 'rgba(255, 255, 255, 0.2)',
           color: 'white'
         }}>
-          {character.isActive ? '✓ Active' : 'Inactive'}
+          {character.isActive ? 'Active' : 'Inactive'}
         </span>
       </p>
       {isCharacterPanel && (
@@ -105,7 +105,7 @@ const CharacterCard: React.FC<CharacterCardProps> = ({
             disabled={character.isActive}
             className={character.isActive ? 'btn btn-secondary' : 'btn btn-success'}
           >
-            {character.isActive ? '🏛️ Active' : '⚡ Activate'}
+            {character.isActive ? 'Active' : 'Activate'}
           </button>
           {!character.isNPC && (
             <button 
@@ -123,7 +123,7 @@ const CharacterCard: React.FC<CharacterCardProps> = ({
               className={character.isActive ? 'btn btn-secondary' : 'btn btn-danger'}
               title={character.isActive ? 'Cannot delete active character' : 'Delete character'}
             >
-              🗑️ Delete
+              Delete
             </button>
           )}
           {character.isNPC && (

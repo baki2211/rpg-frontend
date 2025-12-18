@@ -77,7 +77,7 @@ const UserCard: React.FC<UserCardProps> = ({ username, location, isCurrentUser }
           }}
           onClick={handleLocationClick}
         >
-          📍 {location}
+          {location}
         </div>
       </div>
     </div>
@@ -106,7 +106,7 @@ const OnlineUsers: React.FC = () => {
 
   return (
     <div className="online-users">
-      <h3>🌐 Online Users ({uniqueUsers.length})</h3>
+      <h3>Online Users ({uniqueUsers.length})</h3>
       <div style={{ maxHeight: '400px', overflowY: 'auto' }}>
         {uniqueUsers.length === 0 ? (
           <div className="card" style={{ textAlign: 'center' }}>

@@ -78,7 +78,7 @@ const Register = () => {
       
       <div className="register-card">
         <div className="register-header">
-          <h1>✨ Join Arcane Realms</h1>
+          <h1>Join Arcane Realms</h1>
           <p>Create your account and begin your magical adventure</p>
         </div>
 
@@ -137,7 +137,7 @@ const Register = () => {
               </>
             ) : (
               <>
-                🚀 Create Account
+                Create Account
               </>
             )}
           </button>

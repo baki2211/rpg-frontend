@@ -405,7 +405,7 @@ const SkillDashboard: React.FC = () => {
             
             <div className="form-full-width">
               <button type="submit" className="btn btn-primary">
-                {selectedSkill ? '✓ Update Skill' : '+ Create Skill'}
+                {selectedSkill ? 'Update Skill' : 'Create Skill'}
               </button>
             </div>
           </form>
@@ -448,8 +448,8 @@ const SkillDashboard: React.FC = () => {
                   <td><strong>{skill.basePower}</strong></td>
                   <td>{skill.skillPointCost} SP</td>
                   <td>
-                    <button onClick={() => handleEdit(skill)} className="btn btn-success">✏️ Edit</button>
-                    <button onClick={() => handleDelete(skill.id)} className="btn btn-danger">🗑️ Delete</button>
+                    <button onClick={() => handleEdit(skill)} className="btn btn-success">Edit</button>
+                    <button onClick={() => handleDelete(skill.id)} className="btn btn-danger">Delete</button>
                   </td>
                 </tr>
               ))}

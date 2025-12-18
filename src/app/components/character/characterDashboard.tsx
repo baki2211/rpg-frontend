@@ -44,12 +44,12 @@ const CharactersDashboard = () => {
             {activeCharacter.isNPC && <span style={{ color: '#fbbf24', marginLeft: '0.5rem' }}>(NPC)</span>}
           </div>
         )}
-        <button 
+        <button
           onClick={() => setIsModalOpen(true)}
           className="btn btn-primary"
           style={{ marginTop: '1rem' }}
         >
-          ✨ Create New Character
+          Create New Character
         </button>
       </div>
 
@@ -72,11 +72,11 @@ const CharactersDashboard = () => {
             Start your adventure by creating your first character! Choose from different races, 
             customize their stats, and begin exploring the mystical realms.
           </p>
-          <button 
+          <button
             onClick={() => setIsModalOpen(true)}
             className="btn btn-primary"
           >
-            🏛️ Create Your First Character
+            Create Your First Character
           </button>
         </div>
       )}

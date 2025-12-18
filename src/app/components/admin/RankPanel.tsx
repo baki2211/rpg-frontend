@@ -97,8 +97,8 @@ export const RankPanel: React.FC = () => {
             <td><input type="number" value={Number.isNaN(editData.aetherPercent) ? '' : editData.aetherPercent} onChange={e=>setEditData({...editData, aetherPercent:parseFloat(e.target.value)||0})}/></td>
             <td><input type="number" value={Number.isNaN(editData.hpPercent) ? '' : editData.hpPercent} onChange={e=>setEditData({...editData, hpPercent:parseFloat(e.target.value)||0})}/></td>
             <td>
-              <button onClick={()=>handleSave(editData)}>💾 Save</button>
-              <button onClick={()=>setEditingLevel(null)}>✖ Cancel</button>
+              <button onClick={()=>handleSave(editData)}>Save</button>
+              <button onClick={()=>setEditingLevel(null)}>Cancel</button>
             </td>
           </>
         ) : (
@@ -109,8 +109,8 @@ export const RankPanel: React.FC = () => {
             <td>{r.aetherPercent}%</td>
             <td>{r.hpPercent}%</td>
             <td>
-              <button onClick={()=>setEditingLevel(r.level)}>✏️ Edit</button>
-              <button onClick={()=>handleDelete(r.level)}>🗑 Delete</button>
+              <button onClick={()=>setEditingLevel(r.level)}>Edit</button>
+              <button onClick={()=>handleDelete(r.level)}>Delete</button>
             </td>
           </>
         )}

@@ -307,7 +307,7 @@ const SkillSimulator: React.FC = () => {
     <div className="admin-panel">
       <div className="admin-container">
         <div className="admin-header">
-          <h1>⚡ Skill Testing Simulator</h1>
+          <h1>Skill Testing Simulator</h1>
           <p>Test and analyze skill calculations with real game data</p>
         </div>
 
@@ -320,7 +320,7 @@ const SkillSimulator: React.FC = () => {
         <div className="simulator-grid">
           {/* Character/Stats Configuration */}
           <div className="simulator-card">
-            <h3>📊 Character Configuration</h3>
+            <h3>Character Configuration</h3>
             
             <div className="form-group">
               <label>
@@ -376,7 +376,7 @@ const SkillSimulator: React.FC = () => {
 
           {/* Skill Configuration */}
           <div className="simulator-card">
-            <h3>⚔️ Skill Configuration</h3>
+            <h3>Skill Configuration</h3>
             
             <div className="form-group">
               <label>Select Skill:</label>
@@ -432,14 +432,14 @@ const SkillSimulator: React.FC = () => {
 
           {/* Simulation Results */}
           <div className="simulator-card result-card">
-            <h3>🎯 Simulation Results</h3>
+            <h3>Simulation Results</h3>
             
             <div className="simulation-controls">
               <button onClick={runSimulation} className="btn btn-primary">
                 Calculate Skill Output
               </button>
               <button onClick={rollRandomOutcome} className="btn btn-secondary">
-                🎲 Roll Random Outcome
+                Roll Random Outcome
               </button>
             </div>
 
@@ -482,7 +482,7 @@ const SkillSimulator: React.FC = () => {
 
           {/* Combat Simulator */}
           <div className="simulator-card combat-card">
-            <h3>⚔️ Combat Simulator</h3>
+            <h3>Combat Simulator</h3>
             
             <button onClick={simulateCombat} className="btn btn-primary">
               Simulate Combat
@@ -503,9 +503,9 @@ const SkillSimulator: React.FC = () => {
                 </div>
                 <div className="combat-outcome">
                   {combatResults.winner === 'Tie' ? (
-                    <p>🤝 Perfect Tie! No damage dealt.</p>
+                    <p>Perfect Tie! No damage dealt.</p>
                   ) : (
-                    <p>🏆 {combatResults.winner} wins! Damage: {combatResults.damage}</p>
+                    <p>{combatResults.winner} wins! Damage: {combatResults.damage}</p>
                   )}
                 </div>
               </div>

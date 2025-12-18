@@ -186,7 +186,7 @@ export const SkillsModal: React.FC<SkillsModalProps> = ({ isOpen, onClose, onSel
         {activeRound && !currentlySelectedSkill && (
           <div className="combat-notice">
             <div className="combat-info">
-              <span className="combat-icon">⚔️</span>
+              <span className="combat-icon"></span>
               <span>Combat Round {activeRound.roundNumber} is active! Selected skills will be submitted to combat when you send your message.</span>
             </div>
           </div>
@@ -290,7 +290,7 @@ export const SkillsModal: React.FC<SkillsModalProps> = ({ isOpen, onClose, onSel
             
             {!activeEvent && skills.length > availableSkills.length && (
               <div className="restricted-skills-notice">
-                <div className="notice-icon">🚫</div>
+                <div className="notice-icon"></div>
                 <div className="notice-text">
                   <strong>Some skills are restricted</strong>
                   <p>Skills that target others are only available during active events.</p>

@@ -118,7 +118,7 @@ const RolePanel: React.FC = () => {
         </div>
         {isLastAdmin && (
           <div className="admin-warning">
-            ⚠️ This is the last admin user and cannot be demoted. There must always be at least one admin.
+            This is the last admin user and cannot be demoted. There must always be at least one admin.
           </div>
         )}
       </div>

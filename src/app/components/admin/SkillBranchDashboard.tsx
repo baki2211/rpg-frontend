@@ -106,7 +106,7 @@ const SkillBranchDashboard: React.FC = () => {
             
             <div className="form-full-width">
               <button type="submit" className="btn btn-primary">
-                {selectedBranch ? '✓ Update Branch' : '+ Create Branch'}
+                {selectedBranch ? 'Update Branch' : 'Create Branch'}
               </button>
               {selectedBranch && (
                 <button 
@@ -142,10 +142,10 @@ const SkillBranchDashboard: React.FC = () => {
                   <td>{branch.description}</td>
                   <td>
                     <button onClick={() => handleEdit(branch)} className="btn btn-success">
-                      ✏️ Edit
+                      Edit
                     </button>
                     <button onClick={() => handleDelete(branch.id)} className="btn btn-danger">
-                      🗑️ Delete
+                      Delete
                     </button>
                   </td>
                 </tr>

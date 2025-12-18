@@ -163,7 +163,7 @@ export const MasterPanel: React.FC<MasterPanelProps> = ({
         setEngineLogs([]);
       }
     } catch (error) {
-      console.error('🔍 MASTER PANEL: Error fetching engine logs:', error);
+      console.error('MASTER PANEL: Error fetching engine logs:', error);
       // Don't show error to user for empty logs - this is expected when no skills have been used
       setEngineLogs([]);
     }
@@ -242,7 +242,7 @@ export const MasterPanel: React.FC<MasterPanelProps> = ({
         await fetchActiveRound();
       }
     } catch (error) {
-      console.error('⚔️ MASTER PANEL: Error creating round:', error);
+      console.error('MASTER PANEL: Error creating round:', error);
       alert('Failed to create combat round');
     } finally {
       setIsCreatingRound(false);
@@ -269,7 +269,7 @@ export const MasterPanel: React.FC<MasterPanelProps> = ({
           }
         }
     } catch (error) {
-      console.error('⚔️ MASTER PANEL: Error resolving round:', error);
+      console.error('MASTER PANEL: Error resolving round:', error);
       alert('Failed to resolve combat round');
     } finally {
       setIsResolvingRound(false);
@@ -422,7 +422,7 @@ export const MasterPanel: React.FC<MasterPanelProps> = ({
       const responseData = response.data as { success: boolean };
       if (responseData.success) {
         await fetchActiveEvent();
-        alert('🔥 Event unfrozen! Session state has been restored.');
+        alert('Event unfrozen! Session state has been restored.');
       }
     } catch (error) {
       console.error('Error unfreezing event:', error);
@@ -564,31 +564,31 @@ export const MasterPanel: React.FC<MasterPanelProps> = ({
           className={`tab ${activeTab === 'logs' ? 'active' : ''}`}
           onClick={() => setActiveTab('logs')}
         >
-          📋 Logs
+          Logs
         </button>
         <button 
           className={`tab ${activeTab === 'hp' ? 'active' : ''}`}
           onClick={() => setActiveTab('hp')}
         >
-          ❤️ HP Manager
+          HP Manager
         </button>
         <button 
           className={`tab ${activeTab === 'status' ? 'active' : ''}`}
           onClick={() => setActiveTab('status')}
         >
-          ✨ Status Panel
+          Status Panel
         </button>
         <button 
           className={`tab ${activeTab === 'combat' ? 'active' : ''}`}
           onClick={() => setActiveTab('combat')}
         >
-          ⚔️ Combat
+          Combat
         </button>
         <button 
           className={`tab ${activeTab === 'events' ? 'active' : ''}`}
           onClick={() => setActiveTab('events')}
         >
-          📅 Events
+          Events
         </button>
       </div>
 
@@ -604,7 +604,7 @@ export const MasterPanel: React.FC<MasterPanelProps> = ({
             <div className="logs-container">
               {engineLogs.length === 0 ? (
                 <div className="no-logs">
-                  <div className="no-logs-icon">📋</div>
+                  <div className="no-logs-icon"></div>
                   <div>No engine activity yet</div>
                   <div className="no-logs-hint">
                     Engine logs appear when:
@@ -635,7 +635,7 @@ export const MasterPanel: React.FC<MasterPanelProps> = ({
                           <div className="clash-content">
                             <div className="log-main-line">
                               <span className="log-actor">{log.actor}</span>
-                              <span className="clash-vs">⚔️ VS ⚔️</span>
+                              <span className="clash-vs">VS</span>
                               <span className="log-actor">{log.target}</span>
                             </div>
                             
@@ -931,7 +931,7 @@ export const MasterPanel: React.FC<MasterPanelProps> = ({
                       disabled={isCreatingRound}
                       className="create-round-button"
                     >
-                      {isCreatingRound ? 'Creating...' : '⚔️ Start New Round'}
+                      {isCreatingRound ? 'Creating...' : 'Start New Round'}
                     </button>
                   </>
                 ) : (
@@ -939,7 +939,7 @@ export const MasterPanel: React.FC<MasterPanelProps> = ({
                     <h4>No Active Event</h4>
                     <p>Combat rounds can only be created during active events. Start an event in the Events tab first.</p>
                     <div className="event-hint">
-                      💡 Go to the <strong>Events</strong> tab to create a new event before starting combat rounds.
+                      Go to the <strong>Events</strong> tab to create a new event before starting combat rounds.
                     </div>
                   </div>
                 )}
@@ -991,7 +991,7 @@ export const MasterPanel: React.FC<MasterPanelProps> = ({
                         className="unfreeze-event-button"
                         title="Unfreeze event and session"
                       >
-                        {isUnfreezingEvent ? 'Unfreezing...' : '🔥 Unfreeze'}
+                        {isUnfreezingEvent ? 'Unfreezing...' : 'Unfreeze'}
                       </button>
                     ) : (
                       <button 
@@ -1000,7 +1000,7 @@ export const MasterPanel: React.FC<MasterPanelProps> = ({
                         className="freeze-event-button"
                         title="Freeze event and session"
                       >
-                        {isFreezingEvent ? 'Freezing...' : '❄️ Freeze'}
+                        {isFreezingEvent ? 'Freezing...' : 'Freeze'}
                       </button>
                     )}
                     <button 
@@ -1008,7 +1008,7 @@ export const MasterPanel: React.FC<MasterPanelProps> = ({
                       disabled={isClosingEvent}
                       className="close-event-button"
                     >
-                      {isClosingEvent ? 'Closing...' : '🔒 Close Event'}
+                      {isClosingEvent ? 'Closing...' : 'Close Event'}
                     </button>
                   </div>
                 </div>
@@ -1085,7 +1085,7 @@ export const MasterPanel: React.FC<MasterPanelProps> = ({
                     disabled={isCreatingEvent || !eventForm.title}
                     className="create-event-button"
                   >
-                    {isCreatingEvent ? 'Creating...' : '📅 Create Event'}
+                    {isCreatingEvent ? 'Creating...' : 'Create Event'}
                   </button>
                 </div>
               </div>

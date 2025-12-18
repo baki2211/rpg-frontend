@@ -35,10 +35,10 @@ export default function HomePage() {
         </p>
         <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', flexWrap: 'wrap' }}>
           <a href="/pages/register" className="btn btn-primary">
-            ✨ Create Account
+            Create Account
           </a>
           <a href="/pages/login" className="btn btn-secondary">
-            🔑 Login
+            Login
           </a>
         </div>
       </div>
