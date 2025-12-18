@@ -5,7 +5,7 @@ const nextConfig = {
     remotePatterns: [
       {
         protocol: "https",
-        hostname: "rpg-be.onrender.com",
+        hostname: "arcanerealms.org",
         pathname: "/uploads/**",
       },
       {
