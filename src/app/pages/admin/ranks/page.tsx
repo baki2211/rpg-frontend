@@ -13,7 +13,7 @@ interface Rank {
   hpPercent: number;
 }
 
-export const RankPanel: React.FC = () => {
+const RankPanel: React.FC = () => {
   const [ranks, setRanks] = useState<Rank[]>([]);
   const [loading, setLoading] = useState(false);
   const [editingLevel, setEditingLevel] = useState<number | null>(null);
