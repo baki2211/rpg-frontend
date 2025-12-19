@@ -449,7 +449,7 @@ const EntryItem: React.FC<{
   );
 };
 
-export const WikiPanel: React.FC = () => {
+const WikiPanel: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'sections' | 'entries' | 'stats'>('sections');
   const [sections, setSections] = useState<WikiSection[]>([]);
   const [entries, setEntries] = useState<WikiEntry[]>([]);

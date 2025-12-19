@@ -95,7 +95,7 @@ const flattenEntries = (entries: WikiNavigationEntry[]): WikiNavigationEntry[] =
   return flattened;
 };
 
-export const WikiBrowser: React.FC = () => {
+const WikiBrowser: React.FC = () => {
   const [navigation, setNavigation] = useState<WikiNavigation | null>(null);
   const [currentEntry, setCurrentEntry] = useState<WikiEntryDetail | null>(null);
   const [searchResults, setSearchResults] = useState<WikiEntry[]>([]);
