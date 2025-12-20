@@ -2,6 +2,8 @@
 
 import React, { useState, useEffect } from 'react';
 import { api } from '../../services/apiClient';
+import '../pages/register/register.css';
+import '../pages/admin/admin.css';
 
 interface User {
   id: number;
@@ -113,93 +115,91 @@ const UpdateUserPassword: React.FC<UpdateUserPasswordProps> = ({ isAdmin = true,
         };
 
     return (
+        <div className='role-table-container'>
+        <h3 className="role-table-title">Change Password</h3>
         <form onSubmit={updateUserPassword} className="register-form">
           {error && <div className="error-message">{error}</div>}
           {successMessage && <div className="success-message">{successMessage}</div>}
-
-          {isAdmin && (
             <div className="form-group">
-              <label htmlFor="username">Select User</label>
-              <div className="role-actions">
-                            <select
-                              className="role-select"
-                              value={selectedUserId || ''}
-                              onChange={(e) => {
-                                setSelectedUserId(e.target.value ? Number(e.target.value) : null);
-                              }}
-                              required
-                              disabled={isLoading || loading}
-                            >
-                              <option value="">-- Select a user --</option>
-                              {users.map(user =>(
-                                  <option key={user.id} value={user.id}>{user.username}</option>
-                              ))}
-
-                            </select>
-                          </div>
+              <table className="admin-table">
+              {/* Header */}
+              <thead>
+                <tr>
+                <th><label htmlFor="username">User</label></th>
+                {!isAdmin && (<th><label htmlFor="oldPassword">Old Password</label></th>)}
+                <th><label htmlFor="password">New Password</label></th>
+                <th><label htmlFor="confirmPassword">Confirm New Password</label></th>
+                </tr>
+              </thead>
+              {/* Inputs - Body */}
+                <tbody>
+                    <tr>
+                    <td>
+                    <select
+                      className="role-select"
+                      value={selectedUserId || ''}
+                      onChange={(e) => {setSelectedUserId(e.target.value ? Number(e.target.value) : null);}}
+                      required
+                      disabled={isLoading || loading}
+                    >
+                    <option value="">-- Select a user --</option>
+                      {users.map(user =>(<option key={user.id} value={user.id}>{user.username}</option>))}
+                    </select>
+                    </td>
+                      {!isAdmin && (
+                        <td>
+                          <input
+                          className="role-input"
+                          id="oldPassword"
+                          type="password"
+                          value={oldPassword}
+                          onChange={(e) => setOldPassword(e.target.value)}
+                          placeholder="Enter your current password"
+                          required
+                          disabled={isLoading}
+                        />
+                        </td>
+                      )}
+                    <td>
+                      <input
+                        className="role-input"
+                        id="password"
+                        type="password"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        placeholder="Enter a secure password"
+                        required
+                        disabled={isLoading}
+                        minLength={6}
+                      />
+                    </td>
+                    <td>
+                      <input
+                        className="role-input"
+                        id="confirmPassword"
+                        type="password"
+                        value={confirmPassword}
+                        onChange={(e) => setConfirmPassword(e.target.value)}
+                        placeholder="Confirm your new password"
+                        required
+                        disabled={isLoading}
+                        minLength={6}
+                      />
+                    </td>
+                    </tr>
+                </tbody>
+              </table>
             </div>
-          )}
-
-          {!isAdmin && (
-            <div className="form-group">
-              <label htmlFor="oldPassword">Old Password</label>
-              <input
-                id="oldPassword"
-                type="password"
-                value={oldPassword}
-                onChange={(e) => setOldPassword(e.target.value)}
-                placeholder="Enter your current password"
-                required
-                disabled={isLoading}
-              />
-            </div>
-          )}
-
-          <div className="form-group">
-            <label htmlFor="password">New Password</label>
-            <input
-              id="password"
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="Enter a secure password"
-              required
-              disabled={isLoading}
-              minLength={6}
-            />
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="confirmPassword">Confirm New Password</label>
-            <input
-              id="confirmPassword"
-              type="password"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              placeholder="Confirm your new password"
-              required
-              disabled={isLoading}
-              minLength={6}
-            />
-          </div>
-
           <button
             type="submit"
             className="register-button"
             disabled={isLoading || loading || (!isAdmin && !selectedUserId)}
           >
-            {isLoading ? (
-              <>
-                <span className="spinner"></span>
-                Updating Password...
-              </>
-            ) : (
-              <>
-                {isAdmin ? 'Update User Password' : 'Update My Password'}
-              </>
-            )}
+            {isLoading ? (<><span className="spinner"></span>Updating Password</>) : 
+            (<>{isAdmin ? 'Update User Password' : 'Update My Password'}</>)}
           </button>
         </form>
+        </div>
     )
 }
 
