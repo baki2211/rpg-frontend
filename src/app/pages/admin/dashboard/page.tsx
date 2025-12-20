@@ -20,7 +20,7 @@ const AdminDashboard = () => {
                 <a href="/pages/admin/roles">Role Management</a>
               </li>
               <li>
-                <a href="/pages/admin/password">Change Password</a>
+                <a href="/pages/admin/user">User Password</a>
               </li>
             </ul>
           </div>
