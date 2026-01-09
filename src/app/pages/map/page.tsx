@@ -63,33 +63,26 @@ const MapPage = () => {
   };
 
   return (
-    <div style={{ position: 'relative', padding: '2rem', backgroundColor: '#b7abab' }}>
+    <div className="map-page-container">
       {mapUrl ? (
-        <div style={{ position: 'relative' }}>
+        <div className="map-image-container">
           <Image
             src={getImageUrl()}
             alt="Game Map"
             width={1200}
             height={800}
-            style={{ width: '100%', height: 'auto' }}
+            className="map-image"
             onError={() => setImageError(true)}
           />
           {locations.map((location: Location) => (
             <button
               key={location.id}
+              className="map-location-button"
               style={{
-                position: 'absolute',
                 top: `${location.yCoordinate}%`,
                 left: `${location.xCoordinate}%`,
                 transform: 'translate(-50%, -50%)',
-                background: 'red',
-                color: 'white',
-                border: 'none',
-                borderRadius: '50%',
-                padding: '5px',
-                cursor: 'pointer',
               }}
-
               onClick={() => navigateToChat(location.id)}
             >
               {location.name}

@@ -27,8 +27,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const authCheckInProgress = React.useRef(false);
 
   const checkAuthStatus = async (retryCount = 0): Promise<void> => {
+    // Prevent duplicate simultaneous auth checks
+    if (authCheckInProgress.current) {
+      return;
+    }
+    authCheckInProgress.current = true;
     try {
       setIsLoading(true);
       setError(null);
@@ -51,14 +57,21 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       }
     } catch (error: unknown) {
       const axiosError = error as { code?: string; response?: { status: number }; message?: string };
-      
+
+      // Handle rate limiting
+      if (axiosError.response?.status === 429) {
+        setError('Too many requests. Please wait a moment before trying again.');
+        // Don't clear auth state for rate limiting
+        return;
+      }
+
       // Only clear auth on actual authentication failures
       if (axiosError.response?.status === 401 || axiosError.response?.status === 403) {
         tokenService.clearAuth();
         setIsAuthenticated(false);
         setUser(null);
         setError('Session expired. Please log in again.');
-      } else if (axiosError.code === 'ECONNREFUSED' || axiosError.code === 'ECONNABORTED' || 
+      } else if (axiosError.code === 'ECONNREFUSED' || axiosError.code === 'ECONNABORTED' ||
                  axiosError.message?.includes('Network Error') || axiosError.message?.includes('timeout')) {
         // Network errors - don't clear auth, but show appropriate message
         if (retryCount < 3) {
@@ -79,6 +92,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       if (retryCount === 0) { // Only set loading false on initial call, not retries
         setIsLoading(false);
       }
+      authCheckInProgress.current = false;
     }
   };
 

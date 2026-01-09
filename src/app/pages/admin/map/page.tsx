@@ -325,11 +325,10 @@ const AdminMapPanel = () => {
                 {selectedLocation ? 'Update Location' : 'Add Location'}
               </button>
               {selectedLocation && (
-                <button 
-                  type="button" 
-                  onClick={() => setSelectedLocation(null)} 
-                  className="btn btn-secondary"
-                  style={{ marginLeft: '1rem' }}
+                <button
+                  type="button"
+                  onClick={() => setSelectedLocation(null)}
+                  className="btn btn-secondary btn-secondary-ml"
                 >
                   Cancel
                 </button>

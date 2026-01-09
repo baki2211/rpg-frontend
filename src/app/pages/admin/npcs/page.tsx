@@ -253,10 +253,9 @@ const NPCPanel: React.FC = () => {
       <h1>Manage NPCs</h1>
       
       {!showCreateForm && (
-        <button 
-          onClick={() => setShowCreateForm(true)} 
-          className="btn btn-primary"
-          style={{ marginBottom: '1rem' }}
+        <button
+          onClick={() => setShowCreateForm(true)}
+          className="btn btn-primary btn-mb-1rem"
         >
           Create New NPC
         </button>

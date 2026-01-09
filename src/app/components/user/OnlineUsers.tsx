@@ -17,12 +17,8 @@ const OnlineUsers: React.FC<OnlineUsersProps> = ({ onlineUsers, currentUsername 
   return (
     <>
     <h3>Online Users ({onlineUsers.length})</h3>
-    <div style={{ maxHeight: '500px', overflowY: 'auto' }}>
-      <div style={{
-        border: '1px solid #e3e6f0',
-        borderRadius: '0 0 8px 8px',
-        padding: '0.5rem'
-      }}>
+    <div className="user-online-users-container">
+      <div className="user-online-users-border">
         {onlineUsers.length > 0 ? (
           onlineUsers.map((user) => (
             <UserCard
@@ -32,7 +28,7 @@ const OnlineUsers: React.FC<OnlineUsersProps> = ({ onlineUsers, currentUsername 
               isCurrentUser={user.username === currentUsername} />
           ))
         ) : (
-          <div style={{ padding: '1rem', textAlign: 'center' }}>No users online</div>
+          <div className="user-no-users-text">No users online</div>
         )}
       </div>
     </div></>

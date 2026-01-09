@@ -111,14 +111,13 @@ const SkillBranchDashboard: React.FC = () => {
                 {selectedBranch ? 'Update Branch' : 'Create Branch'}
               </button>
               {selectedBranch && (
-                <button 
-                  type="button" 
+                <button
+                  type="button"
                   onClick={() => {
                     setSelectedBranch(null);
                     setFormData({ name: '', description: '' });
                   }}
-                  className="btn btn-secondary"
-                  style={{ marginLeft: '1rem' }}
+                  className="btn btn-secondary btn-secondary-ml"
                 >
                   Cancel
                 </button>

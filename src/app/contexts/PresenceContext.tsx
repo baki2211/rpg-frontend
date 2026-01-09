@@ -98,23 +98,23 @@ export const PresenceProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         console.error('SSE connection error:', error);
         setConnectionStatus('disconnected');
         setServerMessage('Connection lost. Reconnecting...');
-        
+
         // Close the connection
         eventSource.close();
         eventSourceRef.current = null;
-        
+
         // Clear heartbeat
         if (heartbeatIntervalRef.current) {
           clearInterval(heartbeatIntervalRef.current);
           heartbeatIntervalRef.current = null;
         }
 
-        // Try to reconnect after 5 seconds
+        // Try to reconnect after 30 seconds (reduced frequency to prevent CPU overload)
         setTimeout(() => {
           if (isAuthenticated && currentUser && isPresenceEnabled) {
             connect(currentUser.id, currentUser.username);
           }
-        }, 5000);
+        }, 30000);
       };
 
       // Set up heartbeat

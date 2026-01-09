@@ -59,7 +59,7 @@ const HierarchicalEntryList: React.FC<{
           <div
             className={`nav-entry level-${entry.level} ${currentEntryId === entry.id ? 'active' : ''}`}
             onClick={() => onEntryClick(sectionSlug, entry.slug)}
-            style={{ marginLeft: `${(entry.level - 1) * 16}px` }}
+            data-level={entry.level}
           >
             {entry.title}
           </div>
@@ -323,7 +323,7 @@ const WikiBrowser: React.FC = () => {
                           key={entry.id}
                           className={`entry-item level-${entry.level}`}
                           onClick={() => fetchEntry(section.slug, entry.slug)}
-                          style={{ marginLeft: `${(entry.level - 1) * 20}px` }}
+                          data-level={entry.level}
                         >
                           <h4>{entry.title}</h4>
                           {entry.excerpt && (

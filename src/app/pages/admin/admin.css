@@ -96,6 +96,43 @@
   border-color: #2F4A72;
 }
 
+.btn-secondary-ml {
+  margin-left: 1rem;
+}
+
+.error-text-red {
+  color: red;
+}
+
+.btn-mb-1rem {
+  margin-bottom: 1rem;
+}
+
+.skill-target-badge {
+  padding: 0.25rem 0.75rem;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: white;
+}
+
+.skill-target-badge.target-self {
+  background-color: #4ecdc4;
+}
+
+.skill-target-badge.target-other {
+  background-color: #ff6b6b;
+}
+
+.skill-target-badge.target-any {
+  background-color: #9b59b6;
+}
+
+.skill-target-badge.target-none {
+  background-color: #667eea;
+}
+
 .admin-form {
   background: rgba(255, 255, 255, 0.95);
   border-radius: 20px;

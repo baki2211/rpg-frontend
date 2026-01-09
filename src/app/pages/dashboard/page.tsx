@@ -75,10 +75,10 @@ const Dashboard = () => {
             </div>
           ) : (
             <div className="card">
-              <p style={{ color: 'rgba(255, 255, 255, 0.8)', marginBottom: '1rem' }}>
+              <p className="dashboard-no-characters">
                 No active character found. Create or activate one to start your adventure!
               </p>
-              <a href="/pages/characters" className="btn btn-primary">
+              <a href="/pages/charactersDashboard" className="btn btn-primary">
                 Manage Characters
               </a>
             </div>

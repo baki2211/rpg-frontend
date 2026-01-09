@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useAuth } from "../../utils/AuthContext";
+import { useCharacterSheet } from "../../contexts/CharacterSheetContext";
 import LogoutButton from "../buttons/logoutButton";
 
 const NavMenu: React.FC = () => {
   const { isAuthenticated, user } = useAuth();
+  const { openCharacterSheet } = useCharacterSheet();
   const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
@@ -34,8 +36,11 @@ const NavMenu: React.FC = () => {
         )}
         {isAuthenticated && (
           <>
+            <button onClick={openCharacterSheet} className="navbar-link button">
+              Character Sheet
+            </button>
             <a href="/pages/dashboard" className="navbar-link">Dashboard</a>
-            <a href="/pages/characters" className="navbar-link">Characters</a>
+            <a href="/pages/charactersDashboard" className="navbar-link">Characters</a>
             <a href="/pages/skills" className="navbar-link">Skills</a>
             <a href="/pages/map" className="navbar-link">Map</a>
             <a href="/pages/logs" className="navbar-link">Logs</a>

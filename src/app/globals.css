@@ -58,6 +58,13 @@ body {
   border: 1px solid transparent;
 }
 
+.navbar-link.button {
+  background: none;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: inherit;
+}
+
 .navbar-link:hover {
   background: rgba(255, 255, 255, 0.1);
   border-color: rgba(255, 255, 255, 0.2);
@@ -89,6 +96,179 @@ body {
 .dashboard-page .page-container {
   max-width: 95vw;
   padding: 1.5rem 0.5rem;
+}
+
+.dashboard-no-characters {
+  color: rgba(255, 255, 255, 0.8);
+  margin-bottom: 1rem;
+}
+
+/* Home Page Styles */
+.home-journey-card {
+  max-width: 600px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.home-journey-title {
+  color: white;
+  margin-bottom: 1rem;
+}
+
+.home-journey-text {
+  color: rgba(255, 255, 255, 0.8);
+  margin-bottom: 2rem;
+}
+
+.home-journey-buttons {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+/* Online Users Styles */
+.user-card-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  margin-right: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: 600;
+  font-size: 1.1rem;
+}
+
+.user-card-info {
+  flex: 1;
+}
+
+.user-card-username {
+  color: white;
+  margin-bottom: 0.25rem;
+}
+
+.user-card-username.current-user {
+  font-weight: 600;
+}
+
+.user-card-username.other-user {
+  font-weight: 500;
+}
+
+.user-card-location {
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.7);
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.online-users-list {
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.no-users-card {
+  text-align: center;
+}
+
+.no-users-text {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+/* User Component Online Users Styles */
+.user-online-users-container {
+  max-height: 500px;
+  overflow-y: auto;
+}
+
+.user-online-users-border {
+  border: 1px solid #e3e6f0;
+  border-radius: 0 0 8px 8px;
+  padding: 0.5rem;
+}
+
+.user-no-users-text {
+  padding: 1rem;
+  text-align: center;
+}
+
+.user-card-container {
+  display: flex;
+  align-items: center;
+  padding: 0.75rem;
+  margin-bottom: 0.5rem;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  border-left: 4px solid transparent;
+}
+
+.user-card-container.current-user {
+  border-left: 4px solid rgb(0, 0, 1);
+}
+
+.user-card-avatar-user {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: #ddd;
+  margin-right: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.user-card-avatar-text {
+  font-size: 18px;
+  color: #666;
+}
+
+.user-card-username-text {
+  font-weight: 500;
+}
+
+.user-card-username-text.current-user {
+  font-weight: 600;
+}
+
+.user-card-location-text {
+  font-size: 0.75rem;
+  color: #6c757d;
+}
+
+/* Map Page Styles */
+.map-page-container {
+  position: relative;
+  padding: 2rem;
+  background-color: #b7abab;
+}
+
+.map-image-container {
+  position: relative;
+}
+
+.map-image {
+  width: 100%;
+  height: auto;
+}
+
+.map-location-button {
+  position: absolute;
+  background: red;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  padding: 5px;
+  cursor: pointer;
+}
+
+/* Protected Page Styles */
+.protected-page-container {
+  padding: 2rem;
 }
 
 /* Dashboard Grid */
@@ -168,6 +348,10 @@ body {
   border: 2px solid rgba(255, 255, 255, 0.2);
 }
 
+img .character-img {
+  height: 500px;
+}
+
 .character-card h3 {
   color: white;
   font-size: 1.2rem;
@@ -193,6 +377,42 @@ body {
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   gap: 1.5rem;
   margin-top: 2rem;
+}
+
+/* Active Character Banner */
+.active-character-banner {
+  background: rgba(0, 255, 0, 0.1);
+  border: 1px solid rgba(0, 255, 0, 0.3);
+  border-radius: 8px;
+  padding: 0.75rem;
+  margin-top: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.active-character-name {
+  color: #4ade80;
+}
+
+.npc-badge {
+  color: #fbbf24;
+  margin-left: 0.5rem;
+}
+
+/* Empty State */
+.empty-state-card {
+  text-align: center;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.empty-state-card h3 {
+  color: white;
+  margin-bottom: 1rem;
+}
+
+.empty-state-card p {
+  color: rgba(255, 255, 255, 0.8);
+  margin-bottom: 1.5rem;
 }
 
 /* Dashboard Session Container */

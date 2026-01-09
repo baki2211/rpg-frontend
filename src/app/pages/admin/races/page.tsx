@@ -202,7 +202,7 @@ const RacePanel: React.FC = () => {
           </div>
         </form>
       </div>
-      {error && <p style={{ color: 'red' }}>{error}</p>}
+      {error && <p className="error-text-red">{error}</p>}
 
       <h2>Existing Races</h2>
       <div className="race-list">

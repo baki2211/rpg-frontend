@@ -433,17 +433,7 @@ const SkillDashboard: React.FC = () => {
                   <td>{branches.find(b => b.id === skill.branchId)?.name || skill.branchId}</td>
                   <td>{types.find(t => t.id === skill.typeId)?.name || skill.typeId}</td>
                   <td>
-                    <span style={{
-                      padding: '0.25rem 0.75rem',
-                      borderRadius: '12px',
-                      fontSize: '0.8rem',
-                      fontWeight: '600',
-                      textTransform: 'uppercase',
-                      backgroundColor: skill.target === 'self' ? '#4ecdc4' : 
-                                     skill.target === 'other' ? '#ff6b6b' : 
-                                     skill.target === 'any' ? '#9b59b6' : '#667eea',
-                      color: 'white'
-                    }}>
+                    <span className={`skill-target-badge target-${skill.target}`}>
                       {skill.target}
                     </span>
                   </td>

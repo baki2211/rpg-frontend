@@ -11,35 +11,17 @@ interface UserCardProps {
 
 const UserCard: React.FC<UserCardProps> = ({ username, isCurrentUser = false, location = 'Online' }) => {
   return (
-    <div style={{
-      display: 'flex',
-      alignItems: 'center',
-      padding: '0.75rem',
-      marginBottom: '0.5rem',
-      backgroundColor: '#f8f9fa',
-      borderRadius: '8px',
-      borderLeft: isCurrentUser ? '4px solid rgb(0, 0, 1)' : '4px solid transparent'
-    }}>
-      <div style={{
-        width: '40px',
-        height: '40px',
-        borderRadius: '50%',
-        backgroundColor: '#ddd',
-        marginRight: '1rem',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        overflow: 'hidden'
-      }}>
-        <span style={{ fontSize: '18px', color: '#666' }}>
+    <div className={`user-card-container ${isCurrentUser ? 'current-user' : ''}`}>
+      <div className="user-card-avatar-user">
+        <span className="user-card-avatar-text">
           {username}
         </span>
       </div>
       <div>
-        <div style={{ fontWeight: isCurrentUser ? '600' : '500' }}>
+        <div className={`user-card-username-text ${isCurrentUser ? 'current-user' : ''}`}>
           {username}{isCurrentUser && ' (You)'}
         </div>
-        <div style={{ fontSize: '0.75rem', color: '#6c757d' }}>
+        <div className="user-card-location-text">
           {location}
         </div>
       </div>

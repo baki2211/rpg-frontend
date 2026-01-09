@@ -1,0 +1,28 @@
+/* Warning Banner - No Active Character */
+.no-active-character-warning {
+  max-width: 600px;
+  margin: 1rem auto;
+  text-align: center;
+  background: rgba(251, 191, 36, 0.1);
+  border: 2px solid rgba(251, 191, 36, 0.4);
+  padding: 1rem;
+  border-radius: 16px;
+}
+
+.warning-icon {
+  font-size: 2rem;
+  margin-bottom: 0.5rem;
+}
+
+.warning-title {
+  color: #fbbf24;
+  margin-bottom: 0.5rem;
+  font-size: 1.2rem;
+  font-weight: 600;
+}
+
+.warning-message {
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 0.9rem;
+  line-height: 1.5;
+}

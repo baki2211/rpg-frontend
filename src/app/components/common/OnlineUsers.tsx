@@ -45,36 +45,15 @@ const UserCard: React.FC<UserCardProps> = ({ username, location, isCurrentUser }
 
   return (
     <div className={`user-card ${isCurrentUser ? 'current-user' : ''}`}>
-      <div style={{
-        width: '40px',
-        height: '40px',
-        borderRadius: '50%',
-        background: 'linear-gradient(135deg, #667eea, #764ba2)',
-        marginRight: '1rem',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        color: 'white',
-        fontWeight: '600',
-        fontSize: '1.1rem'
-      }}>
+      <div className="user-card-avatar">
         {username.charAt(0).toUpperCase()}
       </div>
-      <div style={{ flex: 1 }}>
-        <div style={{ 
-          fontWeight: isCurrentUser ? '600' : '500',
-          color: 'white',
-          marginBottom: '0.25rem'
-        }}>
+      <div className="user-card-info">
+        <div className={`user-card-username ${isCurrentUser ? 'current-user' : 'other-user'}`}>
           {username}{isCurrentUser && ' (You)'}
         </div>
-        <div 
-          style={{ 
-            fontSize: '0.75rem', 
-            color: 'rgba(255, 255, 255, 0.7)',
-            cursor: 'pointer',
-            textDecoration: 'underline'
-          }}
+        <div
+          className="user-card-location"
           onClick={handleLocationClick}
         >
           {location}
@@ -107,10 +86,10 @@ const OnlineUsers: React.FC = () => {
   return (
     <div className="online-users">
       <h3>Online Users ({uniqueUsers.length})</h3>
-      <div style={{ maxHeight: '400px', overflowY: 'auto' }}>
+      <div className="online-users-list">
         {uniqueUsers.length === 0 ? (
-          <div className="card" style={{ textAlign: 'center' }}>
-            <p style={{ color: 'rgba(255, 255, 255, 0.7)' }}>No users online</p>
+          <div className="card no-users-card">
+            <p className="no-users-text">No users online</p>
           </div>
         ) : (
           uniqueUsers.map((user, index) => (

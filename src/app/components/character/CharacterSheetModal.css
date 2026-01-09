@@ -1,0 +1,414 @@
+.character-sheet-modal {
+  max-width: 1200px;
+  width: 95vw;
+}
+
+.character-sheet-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+/* Tab Navigation */
+.character-sheet-tabs {
+  display: flex;
+  gap: 0.5rem;
+  border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+  padding-bottom: 0.5rem;
+}
+
+.tab-button {
+  padding: 0.75rem 1.5rem;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px 8px 0 0;
+  color: rgba(255, 255, 255, 0.7);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 0.95rem;
+}
+
+.tab-button:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.tab-button.active {
+  background: linear-gradient(135deg, #2F4A72, #0E2C40);
+  border-color: rgba(47, 74, 114, 0.8);
+  color: white;
+  box-shadow: 0 4px 15px rgba(47, 74, 114, 0.4);
+}
+
+/* Character Sheet Body */
+.character-sheet-body {
+  padding: 1rem 0;
+  min-height: 500px;
+}
+
+/* General Tab - Layout */
+.character-sheet-content {
+  display: grid;
+  grid-template-columns: 400px 1fr;
+  gap: 2rem;
+}
+
+.character-image-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.character-sheet-image {
+  width: 100%;
+  height: auto;
+  max-height: 500px;
+  object-fit: cover;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  border-radius: 12px;
+}
+
+.character-info-section {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+/* Stats Section */
+.stats-section {
+  background: linear-gradient(135deg, rgba(47, 74, 114, 0.3), rgba(14, 44, 64, 0.3));
+  border: 1px solid rgba(47, 74, 114, 0.5);
+  border-radius: 12px;
+  padding: 1.5rem;
+}
+
+.stats-section h3 {
+  color: rgb(255, 255, 255);
+  font-size: 1.3rem;
+  margin-bottom: 1rem;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+}
+
+.stat-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  background: rgba(255, 255, 255, 0.05);
+  padding: 1rem;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.stat-label {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.stat-value {
+  color: white;
+  font-size: 1.8rem;
+  font-weight: 700;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+/* Basic Info Section */
+.basic-info-section {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
+  padding: 1.5rem;
+}
+
+.basic-info-section h3 {
+  color: white;
+  font-size: 1.3rem;
+  margin-bottom: 1rem;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.info-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.info-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.info-label {
+  color: rgba(255, 255, 255, 0.7);
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.info-value {
+  color: white;
+  font-weight: 500;
+  font-size: 0.95rem;
+}
+
+.status-badge {
+  padding: 0.35rem 0.75rem;
+  border-radius: 12px;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.status-badge.active {
+  background: linear-gradient(135deg, rgba(47, 74, 114, 0.5), rgba(14, 44, 64, 0.5));
+  color: #4ecdc4;
+  border: 1px solid rgba(47, 74, 114, 0.8);
+}
+
+.status-badge.inactive {
+  background: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.npc-badge {
+  padding: 0.35rem 0.75rem;
+  border-radius: 12px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  background: rgba(251, 191, 36, 0.3);
+  color: #fbbf24;
+  border: 1px solid rgba(251, 191, 36, 0.5);
+}
+
+.race-description {
+  margin-top: 1.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.race-description h4 {
+  color: white;
+  font-size: 1.1rem;
+  margin-bottom: 0.75rem;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.race-description p {
+  color: rgba(255, 255, 255, 0.8);
+  line-height: 1.6;
+  font-size: 0.95rem;
+}
+
+/* Skills Tab */
+.skills-tab-content {
+  padding: 1rem;
+}
+
+.skills-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.skills-header h3 {
+  color: white;
+  font-size: 1.5rem;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.skill-points-display {
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 1rem;
+  padding: 0.75rem 1.25rem;
+  background: linear-gradient(135deg, rgba(47, 74, 114, 0.3), rgba(14, 44, 64, 0.3));
+  border: 1px solid rgba(47, 74, 114, 0.5);
+  border-radius: 8px;
+}
+
+.skill-points-display strong {
+  color: #D4B67A;
+  font-size: 1.2rem;
+  margin-left: 0.5rem;
+}
+
+.skills-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: 1rem;
+}
+
+.skill-card {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
+  padding: 1.25rem;
+  transition: all 0.3s ease;
+}
+
+.skill-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+  border-color: rgba(47, 74, 114, 0.6);
+}
+
+.skill-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 0.75rem;
+  gap: 1rem;
+}
+
+.skill-header h4 {
+  color: white;
+  font-size: 1.1rem;
+  font-weight: 600;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.skill-badges {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.skill-badge {
+  padding: 0.25rem 0.6rem;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.skill-badge.type {
+  background: rgba(168, 85, 247, 0.3);
+  color: #a855f7;
+  border: 1px solid rgba(168, 85, 247, 0.5);
+}
+
+.skill-badge.branch {
+  background: rgba(59, 130, 246, 0.3);
+  color: #3b82f6;
+  border: 1px solid rgba(59, 130, 246, 0.5);
+}
+
+.skill-badge.passive {
+  background: rgba(34, 197, 94, 0.3);
+  color: #22c55e;
+  border: 1px solid rgba(34, 197, 94, 0.5);
+}
+
+.skill-description {
+  color: rgba(255, 255, 255, 0.8);
+  line-height: 1.5;
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+}
+
+.skill-meta {
+  display: flex;
+  gap: 1rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.skill-cost,
+.skill-rank,
+.skill-target {
+  font-weight: 500;
+}
+
+.empty-skills {
+  text-align: center;
+  padding: 3rem;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 1rem;
+}
+
+/* Placeholder Content */
+.tab-content-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+  text-align: center;
+  padding: 2rem;
+}
+
+.tab-content-placeholder h3 {
+  color: white;
+  font-size: 1.8rem;
+  margin-bottom: 1rem;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.tab-content-placeholder p {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 1.1rem;
+}
+
+/* Responsive Design */
+@media (max-width: 900px) {
+  .character-sheet-content {
+    grid-template-columns: 1fr;
+  }
+
+  .character-image-section {
+    max-width: 400px;
+    margin: 0 auto;
+  }
+
+  .stats-grid {
+    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+  }
+
+  .skills-list {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 600px) {
+  .character-sheet-tabs {
+    overflow-x: auto;
+    flex-wrap: nowrap;
+  }
+
+  .tab-button {
+    padding: 0.6rem 1rem;
+    font-size: 0.85rem;
+    white-space: nowrap;
+  }
+
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .skills-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+}

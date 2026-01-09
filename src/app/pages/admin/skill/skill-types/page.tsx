@@ -110,14 +110,13 @@ const SkillTypeDashboard: React.FC = () => {
                 {selectedType ? 'Update Type' : 'Create Type'}
               </button>
               {selectedType && (
-                <button 
-                  type="button" 
+                <button
+                  type="button"
                   onClick={() => {
                     setSelectedType(null);
                     setFormData({ name: '', description: '' });
                   }}
-                  className="btn btn-secondary"
-                  style={{ marginLeft: '1rem' }}
+                  className="btn btn-secondary btn-secondary-ml"
                 >
                   Cancel
                 </button>

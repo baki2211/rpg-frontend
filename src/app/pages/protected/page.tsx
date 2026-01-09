@@ -25,7 +25,7 @@ const ProtectedPage = () => {
   }, [router]);
 
   return (
-    <div style={{ padding: '2rem' }}>
+    <div className="protected-page-container">
       <h1>Protected Page</h1>
       <p>{message}</p>
     </div>

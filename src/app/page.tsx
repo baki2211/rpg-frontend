@@ -27,13 +27,13 @@ export default function HomePage() {
         </p>
       </div>
       
-      <div className="card" style={{ maxWidth: '600px', margin: '0 auto', textAlign: 'center' }}>
-        <h3 style={{ color: 'white', marginBottom: '1rem' }}>Begin Your Journey</h3>
-        <p style={{ color: 'rgba(255, 255, 255, 0.8)', marginBottom: '2rem' }}>
-          Join thousands of adventurers in exploring enchanted realms, mastering powerful skills, 
+      <div className="card home-journey-card">
+        <h3 className="home-journey-title">Begin Your Journey</h3>
+        <p className="home-journey-text">
+          Join thousands of adventurers in exploring enchanted realms, mastering powerful skills,
           and forging your legend in this immersive RPG experience.
         </p>
-        <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', flexWrap: 'wrap' }}>
+        <div className="home-journey-buttons">
           <a href="/pages/register" className="btn btn-primary">
             Create Account
           </a>

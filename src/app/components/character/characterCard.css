@@ -1,0 +1,52 @@
+/* Character Card Enhancements */
+.character-card {
+  cursor: pointer;
+}
+
+.character-card-image {
+  object-fit: cover;
+  border-radius: 12px;
+  margin-bottom: 1rem;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+}
+
+.character-card-npc-badge {
+  margin-left: 0.5rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: 12px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  background-color: #fbbf24;
+  color: white;
+}
+
+.character-card-status-badge {
+  margin-left: 0.5rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: white;
+}
+
+.character-card-status-badge.active {
+  background-color: #4ecdc4;
+}
+
+.character-card-status-badge.inactive {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+.character-card-actions {
+  margin-top: 1rem;
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.character-card-npc-notice {
+  padding: 0.5rem;
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.7);
+  font-style: italic;
+}
