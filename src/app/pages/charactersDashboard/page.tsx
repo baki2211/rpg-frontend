@@ -1,9 +1,9 @@
 'use client';
 
 import React, { useState } from 'react';
-import CharacterCreationModalPanel from '../../components/character/characterCreationModal';
+import CharacterCreationModalPanel from '../../components/character/CrationModal/CharacterCreationModal';
 import { useCharacter } from '../../contexts/CharacterContext';
-import CharacterCard from '../../components/character/characterCard';
+import CharacterCard from '../../components/character/Card/CharacterCard';
 import Modal from '../../components/common/Modal';
 import './charactersDashboard.css';
 

@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useAuth } from "../../utils/AuthContext";
 import { useCharacterSheet } from "../../contexts/CharacterSheetContext";
-import LogoutButton from "../buttons/logoutButton";
+import LogoutButton from "../buttons/LogoutButton";
 
 const NavMenu: React.FC = () => {
   const { isAuthenticated, user } = useAuth();

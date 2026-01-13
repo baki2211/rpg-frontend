@@ -2,7 +2,7 @@
 
 import React, { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import CharacterCard from '../../components/character/characterCard';
+import CharacterCard from '../../components/character/Card/CharacterCard';
 import OnlineUsers from '../../components/common/OnlineUsers';
 import SessionList from '../sessions/page';
 import { useCharacter } from '../../contexts/CharacterContext';
