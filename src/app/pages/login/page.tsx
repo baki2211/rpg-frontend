@@ -3,8 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '../../utils/AuthContext';
-import { api } from '../../../services/apiClient';
-import { tokenService } from '../../../services/tokenService';
+import { authService } from '../../../services/authService';
 import './login.css';
 
 const Login = () => {
@@ -27,26 +26,14 @@ const Login = () => {
     setMessage('');
 
     try {
-      const loginResponse = await api.post('/auth/login', {
-        username,
-        password,
-      });
-
-      // Store token if received (for cross-domain compatibility)
-      const responseData = loginResponse.data as { token?: string; user?: { id: number; username: string; role: string } };
-      if (responseData.token) {
-        tokenService.setToken(responseData.token, responseData.user);
-      }
-
-      // Fetch user data after successful login to get complete user info including role
-      const userResponse = await api.get('/protected');
+      const authData = await authService.login(username, password);
 
       setMessage('Login successful! Redirecting...');
       setUsername('');
       setPassword('');
       setIsAuthenticated(true);
-      setUser((userResponse.data as { user: { id: string; username: string; role: string } }).user); // Set complete user data including role
-      
+      setUser(authData.user);
+
       setTimeout(() => {
         router.push('/pages/dashboard');
       }, 1000);

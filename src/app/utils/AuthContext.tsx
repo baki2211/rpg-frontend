@@ -1,7 +1,7 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect } from "react";
-import { api } from "../../services/apiClient";
+import { authService } from "../../services/authService";
 import { tokenService } from "../../services/tokenService";
 
 interface User {
@@ -45,11 +45,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       
       if (storedToken && storedUser) {
         // We have a stored token, let's verify it's still valid
-        const response = await api.get('/protected');
-        const responseData = response.data as { user: User };
-        
+        const authData = await authService.checkAuth();
+
         setIsAuthenticated(true);
-        setUser(responseData.user);
+        setUser(authData.user);
       } else {
         // No stored token, clear auth state
         setIsAuthenticated(false);

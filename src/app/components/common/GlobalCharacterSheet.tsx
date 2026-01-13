@@ -2,12 +2,12 @@
 
 import React from 'react';
 import { useCharacterSheet } from '../../contexts/CharacterSheetContext';
-import { useCharacters } from '../../hooks/useCharacter';
+import { useCharacter } from '../../contexts/CharacterContext';
 import CharacterSheetModal from '../character/CharacterSheetModal';
 
 const GlobalCharacterSheet: React.FC = () => {
   const { isOpen, closeCharacterSheet } = useCharacterSheet();
-  const { activeCharacter } = useCharacters();
+  const { activeCharacter } = useCharacter();
 
   if (!activeCharacter) {
     return null;

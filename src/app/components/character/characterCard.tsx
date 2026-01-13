@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import Image from 'next/image';
 import { UPLOADS_URL } from '../../../config/api';
 import CharacterSheetModal from './CharacterSheetModal';
-import { Character } from '../../hooks/useCharacter';
+import { Character } from '../../../types/character';
 import './characterCard.css';
 
 interface CharacterCardProps {

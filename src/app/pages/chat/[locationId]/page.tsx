@@ -7,7 +7,7 @@ import { WebSocketService } from '../../../services/webSocketService';
 import { SkillsModal } from '@/app/components/skills/SkillsModal';
 import { MiniSkillRow } from '@/app/components/skills/MiniSkillRow';
 import { MasterPanel } from '@/app/components/master/MasterPanel';
-import { Skill } from '@/app/hooks/useCharacter';
+import { Skill } from '@/types/character';
 import { ChatUser, useChatUsers } from '@/app/hooks/useChatUsers';
 import { useToast } from '@/app/contexts/ToastContext';
 import { usePresence } from '@/app/contexts/PresenceContext';

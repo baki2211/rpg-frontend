@@ -1,48 +1,28 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import CharacterCard from '../../components/character/characterCard';
 import OnlineUsers from '../../components/common/OnlineUsers';
 import SessionList from '../sessions/page';
-import { useCharacters } from '../../hooks/useCharacter';
-import { api } from '../../../services/apiClient';
-
+import { useCharacter } from '../../contexts/CharacterContext';
+import { useUser } from '../../contexts/UserContext';
 
 const Dashboard = () => {
   const router = useRouter();
-  const { characters, activateCharacter, deleteCharacter } = useCharacters();
-  
-  interface UserData {
-    id: string;
-    username: string;
-    role: string;
-  }
-
-  const [userData, setUserData] = useState<UserData | null>(null);
-  const [message, setMessage] = useState('');
+  const { user, loading: userLoading, error: userError, fetchDashboard } = useUser();
+  const { characters, activateCharacter, deleteCharacter } = useCharacter();
 
   useEffect(() => {
-    const fetchDashboard = async () => {
-      try {
-        const response = await api.get('/user/dashboard');
-        const responseData = response.data as { user: UserData; message: string };
-        setUserData(responseData.user);
-        setMessage(responseData.message);
-      } catch (error) {
-        setMessage('You are not authorized to view this page. Redirecting...');
-        console.error('Error fetching dashboard:', error);
-        setTimeout(() => router.push('/pages/login'), 2000);
-      }
-    };
+    fetchDashboard().catch(() => {
+      setTimeout(() => router.push('/pages/login'), 2000);
+    });
+  }, [fetchDashboard, router]);
 
-    fetchDashboard();
-  }, [router]);
-
-  if (!userData) {
+  if (userLoading || !user) {
     return (
       <div className="page-container">
-        <div className="loading">{message || 'Loading your dashboard...'}</div>
+        <div className="loading">{userError || 'Loading your dashboard...'}</div>
       </div>
     );
   }
@@ -53,7 +33,7 @@ const Dashboard = () => {
     <div className="dashboard-page">
       <div className="page-container">
         <div className="page-header">
-          <h1>Welcome back, {userData.username}!</h1>
+          <h1>Welcome back, {user.username}!</h1>
           <p>Manage your characters, explore the world, and connect with other adventurers</p>
         </div>
 

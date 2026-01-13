@@ -4,9 +4,8 @@ import React from "react";
 import { useRouter } from 'next/navigation';
 import { useAuth } from "../../utils/AuthContext";
 import { usePresence } from "../../contexts/PresenceContext";
-import { api } from '../../../services/apiClient';
+import { authService } from '../../../services/authService';
 import { WS_URL } from '../../../config/api';
-import { tokenService } from '../../../services/tokenService';
 
 const LogoutButton: React.FC = () => {
   const router = useRouter();
@@ -24,21 +23,18 @@ const LogoutButton: React.FC = () => {
         };
       }
 
-      await api.post('/auth/logout', {});
+      await authService.logout();
 
-      // Clear token and user data from localStorage
-      tokenService.clearAuth();
-      
       // Update global state
       setIsAuthenticated(false);
       setUser(null);
-      
+
       // Redirect to login page
       router.push('/pages/login');
     } catch (error) {
       console.error('Error logging out:', error);
       // Even if the API call fails, clear local state
-      tokenService.clearAuth();
+      await authService.logout();
       setIsAuthenticated(false);
       setUser(null);
       router.push('/pages/login');

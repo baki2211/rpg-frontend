@@ -1,5 +1,5 @@
 import React from 'react';
-import { Skill } from '@/app/hooks/useCharacter';
+import { Skill } from '@/types/character';
 import './SkillRow.css';
 
 interface SkillRowProps {

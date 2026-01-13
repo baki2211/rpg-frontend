@@ -2,13 +2,13 @@
 
 import React, { useState } from 'react';
 import CharacterCreationModalPanel from '../../components/character/characterCreationModal';
-import { useCharacters } from '../../hooks/useCharacter';
+import { useCharacter } from '../../contexts/CharacterContext';
 import CharacterCard from '../../components/character/characterCard';
 import Modal from '../../components/common/Modal';
 import './charactersDashboard.css';
 
 const CharactersDashboard = () => {
-  const { allCharacters, activeCharacter, loading, error, activateCharacter, deleteCharacter, createCharacter } = useCharacters();
+  const { allCharacters, activeCharacter, loading, error, activateCharacter, deleteCharacter, createCharacter } = useCharacter();
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   if (loading) {
@@ -88,14 +88,16 @@ const CharactersDashboard = () => {
         </div>
       )}
 
-      <Modal 
-        isOpen={isModalOpen} 
+      <Modal
+        isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         title="Create New Character"
       >
-        <CharacterCreationModalPanel 
-          onSuccess={() => setIsModalOpen(false)} 
-          createCharacter={createCharacter}
+        <CharacterCreationModalPanel
+          onSuccess={() => setIsModalOpen(false)}
+          createCharacter={async (formData) => {
+            await createCharacter(formData);
+          }}
         />
       </Modal>
     </div>

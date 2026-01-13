@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import Image from 'next/image';
 import { UPLOADS_URL } from '../../../config/api';
 import Modal from '../common/Modal';
-import { Character } from '../../hooks/useCharacter';
+import { Character } from '../../../types/character';
 import './CharacterSheetModal.css';
 
 interface CharacterSheetModalProps {

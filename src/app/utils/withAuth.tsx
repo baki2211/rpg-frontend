@@ -1,6 +1,6 @@
 import React, { useEffect } from "react";
 import { useRouter } from "next/router";
-import { api } from "../../services/apiClient";
+import { authService } from "../../services/authService";
 
 const withAuth = (WrappedComponent: React.ComponentType) => {
   const AuthComponent = (props: Record<string, unknown>) => {
@@ -9,7 +9,7 @@ const withAuth = (WrappedComponent: React.ComponentType) => {
     useEffect(() => {
       const verifyToken = async () => {
         try {
-          await api.get('/protected');
+          await authService.checkAuth();
         } catch {
           router.push('/login');
         }

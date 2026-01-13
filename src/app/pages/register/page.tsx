@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '../../utils/AuthContext';
-import { api } from '../../../services/apiClient';
+import { authService } from '../../../services/authService';
 import './register.css';
 
 const Register = () => {
@@ -39,7 +39,7 @@ const Register = () => {
     }
 
     try {
-      await api.post('/auth/register', {
+      await authService.register({
         username,
         password,
       });

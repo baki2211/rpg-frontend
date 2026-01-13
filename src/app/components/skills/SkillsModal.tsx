@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { useCharacters } from '@/app/hooks/useCharacter';
+import { useCharacter } from '@/app/contexts/CharacterContext';
 import { SkillRow } from './SkillRow';
-import { Skill } from '@/app/hooks/useCharacter';
+import { Skill } from '@/types/character';
 import { useChatUsers, ChatUser } from '@/app/hooks/useChatUsers';
 import { useAuth } from '@/app/utils/AuthContext';
 import { api } from '../../../services/apiClient';
@@ -34,7 +34,7 @@ interface SkillsModalProps {
 }
 
 export const SkillsModal: React.FC<SkillsModalProps> = ({ isOpen, onClose, onSelectSkill, onUnselectSkill, selectedSkill: externalSelectedSkill, locationId }) => {
-  const { characters } = useCharacters();
+  const { characters } = useCharacter();
   const { user } = useAuth();
   const [skills, setSkills] = useState<Skill[]>([]);
   const [loading, setLoading] = useState(true);

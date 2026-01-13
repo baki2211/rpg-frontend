@@ -2,12 +2,13 @@
 
 import React, { useState, useEffect } from 'react';
 import { SkillCard } from '@/app/components/skills/SkillCard';
-import { useCharacters, type Skill } from '@/app/hooks/useCharacter';
+import { useCharacter } from '@/app/contexts/CharacterContext';
+import { type Skill } from '@/types/character';
 import './skills.css';
 import { api } from '../../../services/apiClient';
 
 export default function SkillsPage() {
-  const { characters, fetchCharacters } = useCharacters();
+  const { characters, fetchCharacters } = useCharacter();
   const [availableSkills, setAvailableSkills] = useState<Skill[]>([]);
   const [acquiredSkills, setAcquiredSkills] = useState<Skill[]>([]);
   const [loading, setLoading] = useState(true);
