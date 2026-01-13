@@ -23,10 +23,14 @@ interface Race {
   description: string;
   image: string;
   isPlayable: boolean;
-  // Legacy bonuses (keeping for backward compatibility)
-  healthBonus: number;
-  manaBonus: number;
-  speedBonus: number;
+  baseHp?: number;          
+  baseAether?: number;      
+  baseSpeed?: number;       
+  baseAetherRegen?: number;
+  // Legacy bonuses (deprecated - keeping for backward compatibility)
+  healthBonus?: number;
+  manaBonus?: number;
+  speedBonus?: number;
   // Dynamic stat bonuses based on stat definitions
   focusBonus?: number;
   controlBonus?: number;
@@ -163,18 +167,73 @@ const RacePanel: React.FC = () => {
           </div>
           
           <div className="form-group form-full-width">
-            <h3>Resource Bonuses</h3>
+            <h3>Race Attributes (Required)</h3>
             <div className="bonus-grid">
               <div>
-                <label>Health Bonus:</label>
+                <label>Base HP (BHP) *:</label>
+                <input
+                  type="number"
+                  name="baseHp"
+                  value={newRace.baseHp || ''}
+                  onChange={handleInputChange}
+                  placeholder="e.g., 100"
+                  required
+                />
+                <small>Used in: MaxHP = BHP + (RES × 10)</small>
+              </div>
+              <div>
+                <label>Base Aether (BAE) *:</label>
+                <input
+                  type="number"
+                  name="baseAether"
+                  value={newRace.baseAether || ''}
+                  onChange={handleInputChange}
+                  placeholder="e.g., 50"
+                  required
+                />
+                <small>Used in: MaxAether = BAE + (FOC × 8) + (FOR × 4)</small>
+              </div>
+              <div>
+                <label>Base Speed (BSD) *:</label>
+                <input
+                  type="number"
+                  name="baseSpeed"
+                  value={newRace.baseSpeed || ''}
+                  onChange={handleInputChange}
+                  placeholder="e.g., 5"
+                  required
+                />
+                <small>Base initiative/movement speed</small>
+              </div>
+              <div>
+                <label>Base Aether Regen (BAR) *:</label>
+                <input
+                  type="number"
+                  name="baseAetherRegen"
+                  value={newRace.baseAetherRegen || ''}
+                  onChange={handleInputChange}
+                  placeholder="e.g., 3"
+                  required
+                />
+                <small>Used in: AetherRegen = BAR + floor(FOC / 2)</small>
+              </div>
+            </div>
+          </div>
+
+          <div className="form-group form-full-width">
+            <h3>Resource Bonuses (Deprecated)</h3>
+            <p className="warning-text">These fields are kept for backward compatibility</p>
+            <div className="bonus-grid">
+              <div>
+                <label>Health Bonus (Legacy):</label>
                 <input type="number" name="healthBonus" value={newRace.healthBonus || ''} onChange={handleInputChange} />
               </div>
               <div>
-                <label>Mana Bonus:</label>
+                <label>Mana Bonus (Legacy):</label>
                 <input type="number" name="manaBonus" value={newRace.manaBonus || ''} onChange={handleInputChange} />
               </div>
               <div>
-                <label>Speed Bonus:</label>
+                <label>Speed Bonus (Legacy):</label>
                 <input type="number" name="speedBonus" value={newRace.speedBonus || ''} onChange={handleInputChange} />
               </div>
             </div>
@@ -233,18 +292,41 @@ const RacePanel: React.FC = () => {
                   </label>
                 </div>
                 
-                <h4>Resource Bonuses</h4>
+                <h4>Race Attributes</h4>
                 <div className="bonus-grid">
                   <div>
-                    <label>Health:</label>
+                    <label>Base HP (BHP) *:</label>
+                    <input type="number" value={editData.baseHp ?? ''} onChange={e=>setEditData({...editData,baseHp:parseInt(e.target.value)||0})}/>
+                    <small>MaxHP = BHP + (RES × 10)</small>
+                  </div>
+                  <div>
+                    <label>Base Aether (BAE) *:</label>
+                    <input type="number" value={editData.baseAether ?? ''} onChange={e=>setEditData({...editData,baseAether:parseInt(e.target.value)||0})}/>
+                    <small>MaxAether = BAE + (FOC × 8) + (FOR × 4)</small>
+                  </div>
+                  <div>
+                    <label>Base Speed (BSD) *:</label>
+                    <input type="number" value={editData.baseSpeed ?? ''} onChange={e=>setEditData({...editData,baseSpeed:parseInt(e.target.value)||0})}/>
+                  </div>
+                  <div>
+                    <label>Base Aether Regen (BAR) *:</label>
+                    <input type="number" value={editData.baseAetherRegen ?? ''} onChange={e=>setEditData({...editData,baseAetherRegen:parseInt(e.target.value)||0})}/>
+                    <small>Regen = BAR + floor(FOC / 2)</small>
+                  </div>
+                </div>
+
+                <h4>Legacy Resource Bonuses (Deprecated)</h4>
+                <div className="bonus-grid">
+                  <div>
+                    <label>Health (Legacy):</label>
                     <input type="number" value={editData.healthBonus ?? ''} onChange={e=>setEditData({...editData,healthBonus:parseInt(e.target.value)||0})}/>
                   </div>
                   <div>
-                    <label>Mana:</label>
+                    <label>Mana (Legacy):</label>
                     <input type="number" value={editData.manaBonus ?? ''} onChange={e=>setEditData({...editData,manaBonus:parseInt(e.target.value)||0})}/>
                   </div>
                   <div>
-                    <label>Speed:</label>
+                    <label>Speed (Legacy):</label>
                     <input type="number" value={editData.speedBonus ?? ''} onChange={e=>setEditData({...editData,speedBonus:parseInt(e.target.value)||0})}/>
                   </div>
                 </div>

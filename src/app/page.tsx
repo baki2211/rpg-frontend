@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from './utils/AuthContext';
 
 export default function HomePage() {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, isLoading } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
@@ -14,8 +14,8 @@ export default function HomePage() {
     }
   }, [isAuthenticated, router]);
 
-  if (isAuthenticated) {
-    return null; // Prevent rendering while redirecting
+  if (isLoading || isAuthenticated) {
+    return null; // Prevent rendering while checking auth or redirecting
   }
 
   return (

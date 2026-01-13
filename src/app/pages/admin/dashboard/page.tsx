@@ -62,6 +62,15 @@ const AdminDashboard = () => {
                 <a href="/pages/admin/engine">Engine Panel</a>
               </li>
               <li>
+                <a href="/pages/admin/combat-constants">Combat Constants</a>
+              </li>
+              <li>
+                <a href="/pages/admin/mastery-tiers">Mastery Tiers</a>
+              </li>
+              <li>
+                <a href="/pages/admin/skill-validation">Skill Validation Rules</a>
+              </li>
+              <li>
                 <a href="/pages/admin/ranks">Rank Panel</a>
               </li>
             </ul>
