@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { AppProviders } from './contexts/AppProviders';
-import NavMenu from './components/common/Nav'
+import NavMenu from '@/app/components/common/Nav'
 import ServerStatusNotification from './components/ServerStatusNotification';
 import GlobalCharacterSheet from './components/common/GlobalCharacterSheet';
 import './globals.css';
