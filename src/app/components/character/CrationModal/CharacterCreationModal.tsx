@@ -1,41 +1,10 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import './characterCreationModal.css';
-import { api } from '../../../../services/apiClient';
-
-interface User {
-  id: number;
-  username: string;
-  role: string;
-}
-
-interface Race {
-  id: number;
-  name: string;
-  description: string;
-  baseHp: number;
-}
-
-interface Character {
-  id: number;
-  name: string;
-  surname: string;
-  age: number;
-  gender: string;
-  race: Race;
-  isActive: boolean;
-  imageUrl?: string;
-}
-
-interface StatDefinition {
-  internalName: string;
-  displayName: string;
-  description?: string;
-  minValue: number;
-  maxValue: number | null;
-  defaultValue: number;
-}
+import './CharacterCreationModal.css';
+import { useUser } from '../../../contexts/UserContext';
+import { useRaces } from '../../../contexts/RacesContext';
+import { useStatDefinitions } from '../../../contexts/StatDefinitionsContext';
 
 interface CharacterForm {
   userId: number | null;
@@ -53,9 +22,10 @@ interface CharacterCreationModalPanelProps {
 }
 
 const CharacterCreationModalPanel: React.FC<CharacterCreationModalPanelProps> = ({ onSuccess, createCharacter }) => {
-  const [, setCharacters] = useState<Character[]>([]);
-  const [races, setRaces] = useState<Race[]>([]);
-  const [user, setUser] = useState<User | null>(null);
+  const { user, fetchProfile } = useUser();
+  const { playableRaces, fetchPlayableRaces } = useRaces();
+  const { primaryStats, fetchPrimaryStats } = useStatDefinitions();
+
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [characterData, setCharacterData] = useState<CharacterForm>({
     userId: null,
@@ -68,68 +38,44 @@ const CharacterCreationModalPanel: React.FC<CharacterCreationModalPanelProps> = 
   });
   const [errorMessage, setErrorMessage] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
-  const [statDefinitions, setStatDefinitions] = useState<StatDefinition[]>([]);
   const TOTAL_POINTS = 45;
   const allocatedPoints = Object.values(characterData.stats).reduce((sum, val) => sum + (typeof val === 'number' ? val : 0), 0);
   const remainingPoints = TOTAL_POINTS - allocatedPoints;
 
   useEffect(() => {
-    fetchUser();
-    fetchCharacters();
-    fetchRaces();
-    fetchStatDefinitions();
+    const initializeData = async () => {
+      try {
+        await Promise.all([
+          fetchProfile(),
+          fetchPlayableRaces(),
+          fetchPrimaryStats()
+        ]);
+      } catch (error) {
+        console.error('Failed to initialize data:', error);
+        setErrorMessage('Failed to load initial data');
+      }
+    };
+    initializeData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const fetchUser = async () => {
-    try {
-      const response = await api.get<User>('/user/');
-      const fetchedUser = response.data;
-      setUser(fetchedUser);
+  useEffect(() => {
+    if (user) {
       setCharacterData((prev) => ({
         ...prev,
-        userId: fetchedUser.id,
+        userId: user.id,
       }));
-    } catch (error) {
-      console.error('Failed to fetch user:', error);
-      setErrorMessage('Failed to fetch user');
     }
-  };
+  }, [user]);
 
-  const fetchCharacters = async () => {
-    try {
-      const response = await api.get<Character[]>('/characters');
-      setCharacters(response.data);
-    } catch (error) {
-      console.error('Failed to fetch characters:', error);
-      setErrorMessage('Failed to fetch characters');
-    }
-  }; 
-
-  const fetchRaces = async () => {
-    try {
-      const response = await api.get<Race[]>('/races/playable');
-      setRaces(response.data);
-    } catch (error) {
-      console.error('Failed to fetch playable races:', error);
-      setErrorMessage('Failed to fetch playable races');
-    }
-  };
-
-  const fetchStatDefinitions = async () => {
-    try {
-      const response = await api.get<StatDefinition[]>('/stat-definitions?category=primary_stat&activeOnly=true');
-      const defs = response.data;
-      setStatDefinitions(defs);
-
+  useEffect(() => {
+    if (primaryStats.length > 0) {
       setCharacterData(prev => ({
         ...prev,
-        stats: Object.fromEntries(defs.map((d: StatDefinition) => [d.internalName, d.defaultValue]))
+        stats: Object.fromEntries(primaryStats.map((d) => [d.internalName, d.defaultValue]))
       }));
-    } catch (err) {
-      console.error('Failed to fetch stat definitions', err);
-      setErrorMessage('Failed to fetch stat definitions');
     }
-  };
+  }, [primaryStats]);
 
   const handleStatChange = (stat: string, value: number) => {
     const cleanValue = isNaN(value) ? 0 : value;
@@ -271,8 +217,8 @@ const CharacterCreationModalPanel: React.FC<CharacterCreationModalPanelProps> = 
                 required
               >
                 <option value="">Select Race</option>
-                {races.length > 0 ? (
-                  races.map((race) => (
+                {playableRaces.length > 0 ? (
+                  playableRaces.map((race) => (
                     <option key={race.id} value={race.id}>
                       {race.name}
                     </option>
@@ -313,7 +259,7 @@ const CharacterCreationModalPanel: React.FC<CharacterCreationModalPanelProps> = 
             </div>
 
             <div className="stats-grid">
-              {statDefinitions.map((stat) => {
+              {primaryStats.map((stat) => {
                 const maxVal = stat.maxValue ?? 100;
                 return (
                   <div key={stat.internalName} className="stat-item">

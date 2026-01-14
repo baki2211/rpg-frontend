@@ -10,6 +10,7 @@ interface UserContextValue {
   // State
   user: User | null;
   dashboardData: DashboardData | null;
+  allUsers: User[];
   loading: boolean;
   error: string | null;
   // Actions
@@ -17,6 +18,8 @@ interface UserContextValue {
   fetchProfile: () => Promise<User>;
   updateProfile: (userData: UpdateProfileData) => Promise<User>;
   changePassword: (passwordData: ChangePasswordData) => Promise<void>;
+  getAllUsers: () => Promise<User[]>;
+  updateUserPassword: (userId: number, oldPassword: string, newPassword: string) => Promise<void>;
   clearUser: () => void;
 }
 
@@ -29,6 +32,7 @@ interface UserProviderProps {
 export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [dashboardData, setDashboardData] = useState<DashboardData | null>(null);
+  const [allUsers, setAllUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const { showSuccess, showError } = useToast();
@@ -102,31 +106,73 @@ export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
     }
   }, [showSuccess, showError]);
 
+  const getAllUsers = useCallback(async (): Promise<User[]> => {
+    try {
+      setLoading(true);
+      setError(null);
+      const users = await userService.getAllUsers();
+      setAllUsers(users);
+      return users;
+    } catch (err: unknown) {
+      const errorMsg = getErrorMessage(err, 'Failed to fetch users');
+      setError(errorMsg);
+      showError(errorMsg);
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  }, [showError]);
+
+  const updateUserPassword = useCallback(async (userId: number, oldPassword: string, newPassword: string): Promise<void> => {
+    try {
+      setLoading(true);
+      setError(null);
+      await userService.updateUserPassword(userId, oldPassword, newPassword);
+      showSuccess('Password updated successfully');
+      // Refresh the users list after updating
+      await getAllUsers();
+    } catch (err: unknown) {
+      const errorMsg = getErrorMessage(err, 'Failed to update password');
+      setError(errorMsg);
+      showError(errorMsg);
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  }, [showSuccess, showError, getAllUsers]);
+
   const clearUser = useCallback(() => {
     setUser(null);
     setDashboardData(null);
+    setAllUsers([]);
     setError(null);
   }, []);
 
   const value = useMemo<UserContextValue>(() => ({
     user,
     dashboardData,
+    allUsers,
     loading,
     error,
     fetchDashboard,
     fetchProfile,
     updateProfile,
     changePassword,
+    getAllUsers,
+    updateUserPassword,
     clearUser,
   }), [
     user,
     dashboardData,
+    allUsers,
     loading,
     error,
     fetchDashboard,
     fetchProfile,
     updateProfile,
     changePassword,
+    getAllUsers,
+    updateUserPassword,
     clearUser,
   ]);
 

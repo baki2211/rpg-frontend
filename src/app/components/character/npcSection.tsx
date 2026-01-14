@@ -1,100 +1,33 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { api } from '../../../services/apiClient';
-
-interface NPC {
-  id: number;
-  name: string;
-  surname: string;
-  background?: string;
-  imageUrl?: string;
-  rank: number;
-  experience: number;
-  skillPoints: number;
-  race: {
-    id: number;
-    name: string;
-  };
-}
-
-interface ActiveCharacter {
-  id: number;
-  name: string;
-  surname: string;
-  isNPC?: boolean;
-}
+import { useNPC } from '../../contexts/NPCContext';
 
 const NPCSection: React.FC = () => {
-  const [availableNPCs, setAvailableNPCs] = useState<NPC[]>([]);
-  const [activeCharacter, setActiveCharacter] = useState<ActiveCharacter | null>(null);
+  const { availableNPCs, activeCharacter, loading, error, activateNPC, deactivateNPC, refreshNPCData } = useNPC();
   const [selectedNPC, setSelectedNPC] = useState<number | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
 
   useEffect(() => {
-    fetchData();
+    refreshNPCData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
-  const fetchData = async () => {
-    try {
-      setLoading(true);
-      
-      const [npcsResponse, activeCharResponse] = await Promise.all([
-        api.get('/characters/npcs/available'),
-        api.get('/characters/')
-      ]);
-
-      setAvailableNPCs(npcsResponse.data as NPC[]);
-      
-      // Find the active character
-      const activeChar = (activeCharResponse.data as (ActiveCharacter & { isActive: boolean })[]).find((char: ActiveCharacter & { isActive: boolean }) => char.isActive);
-      setActiveCharacter(activeChar || null);
-      
-    } catch (error) {
-      console.error('Error fetching NPC data:', error);
-      setError('Failed to load NPCs');
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handleActivateNPC = async (npcId: number) => {
     try {
-      setError('');
-      await api.post(`/characters/npcs/${npcId}/activate`, {});
-      
-      // Refresh data to show the newly activated NPC
-      await fetchData();
+      await activateNPC(npcId);
       setSelectedNPC(null);
-    } catch (error: unknown) {
+    } catch (error) {
       console.error('Error activating NPC:', error);
-      if (error && typeof error === 'object' && 'response' in error) {
-        const axiosError = error as { response?: { data?: { error?: string } } };
-        setError(axiosError.response?.data?.error || 'Failed to activate NPC');
-      } else {
-        setError('Failed to activate NPC');
-      }
     }
   };
 
   const handleDeactivateNPC = async () => {
-    if (!activeCharacter?.isNPC) return;
-    
+    if (!activeCharacter?.isNPC || !activeCharacter.id) return;
+
     try {
-      setError('');
-      await api.post(`/characters/npcs/${activeCharacter.id}/deactivate`, {});
-      
-      // Refresh data
-      await fetchData();
-    } catch (error: unknown) {
+      await deactivateNPC(activeCharacter.id);
+    } catch (error) {
       console.error('Error deactivating NPC:', error);
-      if (error && typeof error === 'object' && 'response' in error) {
-        const axiosError = error as { response?: { data?: { error?: string } } };
-        setError(axiosError.response?.data?.error || 'Failed to deactivate NPC');
-      } else {
-        setError('Failed to deactivate NPC');
-      }
     }
   };
 
@@ -111,7 +44,7 @@ const NPCSection: React.FC = () => {
     <div className="npc-section">
       <h3>Available NPCs</h3>
       <p>Activate an NPC to play as them in chat and use their skills.</p>
-      
+
       {error && <div className="error-message">{error}</div>}
       
       {activeCharacter?.isNPC && (

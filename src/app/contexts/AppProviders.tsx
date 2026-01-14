@@ -10,6 +10,9 @@ import { PresenceProvider } from './PresenceContext';
 import { CombatConstantsProvider } from './CombatConstantsContext';
 import { MasteryTiersProvider } from './MasteryTiersContext';
 import { SkillValidationProvider } from './SkillValidationContext';
+import { NPCProvider } from './NPCContext';
+import { RacesProvider } from './RacesContext';
+import { StatDefinitionsProvider } from './StatDefinitionsContext';
 
 interface AppProvidersProps {
   children: ReactNode;
@@ -23,13 +26,19 @@ export const AppProviders: React.FC<AppProvidersProps> = ({ children }) => {
           <CharacterProvider>
             <CharacterSheetProvider>
               <PresenceProvider>
-                <CombatConstantsProvider>
-                  <MasteryTiersProvider>
-                    <SkillValidationProvider>
-                      {children}
-                    </SkillValidationProvider>
-                  </MasteryTiersProvider>
-                </CombatConstantsProvider>
+                <NPCProvider>
+                  <RacesProvider>
+                    <StatDefinitionsProvider>
+                      <CombatConstantsProvider>
+                        <MasteryTiersProvider>
+                          <SkillValidationProvider>
+                            {children}
+                          </SkillValidationProvider>
+                        </MasteryTiersProvider>
+                      </CombatConstantsProvider>
+                    </StatDefinitionsProvider>
+                  </RacesProvider>
+                </NPCProvider>
               </PresenceProvider>
             </CharacterSheetProvider>
           </CharacterProvider>

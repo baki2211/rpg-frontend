@@ -25,6 +25,15 @@ class UserService {
     const response = await api.get<{ message: string }>('/protected');
     return response.data;
   }
+
+  async getAllUsers(): Promise<User[]> {
+    const response = await api.get<User[]>('/user/all');
+    return response.data;
+  }
+
+  async updateUserPassword(userId: number, oldPassword: string, newPassword: string): Promise<void> {
+    await api.put(`/user/${userId}/password`, { oldPassword, newPassword });
+  }
 }
 
 export const userService = new UserService();

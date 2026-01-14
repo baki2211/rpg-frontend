@@ -7,6 +7,11 @@ class RaceService {
     return response.data;
   }
 
+  async getPlayableRaces(): Promise<Race[]> {
+    const response = await api.get<Race[]>('/races/playable');
+    return response.data;
+  }
+
   async getRaceById(raceId: number): Promise<Race> {
     const response = await api.get<Race>(`/races/${raceId}`);
     return response.data;

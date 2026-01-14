@@ -1,16 +1,9 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { api } from '../../services/apiClient';
+import { useUser } from '../contexts/UserContext';
 import '../pages/register/register.css';
 import '../pages/admin/admin.css';
-
-interface User {
-  id: number;
-  username: string;
-  password: string;
-  createdAt: string;
-}
 
 interface UpdateUserPasswordProps {
   isAdmin?: boolean;
@@ -18,12 +11,11 @@ interface UpdateUserPasswordProps {
 }
 
 const UpdateUserPassword: React.FC<UpdateUserPasswordProps> = ({ isAdmin = true, currentUserId }) => {
-    const [users, setUsers] = useState<User[]>([]);
+    const { allUsers, loading, getAllUsers, updateUserPassword: updateUserPasswordContext } = useUser();
     const [selectedUserId, setSelectedUserId] = useState<number | null>(null);
     const [oldPassword, setOldPassword] = useState('');
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
-    const [loading, setLoading] = useState(true);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [successMessage, setSuccessMessage] = useState<string | null>(null);
@@ -34,22 +26,18 @@ const UpdateUserPassword: React.FC<UpdateUserPasswordProps> = ({ isAdmin = true,
         } else if (currentUserId) {
           // For non-admin users, set their own ID
           setSelectedUserId(currentUserId);
-          setLoading(false);
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
       }, [isAdmin, currentUserId]);
 
     const fetchUsers = async () => {
           try {
             setError(null);
             setSuccessMessage(null);
-            setLoading(true);
-            const response = await api.get('/user/all');
-            setUsers(response.data as User[]);
+            await getAllUsers();
           } catch (error) {
             console.error('Error fetching users:', error);
             setError('Failed to fetch users. Make sure you have admin permissions.');
-          } finally {
-            setLoading(false);
           }
         };
 
@@ -79,22 +67,12 @@ const UpdateUserPassword: React.FC<UpdateUserPasswordProps> = ({ isAdmin = true,
 
               // For admin: use encrypted password from user object as oldPassword
               // For user: use the oldPassword they entered
-              const requestBody = isAdmin
-                ? {
-                    oldPassword: users.find(u => u.id === selectedUserId)?.password || '',
-                    newPassword: password
-                  }
-                : {
-                    oldPassword: oldPassword,
-                    newPassword: password
-                  };
+              const oldPasswordValue = isAdmin
+                ? allUsers.find(u => u.id === selectedUserId)?.password || ''
+                : oldPassword;
 
-              await api.put(`/user/${selectedUserId}/password`, requestBody);
+              await updateUserPasswordContext(selectedUserId, oldPasswordValue, password);
               setSuccessMessage(`Password updated successfully!`);
-
-              if (isAdmin) {
-                fetchUsers(); // Refresh the list for admin
-              }
 
               setPassword('');
               setConfirmPassword('');
@@ -143,7 +121,7 @@ const UpdateUserPassword: React.FC<UpdateUserPasswordProps> = ({ isAdmin = true,
                       disabled={isLoading || loading}
                     >
                     <option value="">-- Select a user --</option>
-                      {users.map(user =>(<option key={user.id} value={user.id}>{user.username}</option>))}
+                      {allUsers.map(user =>(<option key={user.id} value={user.id}>{user.username}</option>))}
                     </select>
                     </td>
                       {!isAdmin && (
