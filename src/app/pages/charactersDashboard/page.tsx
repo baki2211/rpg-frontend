@@ -5,7 +5,7 @@ import CharacterCreationModalPanel from '../../components/character/CrationModal
 import { useCharacter } from '../../contexts/CharacterContext';
 import CharacterCard from '../../components/character/Card/CharacterCard';
 import Modal from '../../components/common/Modal';
-import './CharactersDashboard.css';
+import '../../pages/charactersDashboard/CharactersDashboard.css';
 
 const CharactersDashboard = () => {
   const { allCharacters, activeCharacter, loading, error, activateCharacter, deleteCharacter, createCharacter } = useCharacter();
