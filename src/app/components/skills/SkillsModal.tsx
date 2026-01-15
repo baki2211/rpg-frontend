@@ -4,24 +4,13 @@ import { SkillRow } from './SkillRow';
 import { Skill } from '@/types/character';
 import { useChatUsers, ChatUser } from '@/app/hooks/useChatUsers';
 import { useAuth } from '@/app/utils/AuthContext';
-import { api } from '../../../services/apiClient';
+import { useCombatRounds } from '@/app/contexts/CombatRoundsContext';
+import { useEvents } from '@/app/contexts/EventsContext';
+import { useSkills } from '@/app/contexts/SkillsContext';
 import './SkillsModal.css';
 
 interface SkillWithTarget extends Skill {
   selectedTarget?: ChatUser;
-}
-
-interface CombatRound {
-  id: number;
-  roundNumber: number;
-  status: string;
-}
-
-interface ActiveEvent {
-  id: number;
-  title: string;
-  type: string;
-  status: string;
 }
 
 interface SkillsModalProps {
@@ -36,15 +25,13 @@ interface SkillsModalProps {
 export const SkillsModal: React.FC<SkillsModalProps> = ({ isOpen, onClose, onSelectSkill, onUnselectSkill, selectedSkill: externalSelectedSkill, locationId }) => {
   const { characters } = useCharacter();
   const { user } = useAuth();
-  const [skills, setSkills] = useState<Skill[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { activeCombatRound, fetchActiveCombatRound } = useCombatRounds();
+  const { activeEvent, fetchActiveEvent } = useEvents();
+  const { acquiredSkills, loading, error, fetchAcquiredSkills } = useSkills();
   const [currentlySelectedSkill, setCurrentlySelectedSkill] = useState<Skill | null>(null);
   const [selectedTarget, setSelectedTarget] = useState<ChatUser | null>(null);
   const [showTargetSelection, setShowTargetSelection] = useState(false);
-  const [activeRound, setActiveRound] = useState<CombatRound | null>(null);
-  const [activeEvent, setActiveEvent] = useState<ActiveEvent | null>(null);
-  
+
   const { users: chatUsers, loading: usersLoading } = useChatUsers(locationId || '');
 
   const activeCharacter = characters.find(char => char.isActive);
@@ -67,68 +54,31 @@ export const SkillsModal: React.FC<SkillsModalProps> = ({ isOpen, onClose, onSel
   const availableSkills = useMemo(() => {
     if (!activeEvent) {
       // Outside of events, only allow "self", "none", and "any" target skills
-      return skills.filter(skill => skill.target !== 'other');
+      return acquiredSkills.filter(skill => skill.target !== 'other');
     }
     // During events, all skills are available
-    return skills;
-  }, [skills, activeEvent]);
+    return acquiredSkills;
+  }, [acquiredSkills, activeEvent]);
 
   useEffect(() => {
-    const fetchSkills = async () => {
-      if (!activeCharacter) return;
-
-      try {
-        const response = await api.get(`/character-skills/${activeCharacter.id}/acquired-skills?include=branch,type`);
-        setSkills(response.data as Skill[]);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to fetch skills');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    if (isOpen) {
-      fetchSkills();
+    if (isOpen && activeCharacter) {
+      fetchAcquiredSkills(activeCharacter.id, 'branch,type');
     }
-  }, [isOpen, activeCharacter]);
+  }, [isOpen, activeCharacter, fetchAcquiredSkills]);
 
   // Check for active combat round
   useEffect(() => {
-    const fetchActiveRound = async () => {
-      if (!locationId) return;
-      
-      try {
-        const response = await api.get(`/combat/rounds/active/${locationId}`);
-        setActiveRound((response.data as { round: CombatRound }).round);
-      } catch {
-        console.error('Error fetching active round');
-        setActiveRound(null);
-      }
-    };
-
     if (isOpen && locationId) {
-      fetchActiveRound();
+      fetchActiveCombatRound(locationId);
     }
-  }, [isOpen, locationId]);
+  }, [isOpen, locationId, fetchActiveCombatRound]);
 
   // Check for active event
   useEffect(() => {
-    const fetchActiveEvent = async () => {
-      if (!locationId) return;
-      
-      try {
-        const response = await api.get(`/events/active/${locationId}`);
-        setActiveEvent((response.data as { event: ActiveEvent }).event);
-      } catch {
-        console.error('Error fetching active event');
-        setActiveEvent(null);
-      }
-    };
-
     if (isOpen && locationId) {
-      fetchActiveEvent();
+      fetchActiveEvent(locationId);
     }
-  }, [isOpen, locationId]);
+  }, [isOpen, locationId, fetchActiveEvent]);
 
   const handleSkillClick = (skill: Skill) => {
     // Check if skill is restricted outside of events
@@ -183,11 +133,11 @@ export const SkillsModal: React.FC<SkillsModalProps> = ({ isOpen, onClose, onSel
           </button>
         </div>
 
-        {activeRound && !currentlySelectedSkill && (
+        {activeCombatRound && !currentlySelectedSkill && (
           <div className="combat-notice">
             <div className="combat-info">
               <span className="combat-icon"></span>
-              <span>Combat Round {activeRound.roundNumber} is active! Selected skills will be submitted to combat when you send your message.</span>
+              <span>Combat Round {activeCombatRound.roundNumber} is active! Selected skills will be submitted to combat when you send your message.</span>
             </div>
           </div>
         )}
@@ -198,7 +148,7 @@ export const SkillsModal: React.FC<SkillsModalProps> = ({ isOpen, onClose, onSel
           <div className="error">{error}</div>
         ) : !activeCharacter ? (
           <div className="no-skills">No active character selected.</div>
-        ) : skills.length === 0 ? (
+        ) : acquiredSkills.length === 0 ? (
           <div className="no-skills">No skills acquired yet.</div>
         ) : currentlySelectedSkill ? (
           <div className="skill-selection">
@@ -288,13 +238,13 @@ export const SkillsModal: React.FC<SkillsModalProps> = ({ isOpen, onClose, onSel
               />
             ))}
             
-            {!activeEvent && skills.length > availableSkills.length && (
+            {!activeEvent && acquiredSkills.length > availableSkills.length && (
               <div className="restricted-skills-notice">
                 <div className="notice-icon"></div>
                 <div className="notice-text">
                   <strong>Some skills are restricted</strong>
                   <p>Skills that target others are only available during active events.</p>
-                  <p>Restricted skills: {skills.length - availableSkills.length}</p>
+                  <p>Restricted skills: {acquiredSkills.length - availableSkills.length}</p>
                 </div>
               </div>
             )}

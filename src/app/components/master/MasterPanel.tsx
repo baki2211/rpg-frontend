@@ -1,62 +1,11 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../utils/AuthContext';
 import { useChatUsers } from '../../hooks/useChatUsers';
+import { useEngineLogs } from '../../contexts/EngineLogsContext';
+import { useCombatRounds } from '../../contexts/CombatRoundsContext';
+import { useEvents } from '../../contexts/EventsContext';
 import './MasterPanel.css';
-import { api } from '../../../services/apiClient';
 
-interface SkillEngineLog {
-  id: string;
-  timestamp: Date;
-  type: 'skill_use' | 'clash' | 'damage' | 'effect';
-  actor: string;
-  target?: string;
-  skill?: string;
-  damage?: number;
-  effects?: string[];
-  details: string;
-}
-
-interface CombatRound {
-  id: number;
-  roundNumber: number;
-  status: string;
-  resolvedAt?: string;
-  resolutionData?: {
-    summary?: {
-      totalActions: number;
-      clashCount: number;
-      independentCount: number;
-    };
-  };
-}
-
-interface Event {
-  id: number;
-  title: string;
-  type: 'lore' | 'duel' | 'quest';
-  description?: string;
-  status: 'active' | 'closed';
-  createdAt: string;
-  closedAt?: string;
-  eventData?: {
-    totalRounds: number;
-    resolvedRounds: number;
-    cancelledRounds: number;
-    totalActions: number;
-  };
-  session?: {
-    status: 'frozen' | 'open';
-  };
-}
-
-interface CombatAction {
-  id: number;
-  characterData: { name: string };
-  skillData: { name: string; target: string };
-  targetData?: { name: string };
-  finalOutput: number;
-  rollQuality: string;
-}
 
 interface CharacterHP {
   characterId: string;
@@ -95,6 +44,28 @@ export const MasterPanel: React.FC<MasterPanelProps> = ({
 }) => {
   const { user } = useAuth();
   const { users: chatUsers } = useChatUsers(locationId);
+  const { logs: engineLogs, fetchLogsByLocation } = useEngineLogs();
+  const {
+    activeCombatRound,
+    resolvedCombatRounds,
+    roundActions,
+    fetchActiveCombatRound,
+    fetchResolvedCombatRounds,
+    createCombatRound,
+    resolveCombatRound: resolveCombatRoundContext,
+    cancelCombatRound: cancelCombatRoundContext
+  } = useCombatRounds();
+  const {
+    activeEvent,
+    recentEvents,
+    fetchActiveEvent,
+    fetchRecentEvents,
+    createEvent: createEventContext,
+    closeEvent: closeEventContext,
+    freezeEvent: freezeEventContext,
+    unfreezeEvent: unfreezeEventContext
+  } = useEvents();
+
   const [activeTab, setActiveTab] = useState<'logs' | 'hp' | 'status' | 'combat' | 'events'>('logs');
   const [characterHP, setCharacterHP] = useState<CharacterHP[]>([]);
   const [selectedCharacter, setSelectedCharacter] = useState<string>('');
@@ -102,22 +73,15 @@ export const MasterPanel: React.FC<MasterPanelProps> = ({
   const [healingAmount, setHealingAmount] = useState<number>(0);
   const [selectedStatus, setSelectedStatus] = useState<string>('');
   const [statusDuration, setStatusDuration] = useState<number>(1);
-  const [engineLogs, setEngineLogs] = useState<SkillEngineLog[]>([]);
 
-  // Combat state
-  const [activeRound, setActiveRound] = useState<CombatRound | null>(null);
-  const [roundActions, setRoundActions] = useState<CombatAction[]>([]);
-  const [resolvedRounds, setResolvedRounds] = useState<CombatRound[]>([]);
+  // Local loading states for UI feedback
   const [isCreatingRound, setIsCreatingRound] = useState(false);
   const [isResolvingRound, setIsResolvingRound] = useState(false);
-
-  // Event state
-  const [activeEvent, setActiveEvent] = useState<Event | null>(null);
-  const [recentEvents, setRecentEvents] = useState<Event[]>([]);
   const [isCreatingEvent, setIsCreatingEvent] = useState(false);
   const [isClosingEvent, setIsClosingEvent] = useState(false);
   const [isFreezingEvent, setIsFreezingEvent] = useState(false);
   const [isUnfreezingEvent, setIsUnfreezingEvent] = useState(false);
+
   const [eventForm, setEventForm] = useState({
     title: '',
     type: 'lore' as 'lore' | 'duel' | 'quest',
@@ -127,102 +91,17 @@ export const MasterPanel: React.FC<MasterPanelProps> = ({
   // Check if user has master permissions
   const isMaster = user?.role === 'master' || user?.role === 'admin';
 
-  // Fetch engine logs
-  const fetchEngineLogs = useCallback(async () => {
-    try {
-      const response = await api.get(`/engine-logs/location/${locationId}`);
-      
-      const responseData = response.data as { success: boolean; logs: Array<{
-        id: string;
-        type: 'skill_use' | 'clash' | 'damage' | 'effect';
-        actor: string;
-        target?: string;
-        skill?: string;
-        damage?: number;
-        effects?: string[];
-        details: string;
-        createdAt: string;
-      }> };
-      if (responseData.success) {
-        const logs = responseData.logs.map((log: {
-          id: string;
-          type: 'skill_use' | 'clash' | 'damage' | 'effect';
-          actor: string;
-          target?: string;
-          skill?: string;
-          damage?: number;
-          effects?: string[];
-          details: string;
-          createdAt: string;
-        }) => ({
-          ...log,
-          timestamp: new Date(log.createdAt)
-        }));
-        setEngineLogs(logs);
-      } else {
-        setEngineLogs([]);
-      }
-    } catch (error) {
-      console.error('MASTER PANEL: Error fetching engine logs:', error);
-      // Don't show error to user for empty logs - this is expected when no skills have been used
-      setEngineLogs([]);
-    }
-  }, [locationId]);
-
   // Load engine logs when the logs tab is active
   useEffect(() => {
     if (activeTab === 'logs' && isOpen) {
-      fetchEngineLogs();
+      fetchLogsByLocation(locationId);
       // Set up interval to refresh logs periodically
-      const interval = setInterval(fetchEngineLogs, 10000); // Refresh every 10 seconds
+      const interval = setInterval(() => fetchLogsByLocation(locationId), 10000); // Refresh every 10 seconds
       return () => clearInterval(interval);
     }
-  }, [activeTab, isOpen, locationId, fetchEngineLogs]);
+  }, [activeTab, isOpen, locationId, fetchLogsByLocation]);
 
-  // Combat functions
-  const fetchActiveRound = useCallback(async () => {
-    try {
-      const response = await api.get(`/combat/rounds/active/${locationId}`);
-      const responseData = response.data as { round: CombatRound & { actions?: CombatAction[] } };
-      setActiveRound(responseData.round);
-      if (responseData.round) {
-        setRoundActions(responseData.round.actions || []);
-      }
-    } catch (error) {
-      console.error('Error fetching active round:', error);
-    }
-  }, [locationId]);
-
-  const fetchResolvedRounds = useCallback(async () => {
-    try {
-      const response = await api.get(`/combat/rounds/resolved/${locationId}?limit=5`);
-      const responseData = response.data as { rounds: CombatRound[] };
-      setResolvedRounds(responseData.rounds || []);
-    } catch (error) {
-      console.error('Error fetching resolved rounds:', error);
-    }
-  }, [locationId]);
-
-  // Event functions
-  const fetchActiveEvent = useCallback(async () => {
-    try {
-      const response = await api.get(`/events/active/${locationId}`);
-      const responseData = response.data as { event: Event };
-      setActiveEvent(responseData.event);
-    } catch (error) {
-      console.error('Error fetching active event:', error);
-    }
-  }, [locationId]);
-
-  const fetchRecentEvents = useCallback(async () => {
-    try {
-      const response = await api.get(`/events/location/${locationId}?limit=5`);
-      const responseData = response.data as { events: Event[] };
-      setRecentEvents(responseData.events || []);
-    } catch (error) {
-      console.error('Error fetching recent events:', error);
-    }
-  }, [locationId]);
+  // No need for fetch functions - using context methods directly
 
   const createNewRound = async () => {
     if (!activeEvent) {
@@ -232,15 +111,8 @@ export const MasterPanel: React.FC<MasterPanelProps> = ({
 
     setIsCreatingRound(true);
     try {
-      const response = await api.post('/combat/rounds', {
-        locationId: parseInt(locationId),
-        eventId: activeEvent.id  // Pass the event ID explicitly
-      });
-      
-      const responseData = response.data as { success: boolean };
-      if (responseData.success) {
-        await fetchActiveRound();
-      }
+      await createCombatRound(parseInt(locationId), activeEvent.id);
+      await fetchActiveCombatRound(locationId);
     } catch (error) {
       console.error('MASTER PANEL: Error creating round:', error);
       alert('Failed to create combat round');
@@ -250,24 +122,20 @@ export const MasterPanel: React.FC<MasterPanelProps> = ({
   };
 
   const resolveRound = async () => {
-    if (!activeRound) return;
-    
+    if (!activeCombatRound) return;
+
     setIsResolvingRound(true);
     try {
-      const response = await api.post(`/combat/rounds/${activeRound.id}/resolve`, {});
-      
-              const responseData = response.data as { success: boolean };
-        if (responseData.success) {
-          // Refresh all combat data
-          await Promise.all([
-            fetchActiveRound(),
-            fetchResolvedRounds()
-          ]);
-          // Trigger a refresh of engine logs to pick up new logs
-          if (activeTab === 'logs') {
-            await fetchEngineLogs();
-          }
-        }
+      await resolveCombatRoundContext(activeCombatRound.id);
+      // Refresh all combat data
+      await Promise.all([
+        fetchActiveCombatRound(locationId),
+        fetchResolvedCombatRounds(locationId)
+      ]);
+      // Trigger a refresh of engine logs to pick up new logs
+      if (activeTab === 'logs') {
+        await fetchLogsByLocation(locationId);
+      }
     } catch (error) {
       console.error('MASTER PANEL: Error resolving round:', error);
       alert('Failed to resolve combat round');
@@ -277,16 +145,11 @@ export const MasterPanel: React.FC<MasterPanelProps> = ({
   };
 
   const cancelRound = async () => {
-    if (!activeRound) return;
-    
+    if (!activeCombatRound) return;
+
     try {
-      const response = await api.post(`/combat/rounds/${activeRound.id}/cancel`, {});
-      
-              const responseData = response.data as { success: boolean };
-        if (responseData.success) {
-          setActiveRound(null);
-          setRoundActions([]);
-        }
+      await cancelCombatRoundContext(activeCombatRound.id);
+      await fetchActiveCombatRound(locationId);
     } catch (error) {
       console.error('Error cancelling round:', error);
       alert('Failed to cancel combat round');
@@ -315,31 +178,31 @@ export const MasterPanel: React.FC<MasterPanelProps> = ({
   // Load combat data
   useEffect(() => {
     if (activeTab === 'combat') {
-      fetchActiveRound();
-      fetchResolvedRounds();
-      
+      fetchActiveCombatRound(locationId);
+      fetchResolvedCombatRounds(locationId);
+
       // Set up interval to refresh combat data periodically
       const interval = setInterval(() => {
-        fetchActiveRound();
-        fetchResolvedRounds();
+        fetchActiveCombatRound(locationId);
+        fetchResolvedCombatRounds(locationId);
       }, 5000); // Refresh every 5 seconds
-      
+
       return () => clearInterval(interval);
     }
-  }, [activeTab, locationId, fetchActiveRound, fetchResolvedRounds]);
+  }, [activeTab, locationId, fetchActiveCombatRound, fetchResolvedCombatRounds]);
 
   // Load event data
   useEffect(() => {
     if (activeTab === 'events') {
-      fetchActiveEvent();
-      fetchRecentEvents();
-      
+      fetchActiveEvent(locationId);
+      fetchRecentEvents(locationId);
+
       // Set up interval to refresh event data periodically
       const interval = setInterval(() => {
-        fetchActiveEvent();
-        fetchRecentEvents();
+        fetchActiveEvent(locationId);
+        fetchRecentEvents(locationId);
       }, 5000); // Refresh every 5 seconds
-      
+
       return () => clearInterval(interval);
     }
   }, [activeTab, locationId, fetchActiveEvent, fetchRecentEvents]);
@@ -352,18 +215,14 @@ export const MasterPanel: React.FC<MasterPanelProps> = ({
 
     setIsCreatingEvent(true);
     try {
-      const response = await api.post('/events', {
-        title: eventForm.title,
-        type: eventForm.type,
-        description: eventForm.description,
-        locationId: parseInt(locationId)
-      });
-      
-      const responseData = response.data as { success: boolean };
-      if (responseData.success) {
-        await fetchActiveEvent();
-        setEventForm({ title: '', type: 'lore', description: '' });
-      }
+      await createEventContext(
+        eventForm.title,
+        eventForm.type,
+        parseInt(locationId),
+        eventForm.description
+      );
+      await fetchActiveEvent(locationId);
+      setEventForm({ title: '', type: 'lore', description: '' });
     } catch (error) {
       console.error('Error creating event:', error);
       alert('Failed to create event');
@@ -374,16 +233,11 @@ export const MasterPanel: React.FC<MasterPanelProps> = ({
 
   const closeEvent = async () => {
     if (!activeEvent) return;
-    
+
     setIsClosingEvent(true);
     try {
-      const response = await api.post(`/events/${activeEvent.id}/close`, {});
-      
-      const responseData = response.data as { success: boolean };
-      if (responseData.success) {
-        setActiveEvent(null);
-        await fetchRecentEvents();
-      }
+      await closeEventContext(activeEvent.id);
+      await fetchRecentEvents(locationId);
     } catch (error) {
       console.error('Error closing event:', error);
       alert('Failed to close event');
@@ -394,16 +248,12 @@ export const MasterPanel: React.FC<MasterPanelProps> = ({
 
   const freezeEvent = async () => {
     if (!activeEvent) return;
-    
+
     setIsFreezingEvent(true);
     try {
-      const response = await api.post(`/events/${activeEvent.id}/freeze`, {});
-      
-      const responseData = response.data as { success: boolean };
-      if (responseData.success) {
-        await fetchActiveEvent();
-        alert('🧊 Event frozen! Session state has been saved and cleared.');
-      }
+      await freezeEventContext(activeEvent.id);
+      await fetchActiveEvent(locationId);
+      alert('🧊 Event frozen! Session state has been saved and cleared.');
     } catch (error) {
       console.error('Error freezing event:', error);
       alert('Failed to freeze event');
@@ -414,16 +264,12 @@ export const MasterPanel: React.FC<MasterPanelProps> = ({
 
   const unfreezeEvent = async () => {
     if (!activeEvent) return;
-    
+
     setIsUnfreezingEvent(true);
     try {
-      const response = await api.post(`/events/${activeEvent.id}/unfreeze`, {});
-      
-      const responseData = response.data as { success: boolean };
-      if (responseData.success) {
-        await fetchActiveEvent();
-        alert('Event unfrozen! Session state has been restored.');
-      }
+      await unfreezeEventContext(activeEvent.id);
+      await fetchActiveEvent(locationId);
+      alert('Event unfrozen! Session state has been restored.');
     } catch (error) {
       console.error('Error unfreezing event:', error);
       alert('Failed to unfreeze event');
@@ -872,10 +718,10 @@ export const MasterPanel: React.FC<MasterPanelProps> = ({
           <div className="combat-section">
             <h3>Combat Manager</h3>
             
-            {activeRound ? (
+            {activeCombatRound ? (
               <div className="active-round">
                 <div className="round-header">
-                  <h4>Round {activeRound.roundNumber} - Active</h4>
+                  <h4>Round {activeCombatRound.roundNumber} - Active</h4>
                   <div className="round-actions">
                     <button 
                       onClick={resolveRound}
@@ -948,11 +794,11 @@ export const MasterPanel: React.FC<MasterPanelProps> = ({
 
             <div className="resolved-rounds">
               <h4>Recent Resolved Rounds</h4>
-              {resolvedRounds.length === 0 ? (
+              {resolvedCombatRounds.length === 0 ? (
                 <div className="no-resolved">No resolved rounds yet</div>
               ) : (
                 <div className="resolved-list">
-                  {resolvedRounds.map((round) => (
+                  {resolvedCombatRounds.map((round) => (
                     <div key={round.id} className="resolved-round-card">
                       <div className="resolved-header">
                         <span className="round-number">Round {round.roundNumber}</span>
