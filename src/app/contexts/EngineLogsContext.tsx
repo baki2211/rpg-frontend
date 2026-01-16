@@ -2,7 +2,6 @@
 
 import React, { createContext, useContext, useState, useCallback, ReactNode } from 'react';
 import { engineLogsService, EngineLog } from '@/services/engineLogsService';
-import { useToast } from './ToastContext';
 
 interface EngineLogsContextValue {
   logs: EngineLog[];
@@ -29,7 +28,6 @@ export const EngineLogsProvider: React.FC<EngineLogsProviderProps> = ({ children
   const [logs, setLogs] = useState<EngineLog[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const { showError } = useToast();
 
   const fetchLogsByLocation = useCallback(async (locationId: string): Promise<EngineLog[]> => {
     try {
