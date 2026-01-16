@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import CharacterCreationModalPanel from '../../components/character/CrationModal/CharacterCreationModal';
+import CharacterCreationModalPanel from '../../components/character/CreationModal/CharacterCreationModal';
 import { useCharacter } from '../../contexts/CharacterContext';
 import CharacterCard from '../../components/character/Card/CharacterCard';
 import Modal from '../../components/common/Modal';
