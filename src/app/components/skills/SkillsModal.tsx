@@ -7,6 +7,7 @@ import { useAuth } from '@/app/utils/AuthContext';
 import { useCombatRounds } from '@/app/contexts/CombatRoundsContext';
 import { useEvents } from '@/app/contexts/EventsContext';
 import { useSkills } from '@/app/contexts/SkillsContext';
+import Modal from '../common/Modal';
 import './SkillsModal.css';
 
 interface SkillWithTarget extends Skill {
@@ -114,25 +115,20 @@ export const SkillsModal: React.FC<SkillsModalProps> = ({ isOpen, onClose, onSel
     setShowTargetSelection(false);
   };
 
-  if (!isOpen) return null;
+  const modalTitle = showTargetSelection && currentlySelectedSkill ?
+    `Select Target for ${currentlySelectedSkill.name}` :
+    currentlySelectedSkill ?
+      `Selected: ${currentlySelectedSkill.name}` :
+      'Your Skills';
 
   return (
-    <div className="modal-overlay">
-      <div className="modal-content">
-        <div className="modal-header">
-          <h2>
-            {showTargetSelection && currentlySelectedSkill ? 
-              `Select Target for ${currentlySelectedSkill.name}` : 
-              currentlySelectedSkill ? 
-                `Selected: ${currentlySelectedSkill.name}` : 
-                'Your Skills'
-            }
-          </h2>
-          <button onClick={onClose} className="close-button">
-            ×
-          </button>
-        </div>
-
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      title={modalTitle}
+      className="skills-modal"
+    >
+      <div className="skills-modal-content">
         {activeCombatRound && !currentlySelectedSkill && (
           <div className="combat-notice">
             <div className="combat-info">
@@ -251,6 +247,6 @@ export const SkillsModal: React.FC<SkillsModalProps> = ({ isOpen, onClose, onSel
           </div>
         )}
       </div>
-    </div>
+    </Modal>
   );
 }; 

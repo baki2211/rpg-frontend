@@ -1,7 +1,11 @@
+/* Skills Modal specific styling */
+.skills-modal {
+  max-width: 800px;
+  width: 90%;
+}
+
 .skills-modal-content {
-  padding: 1rem;
-  max-height: 70vh;
-  overflow-y: auto;
+  padding: 1rem 0;
 }
 
 .skills-list {
@@ -42,44 +46,7 @@
   color: #f1c40f;
 }
 
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 1000;
-}
-
-.modal-content {
-  background: white;
-  padding: 2rem;
-  border-radius: 8px;
-  max-width: 800px;
-  width: 90%;
-  max-height: 80vh;
-  overflow-y: auto;
-  position: relative;
-}
-
-.modal-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 1rem;
-}
-
-.close-button {
-  background: none;
-  border: none;
-  font-size: 1.5rem;
-  cursor: pointer;
-  padding: 0.5rem;
-}
+/* Removed duplicate modal styles - these are now handled by the common Modal component */
 
 .skills-grid {
   display: grid;
