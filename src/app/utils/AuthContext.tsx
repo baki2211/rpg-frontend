@@ -28,13 +28,24 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const authCheckInProgress = React.useRef(false);
+  const hasInitialized = React.useRef(false);
 
   const checkAuthStatus = async (retryCount = 0): Promise<void> => {
     // Prevent duplicate simultaneous auth checks
     if (authCheckInProgress.current) {
       return;
     }
+
+    // Prevent duplicate initialization (React Strict Mode protection)
+    if (retryCount === 0 && hasInitialized.current) {
+      setIsLoading(false);
+      return;
+    }
+
     authCheckInProgress.current = true;
+    if (retryCount === 0) {
+      hasInitialized.current = true;
+    }
     try {
       setIsLoading(true);
       setError(null);
@@ -57,9 +68,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     } catch (error: unknown) {
       const axiosError = error as { code?: string; response?: { status: number }; message?: string };
 
-      // Handle rate limiting
+      // Handle rate limiting - don't retry automatically
       if (axiosError.response?.status === 429) {
         setError('Too many requests. Please wait a moment before trying again.');
+        setIsLoading(false);
+        authCheckInProgress.current = false;
         // Don't clear auth state for rate limiting
         return;
       }

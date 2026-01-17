@@ -25,20 +25,35 @@ interface RegisterData {
 }
 
 class AuthService {
-  async login(username: string, password: string): Promise<AuthUser> {
-    const loginResponse = await api.post<LoginResponse>('/auth/login', {
-      username,
-      password,
-    });
+  private pendingAuthCheck: Promise<AuthUser> | null = null;
+  private pendingLogin: Promise<AuthUser> | null = null;
+  private pendingRefresh: Promise<LoginResponse> | null = null;
 
-    // Store token if received
-    if (loginResponse.data.token) {
-      tokenService.setToken(loginResponse.data.token, loginResponse.data.user);
+  async login(username: string, password: string): Promise<AuthUser> {
+    // Prevent duplicate login requests
+    if (this.pendingLogin) {
+      return this.pendingLogin;
     }
 
-    // Fetch complete user data
-    const userResponse = await api.get<AuthUser>('/protected');
-    return userResponse.data;
+    this.pendingLogin = (async () => {
+      const loginResponse = await api.post<LoginResponse>('/auth/login', {
+        username,
+        password,
+      });
+
+      // Store token if received
+      if (loginResponse.data.token) {
+        tokenService.setToken(loginResponse.data.token, loginResponse.data.user);
+      }
+
+      // Fetch complete user data
+      const userResponse = await api.get<AuthUser>('/protected');
+      return userResponse.data;
+    })().finally(() => {
+      this.pendingLogin = null;
+    });
+
+    return this.pendingLogin;
   }
 
   async logout(): Promise<void> {
@@ -51,18 +66,38 @@ class AuthService {
   }
 
   async checkAuth(): Promise<AuthUser> {
-    const response = await api.get<AuthUser>('/protected');
-    return response.data;
+    // Deduplicate simultaneous auth checks
+    if (this.pendingAuthCheck) {
+      return this.pendingAuthCheck;
+    }
+
+    this.pendingAuthCheck = api.get<AuthUser>('/protected')
+      .then(response => response.data)
+      .finally(() => {
+        this.pendingAuthCheck = null;
+      });
+
+    return this.pendingAuthCheck;
   }
 
   async refreshToken(): Promise<LoginResponse> {
-    const response = await api.post<LoginResponse>('/auth/refresh');
-
-    if (response.data.token) {
-      tokenService.setToken(response.data.token, response.data.user);
+    // Prevent duplicate refresh requests
+    if (this.pendingRefresh) {
+      return this.pendingRefresh;
     }
 
-    return response.data;
+    this.pendingRefresh = api.post<LoginResponse>('/auth/refresh')
+      .then(response => {
+        if (response.data.token) {
+          tokenService.setToken(response.data.token, response.data.user);
+        }
+        return response.data;
+      })
+      .finally(() => {
+        this.pendingRefresh = null;
+      });
+
+    return this.pendingRefresh;
   }
 }
 

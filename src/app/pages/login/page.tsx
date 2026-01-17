@@ -13,6 +13,7 @@ const Login = () => {
   const [message, setMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const { setIsAuthenticated, setUser, isAuthenticated } = useAuth();
+  const loginInProgress = React.useRef(false);
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -22,6 +23,13 @@ const Login = () => {
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Prevent duplicate submissions
+    if (loginInProgress.current) {
+      return;
+    }
+
+    loginInProgress.current = true;
     setIsLoading(true);
     setMessage('');
 
@@ -38,10 +46,16 @@ const Login = () => {
         router.push('/pages/dashboard');
       }, 1000);
     } catch (error: unknown) {
-      const axiosError = error as { response?: { data?: { message?: string } } };
-      setMessage(axiosError.response?.data?.message || 'Login failed.');
+      const axiosError = error as { response?: { data?: { message?: string }; status?: number } };
+
+      if (axiosError.response?.status === 429) {
+        setMessage('Too many login attempts. Please wait a minute and try again.');
+      } else {
+        setMessage(axiosError.response?.data?.message || 'Login failed.');
+      }
     } finally {
       setIsLoading(false);
+      loginInProgress.current = false;
     }
   };
 
