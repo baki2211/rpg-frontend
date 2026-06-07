@@ -1,28 +1,6 @@
 import { api } from './apiClient';
 import { tokenService } from './tokenService';
-
-interface LoginResponse {
-  token?: string;
-  user?: {
-    id: number;
-    username: string;
-    role: string;
-  };
-}
-
-interface AuthUser {
-  user: {
-    id: string;
-    username: string;
-    role: string;
-  };
-}
-
-interface RegisterData {
-  username: string;
-  password: string;
-  email?: string;
-}
+import { AuthUser, LoginResponse, RegisterData } from '../types/auth';
 
 class AuthService {
   private pendingAuthCheck: Promise<AuthUser> | null = null;

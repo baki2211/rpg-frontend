@@ -40,7 +40,7 @@ const Login = () => {
       setUsername('');
       setPassword('');
       setIsAuthenticated(true);
-      setUser(authData.user);
+      setUser(authData);
 
       setTimeout(() => {
         router.push('/pages/dashboard');

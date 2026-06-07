@@ -3,28 +3,30 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { authService } from "../../services/authService";
 import { tokenService } from "../../services/tokenService";
+import { AuthUser, AuthContextType } from "../../types/auth";
 
-interface User {
-  id: string;
-  username: string;
-  role: string; // Include the user's role (e.g., 'admin', 'user')
+interface ApiError extends Error {
+  code?: string;
+  response?: { status: number };
 }
 
-interface AuthContextType {
-  isAuthenticated: boolean;
-  setIsAuthenticated: React.Dispatch<React.SetStateAction<boolean>>;
-  user: User | null; // Add user to context
-  setUser: React.Dispatch<React.SetStateAction<User | null>>; // Setter for user
-  isLoading: boolean; // Add loading state
-  error: string | null; // Add error state
-  retryAuth: () => void; // Add retry function
-}
+const throwNotInProvider = (): never => {
+  throw new Error('useAuth must be used within an AuthProvider');
+};
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
+const AuthContext = createContext<AuthContextType>({
+  isAuthenticated: false,
+  setIsAuthenticated: throwNotInProvider,
+  user: null,
+  setUser: throwNotInProvider,
+  isLoading: true,
+  error: null,
+  retryAuth: throwNotInProvider,
+});
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<AuthUser | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const authCheckInProgress = React.useRef(false);
@@ -59,46 +61,40 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         const authData = await authService.checkAuth();
 
         setIsAuthenticated(true);
-        setUser(authData.user);
+        setUser(authData);
       } else {
         // No stored token, clear auth state
         setIsAuthenticated(false);
         setUser(null);
       }
-    } catch (error: unknown) {
-      const axiosError = error as { code?: string; response?: { status: number }; message?: string };
+    } catch (err) {
+      if (!(err instanceof Error)) return;
+      const apiErr = err as ApiError;
 
-      // Handle rate limiting - don't retry automatically
-      if (axiosError.response?.status === 429) {
+      if (apiErr.response?.status === 429) {
         setError('Too many requests. Please wait a moment before trying again.');
         setIsLoading(false);
         authCheckInProgress.current = false;
-        // Don't clear auth state for rate limiting
         return;
       }
 
-      // Only clear auth on actual authentication failures
-      if (axiosError.response?.status === 401 || axiosError.response?.status === 403) {
+      if (apiErr.response?.status === 401 || apiErr.response?.status === 403) {
         tokenService.clearAuth();
         setIsAuthenticated(false);
         setUser(null);
         setError('Session expired. Please log in again.');
-      } else if (axiosError.code === 'ECONNREFUSED' || axiosError.code === 'ECONNABORTED' ||
-                 axiosError.message?.includes('Network Error') || axiosError.message?.includes('timeout')) {
-        // Network errors - don't clear auth, but show appropriate message
+      } else if (apiErr.code === 'ECONNREFUSED' || apiErr.code === 'ECONNABORTED' ||
+                 apiErr.message.includes('Network Error') || apiErr.message.includes('timeout')) {
         if (retryCount < 3) {
-          // Retry with exponential backoff
-          const delay = Math.pow(2, retryCount) * 1000; // 1s, 2s, 4s
+          const delay = Math.pow(2, retryCount) * 1000;
           setError(`Connection issue. Retrying in ${delay/1000}s...`);
           setTimeout(() => checkAuthStatus(retryCount + 1), delay);
           return;
         } else {
           setError('Connection lost. Your session is preserved. Check your network connection.');
-          // Keep current auth state - user might still be authenticated when connection returns
         }
       } else {
-        // Other errors - keep auth state but show error
-        setError(axiosError.message || 'Authentication check failed. Your session is preserved.');
+        setError(apiErr.message || 'Authentication check failed. Your session is preserved.');
       }
     } finally {
       if (retryCount === 0) { // Only set loading false on initial call, not retries
@@ -131,10 +127,4 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   );
 };
 
-export const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
-  return context;
-};
+export const useAuth = () => useContext(AuthContext);

@@ -48,7 +48,7 @@ export const PresenceProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   // Update current user when auth changes
   useEffect(() => {
     if (isAuthenticated && user) {
-      setCurrentUser({ id: user.id, username: user.username });
+      setCurrentUser({ id: String(user.id), username: user.username });
     } else {
       setCurrentUser(null);
       setOnlineUsers([]);

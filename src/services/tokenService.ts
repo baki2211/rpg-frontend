@@ -1,11 +1,6 @@
 const TOKEN_KEY = 'auth_token';
 const USER_KEY = 'auth_user';
-
-interface User {
-  id: number;
-  username: string;
-  role: string;
-}
+import { AuthUser } from '../types/auth';
 
 // Helper function to decode JWT without verification (for expiration check)
 const decodeToken = (token: string) => {
@@ -26,7 +21,7 @@ const decodeToken = (token: string) => {
 
 export const tokenService = {
   // Store token and user data
-  setToken: (token: string, user?: User) => {
+  setToken: (token: string, user?: AuthUser) => {
     if (typeof window !== 'undefined') {
       localStorage.setItem(TOKEN_KEY, token);
       if (user) {
@@ -44,7 +39,7 @@ export const tokenService = {
   },
 
   // Get stored user data
-  getUser: (): User | null => {
+  getUser: (): AuthUser | null => {
     if (typeof window !== 'undefined') {
       const userData = localStorage.getItem(USER_KEY);
       return userData ? JSON.parse(userData) : null;
