@@ -54,9 +54,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       
       // First check if we have a stored token
       const storedToken = tokenService.getToken();
-      const storedUser = tokenService.getUser();
-      
-      if (storedToken && storedUser) {
+
+      if (storedToken) {
         // We have a stored token, let's verify it's still valid
         const authData = await authService.checkAuth();
 

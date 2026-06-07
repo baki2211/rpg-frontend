@@ -3,6 +3,7 @@ import { usePathname } from 'next/navigation';
 import { useAuth } from '../utils/AuthContext';
 import { getLocationFromPath } from '../../utils/locationUtils';
 import { API_CONFIG } from '../../config/api';
+import { api } from '../../services/apiClient';
 
 // Export the PresenceUser interface
 export interface PresenceUser {
@@ -121,15 +122,7 @@ export const PresenceProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       heartbeatIntervalRef.current = setInterval(async () => {
         if (isAuthenticated && currentUser) {
           try {
-            const response = await fetch(`${API_CONFIG.baseUrl}/api/presence/heartbeat`, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ userId: currentUser.id })
-            });
-            
-            if (!response.ok) {
-              throw new Error('Heartbeat failed');
-            }
+            await api.post('/presence/heartbeat', { userId: currentUser.id });
           } catch (error) {
             console.error('Heartbeat error:', error);
             // If heartbeat fails, try to reconnect
@@ -148,11 +141,11 @@ export const PresenceProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
       // Update location
       const location = await getLocationFromPath(pathname);
-      await fetch(`${API_CONFIG.baseUrl}/api/presence/location`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId, username, location })
-      });
+      try {
+        await api.post('/presence/location', { userId, username, location });
+      } catch (error) {
+        console.error('Error sending location on connect:', error);
+      }
 
     } catch (error) {
       console.error('Error connecting to presence system:', error);
@@ -165,14 +158,10 @@ export const PresenceProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   useEffect(() => {
     if (isAuthenticated && currentUser && connectionStatus === 'connected') {
       getLocationFromPath(pathname).then((location: string) => {
-        fetch(`${API_CONFIG.baseUrl}/api/presence/location`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ 
-            userId: currentUser.id, 
-            username: currentUser.username,
-            location 
-          })
+        api.post('/presence/location', {
+          userId: currentUser.id,
+          username: currentUser.username,
+          location
         }).catch(error => {
           console.error('Error updating location:', error);
         });

@@ -2,6 +2,11 @@ import { api } from './apiClient';
 import { tokenService } from './tokenService';
 import { AuthUser, LoginResponse, RegisterData } from '../types/auth';
 
+interface ProtectedResponse {
+  user: AuthUser;
+  message: string;
+}
+
 class AuthService {
   private pendingAuthCheck: Promise<AuthUser> | null = null;
   private pendingLogin: Promise<AuthUser> | null = null;
@@ -21,12 +26,12 @@ class AuthService {
 
       // Store token if received
       if (loginResponse.data.token) {
-        tokenService.setToken(loginResponse.data.token, loginResponse.data.user);
+        tokenService.setToken(loginResponse.data.token);
       }
 
       // Fetch complete user data
-      const userResponse = await api.get<AuthUser>('/protected');
-      return userResponse.data;
+      const userResponse = await api.get<ProtectedResponse>('/protected');
+      return userResponse.data.user;
     })().finally(() => {
       this.pendingLogin = null;
     });
@@ -49,8 +54,8 @@ class AuthService {
       return this.pendingAuthCheck;
     }
 
-    this.pendingAuthCheck = api.get<AuthUser>('/protected')
-      .then(response => response.data)
+    this.pendingAuthCheck = api.get<ProtectedResponse>('/protected')
+      .then(response => response.data.user)
       .finally(() => {
         this.pendingAuthCheck = null;
       });
@@ -67,7 +72,7 @@ class AuthService {
     this.pendingRefresh = api.post<LoginResponse>('/auth/refresh')
       .then(response => {
         if (response.data.token) {
-          tokenService.setToken(response.data.token, response.data.user);
+          tokenService.setToken(response.data.token);
         }
         return response.data;
       })
