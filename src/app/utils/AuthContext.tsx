@@ -4,11 +4,7 @@ import React, { createContext, useContext, useState, useEffect } from "react";
 import { authService } from "../../services/authService";
 import { tokenService } from "../../services/tokenService";
 import { AuthUser, AuthContextType } from "../../types/auth";
-
-interface ApiError extends Error {
-  code?: string;
-  response?: { status: number };
-}
+import { getErrorCode, getErrorMessage, getErrorStatus } from "../../utils/errorHandling";
 
 const throwNotInProvider = (): never => {
   throw new Error('useAuth must be used within an AuthProvider');
@@ -68,22 +64,23 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       }
     } catch (err) {
       if (!(err instanceof Error)) return;
-      const apiErr = err as ApiError;
 
-      if (apiErr.code === 'ERR_TOO_MANY_REQUESTS') {
+      const code = getErrorCode(err);
+      const status = getErrorStatus(err);
+
+      if (code === 'ERR_TOO_MANY_REQUESTS') {
         setError('Too many requests. Please wait a moment before trying again.');
         setIsLoading(false);
         authCheckInProgress.current = false;
         return;
       }
 
-      if (apiErr.response?.status === 401 || apiErr.response?.status === 403) {
+      if (status === 401 || status === 403) {
         tokenService.clearAuth();
         setIsAuthenticated(false);
         setUser(null);
         setError('Session expired. Please log in again.');
-      } else if (apiErr.code === 'ECONNREFUSED' || apiErr.code === 'ECONNABORTED' ||
-                 apiErr.message.includes('Network Error') || apiErr.message.includes('timeout')) {
+      } else if (code === 'ERR_NETWORK' || code === 'ERR_TIMEOUT') {
         if (retryCount < 3) {
           const delay = Math.pow(2, retryCount) * 1000;
           setError(`Connection issue. Retrying in ${delay/1000}s...`);
@@ -93,7 +90,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           setError('Connection lost. Your session is preserved. Check your network connection.');
         }
       } else {
-        setError(apiErr.message || 'Authentication check failed. Your session is preserved.');
+        setError(getErrorMessage(err, 'Authentication check failed. Your session is preserved.'));
       }
     } finally {
       if (retryCount === 0) { // Only set loading false on initial call, not retries

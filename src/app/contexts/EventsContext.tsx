@@ -3,6 +3,7 @@
 import React, { createContext, useContext, useState, useCallback, ReactNode } from 'react';
 import { eventsService, GameEvent } from '@/services/eventsService';
 import { useToast } from './ToastContext';
+import { getErrorMessage } from '../../utils/errorHandling';
 
 interface EventsContextValue {
   activeEvent: GameEvent | null;
@@ -30,12 +31,6 @@ export const useEvents = (): EventsContextValue => {
 interface EventsProviderProps {
   children: ReactNode;
 }
-
-const getErrorMessage = (err: unknown, defaultMessage: string): string => {
-  if (err instanceof Error) return err.message;
-  if (typeof err === 'string') return err;
-  return defaultMessage;
-};
 
 export const EventsProvider: React.FC<EventsProviderProps> = ({ children }) => {
   const [activeEvent, setActiveEvent] = useState<GameEvent | null>(null);

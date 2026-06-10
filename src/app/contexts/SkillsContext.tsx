@@ -4,6 +4,7 @@ import React, { createContext, useContext, useState, useCallback, ReactNode } fr
 import { skillsService } from '@/services/skillsService';
 import { Skill } from '@/types/character';
 import { useToast } from './ToastContext';
+import { getErrorMessage } from '../../utils/errorHandling';
 
 interface SkillsContextValue {
   acquiredSkills: Skill[];
@@ -28,12 +29,6 @@ export const useSkills = (): SkillsContextValue => {
 interface SkillsProviderProps {
   children: ReactNode;
 }
-
-const getErrorMessage = (err: unknown, defaultMessage: string): string => {
-  if (err instanceof Error) return err.message;
-  if (typeof err === 'string') return err;
-  return defaultMessage;
-};
 
 export const SkillsProvider: React.FC<SkillsProviderProps> = ({ children }) => {
   const [acquiredSkills, setAcquiredSkills] = useState<Skill[]>([]);

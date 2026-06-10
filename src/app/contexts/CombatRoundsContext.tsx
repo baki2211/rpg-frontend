@@ -3,6 +3,7 @@
 import React, { createContext, useContext, useState, useCallback, ReactNode } from 'react';
 import { combatRoundsService, CombatRound, CombatAction } from '@/services/combatRoundsService';
 import { useToast } from './ToastContext';
+import { getErrorMessage } from '../../utils/errorHandling';
 
 interface CombatRoundsContextValue {
   activeCombatRound: CombatRound | null;
@@ -30,12 +31,6 @@ export const useCombatRounds = (): CombatRoundsContextValue => {
 interface CombatRoundsProviderProps {
   children: ReactNode;
 }
-
-const getErrorMessage = (err: unknown, defaultMessage: string): string => {
-  if (err instanceof Error) return err.message;
-  if (typeof err === 'string') return err;
-  return defaultMessage;
-};
 
 export const CombatRoundsProvider: React.FC<CombatRoundsProviderProps> = ({ children }) => {
   const [activeCombatRound, setActiveCombatRound] = useState<CombatRound | null>(null);

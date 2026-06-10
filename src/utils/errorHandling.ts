@@ -1,10 +1,29 @@
-// Pulls a user-facing message off the apiClient envelope (see docs/api.md "Error Contract"),
-// falling back to a plain Error.message, raw string, or the supplied default.
+import type { ApiError, ApiErrorCode } from '../services/apiClient';
+
+export const isApiError = (error: unknown): error is ApiError => {
+  return (
+    error instanceof Error &&
+    error.name === 'ApiError' &&
+    'config' in error
+  );
+};
+
+export const getErrorCode = (error: unknown): ApiErrorCode | undefined => {
+  return isApiError(error) ? error.code : undefined;
+};
+
+export const getErrorStatus = (error: unknown): number | undefined => {
+  return isApiError(error) ? error.response?.status : undefined;
+};
+
 export const getErrorMessage = (error: unknown, fallbackMessage = 'An error occurred'): string => {
-  if (error && typeof error === 'object' && 'response' in error) {
-    const response = (error as { response?: { data?: { message?: string } } }).response;
-    if (response?.data?.message) {
-      return response.data.message;
+  if (isApiError(error)) {
+    const body = error.response?.data as { message?: string } | undefined;
+    if (body?.message) {
+      return body.message;
+    }
+    if (error.message) {
+      return error.message;
     }
   }
 

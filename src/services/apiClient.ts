@@ -24,10 +24,17 @@ interface RequestContext extends ApiRequestConfig {
   _retryCount?: number;
 }
 
-interface ApiError extends Error {
+export type ApiErrorCode =
+  | 'ERR_BAD_RESPONSE'
+  | 'ERR_TOO_MANY_REQUESTS'
+  | 'ERR_NETWORK'
+  | 'ERR_TIMEOUT'
+  | 'ERR_CANCELED';
+
+export interface ApiError extends Error {
   config: RequestContext;
   response?: ApiResponse<unknown>;
-  code?: string;
+  code?: ApiErrorCode;
 }
 
 const DEFAULT_HEADERS = {
@@ -86,7 +93,7 @@ const normalizeErrorMessage = (error: unknown, fallback: string) => {
 const createApiError = (
   message: string,
   config: RequestContext,
-  options: { code?: string; response?: ApiResponse<unknown> } = {}
+  options: { code?: ApiErrorCode; response?: ApiResponse<unknown> } = {}
 ): ApiError => {
   const error = new Error(message) as ApiError;
   error.name = 'ApiError';
@@ -300,8 +307,8 @@ const executeRequest = async <T>(
     }
 
     if (timedOut) {
-      const timeoutError = createApiError(`timeout of ${timeout}ms exceeded`, requestConfig, {
-        code: 'ECONNABORTED',
+      const timeoutError = createApiError(`Request timed out after ${timeout}ms`, requestConfig, {
+        code: 'ERR_TIMEOUT',
       });
 
       if (retryCount < MAX_NETWORK_RETRIES) {
@@ -320,7 +327,7 @@ const executeRequest = async <T>(
     }
 
     throw createApiError(
-      normalizeErrorMessage(error, 'Network Error'),
+      normalizeErrorMessage(error, 'Network request failed'),
       requestConfig,
       {
         code: 'ERR_NETWORK',

@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '../../utils/AuthContext';
 import { authService } from '../../../services/authService';
-import { getErrorMessage } from '../../../utils/errorHandling';
+import { getErrorCode, getErrorMessage } from '../../../utils/errorHandling';
 import './login.css';
 
 const Login = () => {
@@ -47,9 +47,7 @@ const Login = () => {
         router.push('/pages/dashboard');
       }, 1000);
     } catch (error: unknown) {
-      const code = (error as { code?: string }).code;
-
-      if (code === 'ERR_TOO_MANY_REQUESTS') {
+      if (getErrorCode(error) === 'ERR_TOO_MANY_REQUESTS') {
         setMessage('Too many login attempts. Please wait a minute and try again.');
       } else {
         setMessage(getErrorMessage(error, 'Login failed.'));
