@@ -29,11 +29,11 @@ const getApiConfig = () => {
 
   const baseUrl = shouldUseLocal
     ? (process.env.NEXT_PUBLIC_LOCAL_BACKEND_URL || 'http://localhost:5001')  // Local development URL
-    : 'https://arcanerealms.org';     // Production backend URL
+    : (process.env.NEXT_PUBLIC_BACKEND_URL || 'https://arcanerealms.org');     // Production backend URL
 
   const wsUrl = shouldUseLocal
     ? (process.env.NEXT_PUBLIC_LOCAL_WS_URL || 'ws://localhost:5001')  // Local WebSocket URL
-    : 'wss://arcanerealms.org';       // Production WebSocket URL
+    : (process.env.NEXT_PUBLIC_WS_URL || 'wss://arcanerealms.org');       // Production WebSocket URL
 
   return {
     baseUrl,

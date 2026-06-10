@@ -106,7 +106,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   useEffect(() => {
     checkAuthStatus();
-  }, []); // Run once on initialization
+  }); // Run once on initialization
 
   return (
     <AuthContext.Provider value={{ 
