@@ -28,7 +28,6 @@ interface ApiError extends Error {
   config: RequestContext;
   response?: ApiResponse<unknown>;
   code?: string;
-  isAxiosError?: boolean;
 }
 
 const DEFAULT_HEADERS = {
@@ -94,7 +93,6 @@ const createApiError = (
   error.config = config;
   error.code = options.code;
   error.response = options.response;
-  error.isAxiosError = true;
   return error;
 };
 
@@ -268,13 +266,16 @@ const executeRequest = async <T>(
     };
 
     if (!response.ok) {
+      const errorCode =
+        response.status === 429 ? 'ERR_TOO_MANY_REQUESTS' : 'ERR_BAD_RESPONSE';
+
       const error = createApiError(
         responseData && typeof responseData === 'object' && 'message' in (responseData as Record<string, unknown>)
           ? String((responseData as Record<string, unknown>).message)
           : `Request failed with status code ${response.status}`,
         requestConfig,
         {
-          code: `ERR_BAD_RESPONSE`,
+          code: errorCode,
           response: responseEnvelope,
         }
       );

@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '../../utils/AuthContext';
 import { authService } from '../../../services/authService';
+import { getErrorMessage } from '../../../utils/errorHandling';
 import './register.css';
 
 const Register = () => {
@@ -52,12 +53,7 @@ const Register = () => {
         router.push('/pages/login');
       }, 2000);
     } catch (error: unknown) {
-      if (error && typeof error === 'object' && 'response' in error) {
-        const axiosError = error as { response?: { data?: { message?: string } } };
-        setMessage(axiosError.response?.data?.message || 'Registration failed.');
-      } else {
-        setMessage('Registration failed.');
-      }
+      setMessage(getErrorMessage(error, 'Registration failed.'));
     } finally {
       setIsLoading(false);
     }

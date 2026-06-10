@@ -70,7 +70,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       if (!(err instanceof Error)) return;
       const apiErr = err as ApiError;
 
-      if (apiErr.response?.status === 429) {
+      if (apiErr.code === 'ERR_TOO_MANY_REQUESTS') {
         setError('Too many requests. Please wait a moment before trying again.');
         setIsLoading(false);
         authCheckInProgress.current = false;

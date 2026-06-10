@@ -3,13 +3,9 @@
 import React, { useState, useEffect } from 'react';
 import '../admin.css';
 import { api } from '../../../../services/apiClient';
+import type { AuthUser } from '../../../../types/auth';
 
-interface User {
-  id: number;
-  username: string;
-  role: string;
-  createdAt: string;
-}
+type User = AuthUser & { createdAt: string };
 
 const RolePanel: React.FC = () => {
   const [users, setUsers] = useState<User[]>([]);
