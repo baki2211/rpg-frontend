@@ -1,6 +1,8 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import ReactMarkdown from 'react-markdown';
+import rehypeSanitize from 'rehype-sanitize';
 import './WikiBrowser.css';
 import { api } from '../../../services/apiClient';
 
@@ -213,16 +215,6 @@ const WikiBrowser: React.FC = () => {
     });
   };
 
-  const renderMarkdown = (content: string) => {
-    return content
-      .replace(/^### (.*$)/gim, '<h3>$1</h3>')
-      .replace(/^## (.*$)/gim, '<h2>$1</h2>')
-      .replace(/^# (.*$)/gim, '<h1>$1</h1>')
-      .replace(/\*\*(.*)\*\*/gim, '<strong>$1</strong>')
-      .replace(/\*(.*)\*/gim, '<em>$1</em>')
-      .replace(/\n/gim, '<br>');
-  };
-
   if (loading && !navigation) {
     return (
       <div className="wiki-browser loading">
@@ -377,11 +369,9 @@ const WikiBrowser: React.FC = () => {
             </div>
 
             <div className="entry-content">
-              <div 
-                dangerouslySetInnerHTML={{ 
-                  __html: renderMarkdown(currentEntry.content) 
-                }} 
-              />
+              <ReactMarkdown rehypePlugins={[rehypeSanitize]}>
+                {currentEntry.content}
+              </ReactMarkdown>
             </div>
           </div>
         )}

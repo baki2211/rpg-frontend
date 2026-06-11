@@ -65,11 +65,9 @@ const UpdateUserPassword: React.FC<UpdateUserPasswordProps> = ({ isAdmin = true,
               setError(null);
               setSuccessMessage(null);
 
-              // For admin: use encrypted password from user object as oldPassword
-              // For user: use the oldPassword they entered
-              const oldPasswordValue = isAdmin
-                ? allUsers.find(u => u.id === selectedUserId)?.password || ''
-                : oldPassword;
+              // Admin path sends an empty oldPassword — server must authorize via the
+              // admin's session/role, not by accepting a stored hash from the client.
+              const oldPasswordValue = isAdmin ? '' : oldPassword;
 
               await updateUserPasswordContext(selectedUserId, oldPasswordValue, password);
               setSuccessMessage(`Password updated successfully!`);

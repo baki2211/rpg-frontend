@@ -2,7 +2,6 @@ export interface User {
   id: number;
   username: string;
   email: string;
-  password?: string; // Only included for admin operations
   createdAt?: string;
   updatedAt?: string;
 }

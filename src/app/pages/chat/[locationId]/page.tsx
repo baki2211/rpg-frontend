@@ -12,7 +12,7 @@ import { ChatUser, useChatUsers } from '@/app/hooks/useChatUsers';
 import { useToast } from '@/app/contexts/ToastContext';
 import { usePresence } from '@/app/contexts/PresenceContext';
 import './chat.css';
-import { WS_URL, API_CONFIG } from '../../../../config/api';
+import { WS_URL } from '../../../../config/api';
 import { api } from '../../../../services/apiClient';
 
 interface SkillEngineLogMessage {
@@ -85,52 +85,21 @@ const ChatPage = () => {
         return;
       }
 
+      let fetchedLocationName = `Location ${locationId}`;
       try {
-        // Get the location name from the API
         const response = await api.get(`/locations/byId/${locationId}`);
-        
-        const fetchedLocationName = (response.data as { location: { name: string } }).location?.name || 
-                                   (response.data as { name: string }).name || 
-                                   `Location ${locationId}`;
-
-        // Update presence system with the specific location
-        const presenceResponse = await fetch(`${API_CONFIG.baseUrl}/api/presence/location`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ 
-            userId: currentUser.id, 
-            username: currentUser.username,
-            location: fetchedLocationName
-          })
-        });
-
-        if (!presenceResponse.ok) {
-          const errorText = await presenceResponse.text();
-          console.error('Presence update failed:', { status: presenceResponse.status, error: errorText });
-        }
-        
-        // The useChatUsers hook will now handle filtering properly with the location name
+        fetchedLocationName = (response.data as { location: { name: string } }).location?.name ||
+                              (response.data as { name: string }).name ||
+                              fetchedLocationName;
       } catch (error) {
-        console.error('Error updating location for presence:', error);
-        // Fallback to generic location name
-        const fallbackName = `Location ${locationId}`;
-        
-        // Still try to update presence with fallback
-        if (currentUser) {
-          try {
-            await fetch(`${API_CONFIG.baseUrl}/api/presence/location`, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ 
-                userId: currentUser.id, 
-                username: currentUser.username,
-                location: fallbackName
-              })
-            });
-          } catch (presenceError) {
-            console.error('Failed to update presence with fallback location:', presenceError);
-          }
-        }
+        console.error('Error resolving location name for presence:', error);
+      }
+
+      // Server derives userId/username from the bearer token — do not pass them in the body.
+      try {
+        await api.post('/presence/location', { location: fetchedLocationName });
+      } catch (error) {
+        console.error('Presence update failed:', error);
       }
     };
 
@@ -175,10 +144,11 @@ const ChatPage = () => {
     const messageCheckInterval = setInterval(fetchMessages, 10000);
 
     const token = localStorage.getItem('auth_token');
-    const wsUrl = `${WS_URL}/ws/chat?locationId=${locationId}&userId=${user?.id || ''}&username=${encodeURIComponent(user?.username || '')}&token=${token}`;
-    
+    const wsUrl = `${WS_URL}/ws/chat?locationId=${locationId}`;
+
     webSocketServiceRef.current = new WebSocketService({
       url: wsUrl,
+      protocols: token ? [`bearer.${token}`] : undefined,
       onMessage: (message: JSON) => {
         const messageData = message as unknown as ChatMessage | SkillEngineLogMessage;
         
@@ -331,8 +301,6 @@ const ChatPage = () => {
     
     const message = {
       locationId,
-      userId: user.id,
-      username: user.username,
       message: sanitizedMessage,
       createdAt: new Date().toISOString(),
       skill: selectedSkill ? {

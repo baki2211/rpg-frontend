@@ -2,6 +2,7 @@ import { EventEmitter } from 'events';
 
 interface WebSocketOptions {
   url: string;
+  protocols?: string | string[];
   onMessage?: (message: JSON) => void;
   onError?: (error: Event) => void;
   onClose?: (event: CloseEvent) => void;
@@ -11,6 +12,7 @@ interface WebSocketOptions {
 export class WebSocketService extends EventEmitter {
   private socket: WebSocket | null = null;
   private url: string;
+  private protocols?: string | string[];
   private retryCount = 0;
   private retryDelay = 1000; // Start with 1 second
   private maxRetryDelay = 30000; // Max delay of 30 seconds
@@ -22,6 +24,7 @@ export class WebSocketService extends EventEmitter {
   constructor(private options: WebSocketOptions) {
     super();
     this.url = options.url;
+    this.protocols = options.protocols;
     this.connect();
   }
 
@@ -62,7 +65,9 @@ export class WebSocketService extends EventEmitter {
     this.isConnecting = true;
 
     try {
-      this.socket = new WebSocket(this.url);
+      this.socket = this.protocols !== undefined
+        ? new WebSocket(this.url, this.protocols)
+        : new WebSocket(this.url);
 
       // Set a connection timeout
       this.connectionTimeout = setTimeout(() => {
