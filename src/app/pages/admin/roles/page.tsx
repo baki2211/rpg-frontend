@@ -27,8 +27,9 @@ const RolePanel: React.FC = () => {
   };
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    fetchUsers();
+    (async () => {
+      await fetchUsers();
+    })();
   }, []);
 
   const updateUserRole = async (userId: number, newRole: string) => {

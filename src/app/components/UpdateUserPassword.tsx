@@ -33,20 +33,20 @@ const UpdateUserPassword: React.FC<UpdateUserPasswordProps> = ({ isAdmin = true,
 
       useEffect(() => {
         if (isAdmin) {
-          // eslint-disable-next-line react-hooks/set-state-in-effect
-          fetchUsers();
-        } else if (currentUserId) {
-          // For non-admin users, set their own ID
-           
-          setSelectedUserId(currentUserId);
+          (async () => {
+            await fetchUsers();
+          })();
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
-      }, [isAdmin, currentUserId]);
+      }, [isAdmin]);
+
+      // For non-admins the password change targets their own account; admins pick from the list.
+      const targetUserId = isAdmin ? selectedUserId : (currentUserId ?? null);
 
         const updateUserPassword = async (e: React.FormEvent) => {
             e.preventDefault();
 
-            if (!selectedUserId) {
+            if (!targetUserId) {
               setError('Please select a user');
               return;
             }
@@ -71,7 +71,7 @@ const UpdateUserPassword: React.FC<UpdateUserPasswordProps> = ({ isAdmin = true,
               // admin's session/role, not by accepting a stored hash from the client.
               const oldPasswordValue = isAdmin ? '' : oldPassword;
 
-              await updateUserPasswordContext(selectedUserId, oldPasswordValue, password);
+              await updateUserPasswordContext(targetUserId, oldPasswordValue, password);
               setSuccessMessage(`Password updated successfully!`);
 
               setPassword('');
@@ -171,7 +171,7 @@ const UpdateUserPassword: React.FC<UpdateUserPasswordProps> = ({ isAdmin = true,
           <button
             type="submit"
             className="register-button"
-            disabled={isLoading || loading || (!isAdmin && !selectedUserId)}
+            disabled={isLoading || loading || (!isAdmin && !targetUserId)}
           >
             {isLoading ? (<><span className="spinner"></span>Updating Password</>) : 
             (<>{isAdmin ? 'Update User Password' : 'Update My Password'}</>)}

@@ -44,8 +44,9 @@ const AdminMapPanel = () => {
     if (user && user.role !== 'admin') {
       router.push('/pages/dashboard');
     }
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    fetchMapsAndLocations();
+    (async () => {
+      await fetchMapsAndLocations();
+    })();
   }, [user, router]);
 
   const handleMapUpload = async (e: React.FormEvent) => {

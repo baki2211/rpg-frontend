@@ -28,8 +28,9 @@ const SkillBranchDashboard: React.FC = () => {
   };
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    fetchBranches();
+    (async () => {
+      await fetchBranches();
+    })();
   }, []);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {

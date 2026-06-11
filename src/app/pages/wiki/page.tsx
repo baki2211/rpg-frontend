@@ -129,9 +129,10 @@ const WikiBrowser: React.FC = () => {
   };
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    fetchNavigation();
-    // fetchTags();
+    (async () => {
+      await fetchNavigation();
+      // fetchTags();
+    })();
   }, []);
 
   // const fetchTags = async () => {

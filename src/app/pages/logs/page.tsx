@@ -59,8 +59,9 @@ const LogList = () => {
   };
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    fetchClosedSessions();
+    (async () => {
+      await fetchClosedSessions();
+    })();
   }, []);
 
   const openSessionLogPopup = async (session: Session) => {

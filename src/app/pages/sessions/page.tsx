@@ -63,8 +63,9 @@ const SessionList = () => {
   };
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    fetchSessions();
+    (async () => {
+      await fetchSessions();
+    })();
   }, []);
 
   const handleGoHere = (locationId: string) => {

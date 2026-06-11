@@ -71,8 +71,9 @@ const EnginePanel: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    fetchStats();
+    (async () => {
+      await fetchStats();
+    })();
   }, [fetchStats]);
 
   const handleCreate = async () => {
