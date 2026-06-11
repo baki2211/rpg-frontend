@@ -69,38 +69,18 @@ const SkillDashboard: React.FC = () => {
     isPassive: false
   });
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setLoading(true);
-        await Promise.all([
-          fetchSkills(),
-          fetchBranches(),
-          fetchTypes(),
-          fetchStatDefinitions()
-        ]);
-      } catch (error) {
-        console.error('Error fetching data:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchData();
-  }, []);
-
   const fetchStatDefinitions = async () => {
     try {
       const response = await api.get('/stat-definitions?category=primary_stat&activeOnly=true');
       setStatDefinitions(response.data as StatDefinition[]);
-      
+
       // Initialize required stats with all primary stats set to 0
       const initialRequiredStats: Record<string, number> = {};
       const statData = response.data as StatDefinition[];
       statData.forEach((stat: StatDefinition) => {
         initialRequiredStats[stat.internalName] = 0;
       });
-      
+
       setFormData(prev => ({
         ...prev,
         requiredStats: initialRequiredStats
@@ -136,6 +116,27 @@ const SkillDashboard: React.FC = () => {
       console.error('Error fetching skills:', error);
     }
   };
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        await Promise.all([
+          fetchSkills(),
+          fetchBranches(),
+          fetchTypes(),
+          fetchStatDefinitions()
+        ]);
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+     
+  }, []);
 
   // Add validation function for scaling stats
   const validateScalingStats = (newStats: string[], index: number, value: string): boolean => {

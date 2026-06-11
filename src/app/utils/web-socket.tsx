@@ -20,6 +20,7 @@ const useWebSocket = ({ locationId, username, onMessage, onError, onClose }: Web
   useEffect(() => {
     if (!locationId) {
       console.error('locationId is required for WebSocket connection.');
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setConnectionStatus('error');
       setErrorMessage('Missing locationId for WebSocket connection.');
       return;

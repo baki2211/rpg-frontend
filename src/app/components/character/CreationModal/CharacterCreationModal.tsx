@@ -61,6 +61,7 @@ const CharacterCreationModalPanel: React.FC<CharacterCreationModalPanelProps> = 
 
   useEffect(() => {
     if (user) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setCharacterData((prev) => ({
         ...prev,
         userId: user.id,
@@ -70,6 +71,7 @@ const CharacterCreationModalPanel: React.FC<CharacterCreationModalPanelProps> = 
 
   useEffect(() => {
     if (primaryStats.length > 0) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setCharacterData(prev => ({
         ...prev,
         stats: Object.fromEntries(primaryStats.map((d) => [d.internalName, d.defaultValue]))

@@ -52,6 +52,11 @@ const EnginePanel: React.FC = () => {
     sortOrder: 0
   });
 
+  const showMessage = (type: 'success' | 'error', text: string) => {
+    setMessage({ type, text });
+    setTimeout(() => setMessage(null), 3000);
+  };
+
   const fetchStats = useCallback(async () => {
     setLoading(true);
     try {
@@ -62,16 +67,13 @@ const EnginePanel: React.FC = () => {
     } finally {
       setLoading(false);
     }
+     
   }, []);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchStats();
   }, [fetchStats]);
-
-  const showMessage = (type: 'success' | 'error', text: string) => {
-    setMessage({ type, text });
-    setTimeout(() => setMessage(null), 3000);
-  };
 
   const handleCreate = async () => {
     try {

@@ -49,6 +49,7 @@ export const PresenceProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   // Update current user when auth changes
   useEffect(() => {
     if (isAuthenticated && user) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setCurrentUser({ id: String(user.id), username: user.username });
     } else {
       setCurrentUser(null);
@@ -113,6 +114,8 @@ export const PresenceProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         // Try to reconnect after 30 seconds (reduced frequency to prevent CPU overload)
         setTimeout(() => {
           if (isAuthenticated && currentUser && isPresenceEnabled) {
+            // Self-recursive: by the time this fires, `connect` is declared.
+            // eslint-disable-next-line react-hooks/immutability
             connect(currentUser.id, currentUser.username);
           }
         }, 30000);

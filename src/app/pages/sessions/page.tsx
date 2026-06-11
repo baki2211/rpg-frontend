@@ -47,10 +47,6 @@ const SessionList = () => {
   // Check if user has master permissions
   const isMaster = user?.role === 'master' || user?.role === 'admin';
 
-  useEffect(() => {
-    fetchSessions();
-  }, []);
-
   const fetchSessions = async () => {
     try {
       setLoading(true);
@@ -65,6 +61,11 @@ const SessionList = () => {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    fetchSessions();
+  }, []);
 
   const handleGoHere = (locationId: string) => {
     // Use window.location.href for reliable navigation

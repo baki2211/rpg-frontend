@@ -28,6 +28,11 @@ const RankPanel: React.FC = () => {
     hpPercent: 0
   });
 
+  const showMessage = (type: 'success' | 'error', text: string) => {
+    setMessage({ type, text });
+    setTimeout(() => setMessage(null), 3000);
+  };
+
   const fetchRanks = useCallback(async () => {
     setLoading(true);
     try {
@@ -39,16 +44,13 @@ const RankPanel: React.FC = () => {
     } finally {
       setLoading(false);
     }
+     
   }, []);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchRanks();
   }, [fetchRanks]);
-
-  const showMessage = (type: 'success' | 'error', text: string) => {
-    setMessage({ type, text });
-    setTimeout(() => setMessage(null), 3000);
-  };
 
   const handleSave = async (rank: Rank) => {
     try {

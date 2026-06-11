@@ -20,16 +20,6 @@ const UpdateUserPassword: React.FC<UpdateUserPasswordProps> = ({ isAdmin = true,
     const [error, setError] = useState<string | null>(null);
     const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
-      useEffect(() => {
-        if (isAdmin) {
-          fetchUsers();
-        } else if (currentUserId) {
-          // For non-admin users, set their own ID
-          setSelectedUserId(currentUserId);
-        }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-      }, [isAdmin, currentUserId]);
-
     const fetchUsers = async () => {
           try {
             setError(null);
@@ -40,6 +30,18 @@ const UpdateUserPassword: React.FC<UpdateUserPasswordProps> = ({ isAdmin = true,
             setError('Failed to fetch users. Make sure you have admin permissions.');
           }
         };
+
+      useEffect(() => {
+        if (isAdmin) {
+          // eslint-disable-next-line react-hooks/set-state-in-effect
+          fetchUsers();
+        } else if (currentUserId) {
+          // For non-admin users, set their own ID
+           
+          setSelectedUserId(currentUserId);
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+      }, [isAdmin, currentUserId]);
 
         const updateUserPassword = async (e: React.FormEvent) => {
             e.preventDefault();

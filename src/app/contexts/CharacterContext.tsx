@@ -210,6 +210,7 @@ export const CharacterProvider: React.FC<CharacterProviderProps> = ({ children }
   // Auto-fetch characters and races only when authenticated
   useEffect(() => {
     if (isAuthenticated && !authLoading) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       fetchCharacters();
       fetchActiveNPCs();
       fetchRaces();

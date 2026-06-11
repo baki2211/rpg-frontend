@@ -496,12 +496,6 @@ const WikiPanel: React.FC = () => {
   const [selectedSectionId, setSelectedSectionId] = useState<number | null>(null);
   const [showHierarchy, setShowHierarchy] = useState(false);
 
-  useEffect(() => {
-    fetchSections();
-    fetchEntries();
-    fetchStats();
-  }, []);
-
   const fetchSections = async () => {
     try {
       const response = await api.get<{success: boolean, data: WikiSection[]}>('/wiki/admin/sections');
@@ -533,6 +527,15 @@ const WikiPanel: React.FC = () => {
       console.error('Error fetching stats:', error);
     }
   };
+
+  useEffect(() => {
+    /* eslint-disable react-hooks/set-state-in-effect */
+    fetchSections();
+    fetchEntries();
+    fetchStats();
+    /* eslint-enable react-hooks/set-state-in-effect */
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const showMessage = (type: 'success' | 'error', text: string) => {
     setMessage({ type, text });

@@ -1,6 +1,9 @@
 import { API_CONFIG } from '../config/api';
 import { tokenService } from './tokenService';
 
+// Hardcoded so a 401-response body can never steer the redirect target.
+const LOGIN_REDIRECT_PATH = '/pages/login';
+
 type HttpMethod = 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH';
 
 export interface ApiRequestConfig {
@@ -291,7 +294,7 @@ const executeRequest = async <T>(
         tokenService.clearAuth();
 
         if (typeof window !== 'undefined') {
-          window.location.href = '/pages/login';
+          window.location.href = LOGIN_REDIRECT_PATH;
         }
       }
 

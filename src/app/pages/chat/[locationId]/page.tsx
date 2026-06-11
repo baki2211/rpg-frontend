@@ -143,12 +143,16 @@ const ChatPage = () => {
     fetchMessages();
     const messageCheckInterval = setInterval(fetchMessages, 10000);
 
-    const token = localStorage.getItem('auth_token');
     const wsUrl = `${WS_URL}/ws/chat?locationId=${locationId}`;
 
     webSocketServiceRef.current = new WebSocketService({
       url: wsUrl,
-      protocols: token ? [`bearer.${token}`] : undefined,
+      // Resolve lazily so reconnect attempts read the current token, not a
+      // stale snapshot from the initial connect.
+      protocols: () => {
+        const token = localStorage.getItem('auth_token');
+        return token ? [`bearer.${token}`] : undefined;
+      },
       onMessage: (message: JSON) => {
         const messageData = message as unknown as ChatMessage | SkillEngineLogMessage;
         
@@ -191,6 +195,7 @@ const ChatPage = () => {
         webSocketServiceRef.current.close();
       }
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [locationId, user?.id, user?.username, showError, showInfo, showSuccess]);
 
   const sanitizeMessage = (message: string) => {

@@ -42,14 +42,10 @@ const LogList = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    fetchClosedSessions();
-  }, []);
-
   const fetchClosedSessions = async () => {
     try {
       setLoading(true);
-      
+
       const response = await api.get('/sessions/closed');
       setSessions(response.data as Session[]);
       setError(null);
@@ -61,6 +57,11 @@ const LogList = () => {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    fetchClosedSessions();
+  }, []);
 
   const openSessionLogPopup = async (session: Session) => {
     try {

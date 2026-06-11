@@ -71,14 +71,10 @@ const NPCPanel: React.FC = () => {
     stats: {} as Record<string, number>
   });
 
-  useEffect(() => {
-    fetchData();
-  }, []);
-
   const fetchData = async () => {
     try {
       setLoading(true);
-      
+
       const [npcsResponse, racesResponse, statsResponse] = await Promise.all([
         api.get('/characters/npcs'),
         api.get('/admin/races'),
@@ -95,7 +91,7 @@ const NPCPanel: React.FC = () => {
         initialStats[stat.internalName] = stat.defaultValue;
       });
       setFormData(prev => ({ ...prev, stats: initialStats }));
-      
+
     } catch (error) {
       console.error('Error fetching data:', error);
       setError('Failed to load data');
@@ -103,6 +99,11 @@ const NPCPanel: React.FC = () => {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    fetchData();
+  }, []);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;

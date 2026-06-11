@@ -109,15 +109,10 @@ const WikiBrowser: React.FC = () => {
   const [view, setView] = useState<'navigation' | 'entry' | 'search' | 'tag'>('navigation');
   const [expandedSections, setExpandedSections] = useState<Set<number>>(new Set());
 
-  useEffect(() => {
-    fetchNavigation();
-    // fetchTags();
-  }, []);
-
   const fetchNavigation = async () => {
     try {
       const response = await api.get<{success: boolean, data: WikiNavigation}>('/wiki/navigation');
-      
+
       if (response.data && response.data.data && response.data.data.sections) {
         setNavigation(response.data.data);
         // Expand all sections by default
@@ -132,6 +127,12 @@ const WikiBrowser: React.FC = () => {
       setNavigation({ sections: [] });
     }
   };
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    fetchNavigation();
+    // fetchTags();
+  }, []);
 
   // const fetchTags = async () => {
   //   try {

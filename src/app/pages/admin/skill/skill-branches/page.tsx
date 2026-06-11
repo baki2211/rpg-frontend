@@ -18,10 +18,6 @@ const SkillBranchDashboard: React.FC = () => {
     description: ''
   });
 
-  useEffect(() => {
-    fetchBranches();
-  }, []);
-
   const fetchBranches = async () => {
     try {
       const response = await api.get('/skill-branches');
@@ -30,6 +26,11 @@ const SkillBranchDashboard: React.FC = () => {
       console.error('Error fetching skill branches');
     }
   };
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    fetchBranches();
+  }, []);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;

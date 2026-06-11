@@ -17,10 +17,6 @@ const SkillTypeDashboard: React.FC = () => {
     description: ''
   });
 
-  useEffect(() => {
-    fetchTypes();
-  }, []);
-
   const fetchTypes = async () => {
     try {
       const response = await api.get('/skill-types');
@@ -29,6 +25,11 @@ const SkillTypeDashboard: React.FC = () => {
       console.error('Error fetching skill types');
     }
   };
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    fetchTypes();
+  }, []);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;

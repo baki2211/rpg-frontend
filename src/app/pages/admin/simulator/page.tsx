@@ -67,10 +67,6 @@ const SkillSimulator: React.FC = () => {
     damage: number;
   } | null>(null);
 
-  useEffect(() => {
-    fetchData();
-  }, []);
-
   const fetchData = async () => {
     try {
       setLoading(true);
@@ -105,6 +101,11 @@ const SkillSimulator: React.FC = () => {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    fetchData();
+  }, []);
 
   const calculateSkillRankMultiplier = (uses: number): number => {
     if (uses < 20) return 1.0;

@@ -10,6 +10,8 @@ const NavMenu: React.FC = () => {
   const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
+    // SSR hydration guard: mark client after first commit.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setIsClient(true);
   }, []);
 

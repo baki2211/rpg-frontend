@@ -26,13 +26,6 @@ const AdminMapPanel = () => {
   const [selectedLocation, setSelectedLocation] = useState<Location | null>(null);
   const [errorMessage, setErrorMessage] = useState('');
 
-  useEffect(() => {
-    if (user && user.role !== 'admin') {
-      router.push('/pages/dashboard');
-    }
-    fetchMapsAndLocations();
-  }, [user, router]);
-
   const fetchMapsAndLocations = async () => {
     try {
       const response = await api.get('/maps');
@@ -46,6 +39,14 @@ const AdminMapPanel = () => {
       setErrorMessage('Failed to fetch maps and locations');
     }
   };
+
+  useEffect(() => {
+    if (user && user.role !== 'admin') {
+      router.push('/pages/dashboard');
+    }
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    fetchMapsAndLocations();
+  }, [user, router]);
 
   const handleMapUpload = async (e: React.FormEvent) => {
     e.preventDefault();
