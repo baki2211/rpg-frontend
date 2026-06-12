@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, type SubmitEvent } from 'react';
 import '../admin.css';
 import { api } from '../../../../services/apiClient';
 
@@ -146,7 +146,7 @@ const NPCPanel: React.FC = () => {
     });
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: SubmitEvent) => {
     e.preventDefault();
     try {
       const submitData = {

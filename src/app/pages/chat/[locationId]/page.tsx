@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, type SubmitEvent } from 'react';
 import { useAuth } from '../../../utils/AuthContext';
 import { useParams } from 'next/navigation';
 import { WebSocketService } from '../../../services/webSocketService';
@@ -298,7 +298,7 @@ const ChatPage = () => {
     showSuccess(`Applied ${status.name} status effect to character ${characterId} for ${status.duration} turns`);
   };
 
-  const handleSendMessage = (e: React.FormEvent) => {
+  const handleSendMessage = (e: SubmitEvent) => {
     e.preventDefault();
     if (!user || !newMessage.trim()) return;
 

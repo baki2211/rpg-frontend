@@ -1,5 +1,5 @@
 'use client';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, type SubmitEvent } from 'react';
 import '../../admin.css';
 import { api } from '../../../../../services/apiClient';
 
@@ -37,7 +37,7 @@ const SkillTypeDashboard: React.FC = () => {
     setFormData({ ...formData, [name]: value });
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: SubmitEvent) => {
     e.preventDefault();
     try {
       if (selectedType) {

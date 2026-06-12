@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, type SubmitEvent } from 'react';
 import './WikiPanel.css';
 import { api } from '../../../../services/apiClient';
 import {
@@ -543,7 +543,7 @@ const WikiPanel: React.FC = () => {
   };
 
   // Section handlers
-  const handleSectionSubmit = async (e: React.FormEvent) => {
+  const handleSectionSubmit = async (e: SubmitEvent) => {
     e.preventDefault();
     setLoading(true);
 
@@ -595,7 +595,7 @@ const WikiPanel: React.FC = () => {
   };
 
   // Entry handlers
-  const handleEntrySubmit = async (e: React.FormEvent) => {
+  const handleEntrySubmit = async (e: SubmitEvent) => {
     e.preventDefault();
     setLoading(true);
 

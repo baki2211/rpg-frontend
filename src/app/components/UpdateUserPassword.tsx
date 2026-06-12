@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, type SubmitEvent } from 'react';
 import { useUser } from '../contexts/UserContext';
 import '../pages/register/register.css';
 import '../pages/admin/admin.css';
@@ -11,7 +11,7 @@ interface UpdateUserPasswordProps {
 }
 
 const UpdateUserPassword: React.FC<UpdateUserPasswordProps> = ({ isAdmin = true, currentUserId }) => {
-    const { allUsers, loading, getAllUsers, updateUserPassword: updateUserPasswordContext } = useUser();
+    const { allUsers, loading, getAllUsers, updateUserPassword: updateUserPasswordContext, adminResetUserPassword } = useUser();
     const [selectedUserId, setSelectedUserId] = useState<number | null>(null);
     const [oldPassword, setOldPassword] = useState('');
     const [password, setPassword] = useState('');
@@ -43,7 +43,7 @@ const UpdateUserPassword: React.FC<UpdateUserPasswordProps> = ({ isAdmin = true,
       // For non-admins the password change targets their own account; admins pick from the list.
       const targetUserId = isAdmin ? selectedUserId : (currentUserId ?? null);
 
-        const updateUserPassword = async (e: React.FormEvent) => {
+        const updateUserPassword = async (e: SubmitEvent) => {
             e.preventDefault();
 
             if (!targetUserId) {
@@ -67,11 +67,13 @@ const UpdateUserPassword: React.FC<UpdateUserPasswordProps> = ({ isAdmin = true,
               setError(null);
               setSuccessMessage(null);
 
-              // Admin path sends an empty oldPassword — server must authorize via the
-              // admin's session/role, not by accepting a stored hash from the client.
-              const oldPasswordValue = isAdmin ? '' : oldPassword;
-
-              await updateUserPasswordContext(targetUserId, oldPasswordValue, password);
+              // Admin path uses a dedicated reset endpoint that authorizes via the admin's
+              // session/role and bypasses the old-password check on the server.
+              if (isAdmin) {
+                await adminResetUserPassword(targetUserId, password);
+              } else {
+                await updateUserPasswordContext(targetUserId, oldPassword, password);
+              }
               setSuccessMessage(`Password updated successfully!`);
 
               setPassword('');

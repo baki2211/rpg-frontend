@@ -34,6 +34,10 @@ class UserService {
   async updateUserPassword(userId: number, oldPassword: string, newPassword: string): Promise<void> {
     await api.put(`/user/${userId}/password`, { oldPassword, newPassword });
   }
+
+  async adminResetUserPassword(userId: number, newPassword: string): Promise<void> {
+    await api.put(`/user/${userId}/admin-password-reset`, { newPassword });
+  }
 }
 
 export const userService = new UserService();

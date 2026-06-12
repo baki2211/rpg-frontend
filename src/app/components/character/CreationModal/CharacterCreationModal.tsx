@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, type SubmitEvent } from 'react';
 import './CharacterCreationModal.css';
 import { useUser } from '../../../contexts/UserContext';
 import { useRaces } from '../../../contexts/RacesContext';
@@ -91,7 +91,7 @@ const CharacterCreationModalPanel: React.FC<CharacterCreationModalPanelProps> = 
     setErrorMessage(''); 
   };
 
-  const handleCharacterSubmit = async (e: React.FormEvent) => {
+  const handleCharacterSubmit = async (e: SubmitEvent) => {
     e.preventDefault();
   
     if (!user || !characterData.userId) {

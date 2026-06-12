@@ -20,6 +20,7 @@ interface UserContextValue {
   changePassword: (passwordData: ChangePasswordData) => Promise<void>;
   getAllUsers: () => Promise<User[]>;
   updateUserPassword: (userId: number, oldPassword: string, newPassword: string) => Promise<void>;
+  adminResetUserPassword: (userId: number, newPassword: string) => Promise<void>;
   clearUser: () => void;
 }
 
@@ -141,6 +142,23 @@ export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
     }
   }, [showSuccess, showError, getAllUsers]);
 
+  const adminResetUserPassword = useCallback(async (userId: number, newPassword: string): Promise<void> => {
+    try {
+      setLoading(true);
+      setError(null);
+      await userService.adminResetUserPassword(userId, newPassword);
+      showSuccess('Password updated successfully');
+      await getAllUsers();
+    } catch (err: unknown) {
+      const errorMsg = getErrorMessage(err, 'Failed to update password');
+      setError(errorMsg);
+      showError(errorMsg);
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  }, [showSuccess, showError, getAllUsers]);
+
   const clearUser = useCallback(() => {
     setUser(null);
     setDashboardData(null);
@@ -160,6 +178,7 @@ export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
     changePassword,
     getAllUsers,
     updateUserPassword,
+    adminResetUserPassword,
     clearUser,
   }), [
     user,
@@ -173,6 +192,7 @@ export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
     changePassword,
     getAllUsers,
     updateUserPassword,
+    adminResetUserPassword,
     clearUser,
   ]);
 
