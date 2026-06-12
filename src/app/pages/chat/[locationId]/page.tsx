@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef, type SubmitEvent } from 'react';
-import { useAuth } from '../../../utils/AuthContext';
+import { useAuth } from '../../../contexts/AuthContext';
 import { useParams } from 'next/navigation';
 import { WebSocketService } from '../../../services/webSocketService';
 import { SkillsModal } from '@/app/components/skills/SkillsModal';
@@ -95,7 +95,7 @@ const ChatPage = () => {
         console.error('Error resolving location name for presence:', error);
       }
 
-      // Server derives userId/username from the bearer token — do not pass them in the body.
+      // Server derives userId/username from the session cookie — do not pass them in the body.
       try {
         await api.post('/presence/location', { location: fetchedLocationName });
       } catch (error) {
@@ -147,12 +147,6 @@ const ChatPage = () => {
 
     webSocketServiceRef.current = new WebSocketService({
       url: wsUrl,
-      // Resolve lazily so reconnect attempts read the current token, not a
-      // stale snapshot from the initial connect.
-      protocols: () => {
-        const token = localStorage.getItem('auth_token');
-        return token ? [`bearer.${token}`] : undefined;
-      },
       onMessage: (message: JSON) => {
         const messageData = message as unknown as ChatMessage | SkillEngineLogMessage;
         

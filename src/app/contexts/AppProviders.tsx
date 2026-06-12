@@ -1,7 +1,7 @@
 'use client';
 
 import React, { ReactNode } from 'react';
-import { AuthProvider } from '../utils/AuthContext';
+import { AuthProvider } from './AuthContext';
 import { ToastProvider } from './ToastContext';
 import { UserProvider } from './UserContext';
 import { CharacterProvider } from './CharacterContext';

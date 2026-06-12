@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useAuth } from '../../utils/AuthContext';
+import { useAuth } from '../../contexts/AuthContext';
 import { useChatUsers } from '../../hooks/useChatUsers';
 import { useEngineLogs } from '../../contexts/EngineLogsContext';
 import { useCombatRounds } from '../../contexts/CombatRoundsContext';

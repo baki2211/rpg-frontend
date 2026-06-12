@@ -15,9 +15,14 @@ export interface AuthContextType {
 }
 
 export interface LoginResponse {
-  token?: string;
-  user?: AuthUser;
-  refreshed?: boolean;
+  message: string;
+  user: AuthUser;
+}
+
+export interface RefreshResponse {
+  message: string;
+  refreshed: boolean;
+  user: AuthUser;
 }
 
 export interface RegisterData {

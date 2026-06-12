@@ -25,15 +25,13 @@ const getApiConfig = () => {
     hostname.endsWith('.local')
   );
 
-  // Check if we're running on development ports
-  const isLocalPort = isBrowser && (
-    window.location.port === '3000' ||
-    window.location.port === '3001'
-  );
+  // Note: we intentionally do NOT sniff window.location.port. Previewing a production
+  // build on :3000 used to flip this to the local backend; NODE_ENV and the explicit
+  // overrides above are the reliable signals. See docs/known_issues.md.
 
   // Explicit override wins over heuristics in either direction.
   const shouldUseLocal = forceLocal
-    || (!forceProd && (isDevelopment || isLocalHostname || isLocalPort));
+    || (!forceProd && (isDevelopment || isLocalHostname));
 
   const baseUrl = shouldUseLocal
     ? (process.env.NEXT_PUBLIC_LOCAL_BACKEND_URL || 'http://localhost:5001')  // Local development URL

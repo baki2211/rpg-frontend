@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useAuth } from '../../../utils/AuthContext';
+import { useAuth } from '../../../contexts/AuthContext';
 import { Map, Location } from '../../../../types/types';
 import '../admin.css';
 import Image from 'next/image';

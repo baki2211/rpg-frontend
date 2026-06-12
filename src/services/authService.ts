@@ -1,6 +1,5 @@
 import { api } from './apiClient';
-import { tokenService } from './tokenService';
-import { AuthUser, LoginResponse, RegisterData } from '../types/auth';
+import { AuthUser, LoginResponse, RefreshResponse, RegisterData } from '../types/auth';
 
 interface ProtectedResponse {
   user: AuthUser;
@@ -10,10 +9,9 @@ interface ProtectedResponse {
 class AuthService {
   private pendingAuthCheck: Promise<AuthUser> | null = null;
   private pendingLogin: Promise<AuthUser> | null = null;
-  private pendingRefresh: Promise<LoginResponse> | null = null;
+  private pendingRefresh: Promise<RefreshResponse> | null = null;
 
   async login(username: string, password: string): Promise<AuthUser> {
-    // Prevent duplicate login requests
     if (this.pendingLogin) {
       return this.pendingLogin;
     }
@@ -23,15 +21,7 @@ class AuthService {
         username,
         password,
       });
-
-      // Store token if received
-      if (loginResponse.data.token) {
-        tokenService.setToken(loginResponse.data.token);
-      }
-
-      // Fetch complete user data
-      const userResponse = await api.get<ProtectedResponse>('/protected');
-      return userResponse.data.user;
+      return loginResponse.data.user;
     })().finally(() => {
       this.pendingLogin = null;
     });
@@ -41,7 +31,6 @@ class AuthService {
 
   async logout(): Promise<void> {
     await api.post('/auth/logout', {});
-    tokenService.clearAuth();
   }
 
   async register(userData: RegisterData): Promise<void> {
@@ -49,7 +38,6 @@ class AuthService {
   }
 
   async checkAuth(): Promise<AuthUser> {
-    // Deduplicate simultaneous auth checks
     if (this.pendingAuthCheck) {
       return this.pendingAuthCheck;
     }
@@ -63,19 +51,13 @@ class AuthService {
     return this.pendingAuthCheck;
   }
 
-  async refreshToken(): Promise<LoginResponse> {
-    // Prevent duplicate refresh requests
+  async refreshToken(): Promise<RefreshResponse> {
     if (this.pendingRefresh) {
       return this.pendingRefresh;
     }
 
-    this.pendingRefresh = api.post<LoginResponse>('/auth/refresh')
-      .then(response => {
-        if (response.data.token) {
-          tokenService.setToken(response.data.token);
-        }
-        return response.data;
-      })
+    this.pendingRefresh = api.post<RefreshResponse>('/auth/refresh')
+      .then(response => response.data)
       .finally(() => {
         this.pendingRefresh = null;
       });

@@ -2,7 +2,8 @@
 
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useAuth } from './utils/AuthContext';
+import { useAuth } from './contexts/AuthContext';
+import { ROUTES } from '../config/routes';
 
 export default function HomePage() {
   const { isAuthenticated, isLoading } = useAuth();
@@ -10,7 +11,7 @@ export default function HomePage() {
 
   useEffect(() => {
     if (isAuthenticated) {
-      router.push('/pages/dashboard');
+      router.push(ROUTES.dashboard);
     }
   }, [isAuthenticated, router]);
 
@@ -34,10 +35,10 @@ export default function HomePage() {
           and forging your legend in this immersive RPG experience.
         </p>
         <div className="home-journey-buttons">
-          <a href="/pages/register" className="btn btn-primary">
+          <a href={ROUTES.register} className="btn btn-primary">
             Create Account
           </a>
-          <a href="/pages/login" className="btn btn-secondary">
+          <a href={ROUTES.login} className="btn btn-secondary">
             Login
           </a>
         </div>

@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { usePathname } from 'next/navigation';
-import { useAuth } from '../utils/AuthContext';
+import { useAuth } from './AuthContext';
 import { getLocationFromPath } from '../../utils/locationUtils';
 import { API_CONFIG } from '../../config/api';
 import { api } from '../../services/apiClient';

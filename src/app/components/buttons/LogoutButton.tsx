@@ -2,10 +2,11 @@
 
 import React from "react";
 import { useRouter } from 'next/navigation';
-import { useAuth } from "../../utils/AuthContext";
+import { useAuth } from "../../contexts/AuthContext";
 import { usePresence } from "../../contexts/PresenceContext";
 import { authService } from '../../../services/authService';
 import { WS_URL } from '../../../config/api';
+import { ROUTES } from '../../../config/routes';
 
 const LogoutButton: React.FC = () => {
   const router = useRouter();
@@ -30,14 +31,14 @@ const LogoutButton: React.FC = () => {
       setUser(null);
 
       // Redirect to login page
-      router.push('/pages/login');
+      router.push(ROUTES.login);
     } catch (error) {
       console.error('Error logging out:', error);
       // Even if the API call fails, clear local state
       await authService.logout();
       setIsAuthenticated(false);
       setUser(null);
-      router.push('/pages/login');
+      router.push(ROUTES.login);
     }
   };
 

@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { authService } from "../../services/authService";
-import { tokenService } from "../../services/tokenService";
+import { getCsrfToken } from "../../services/csrfService";
 import { AuthUser, AuthContextType } from "../../types/auth";
 import { getErrorCode, getErrorMessage, getErrorStatus } from "../../utils/errorHandling";
 
@@ -47,21 +47,20 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     try {
       setIsLoading(true);
       setError(null);
-      
-      // First check if we have a stored token
-      const storedToken = tokenService.getToken();
 
-      if (storedToken) {
-        // We have a stored token, let's verify it's still valid
-        const authData = await authService.checkAuth();
-
-        setIsAuthenticated(true);
-        setUser(authData);
-      } else {
-        // No stored token, clear auth state
+      // The session JWT cookie is httpOnly, but the csrfToken cookie isn't
+      // and is always set alongside it. Use its presence as a hint that the
+      // browser has an active session; absence means definitively logged out
+      // and we skip /protected to avoid the apiClient 401 auto-redirect.
+      if (!getCsrfToken()) {
         setIsAuthenticated(false);
         setUser(null);
+        return;
       }
+
+      const authData = await authService.checkAuth();
+      setIsAuthenticated(true);
+      setUser(authData);
     } catch (err) {
       if (!(err instanceof Error)) return;
 
@@ -76,10 +75,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       }
 
       if (status === 401 || status === 403) {
-        tokenService.clearAuth();
         setIsAuthenticated(false);
         setUser(null);
-        setError('Session expired. Please log in again.');
+        setError(null);
       } else if (code === 'ERR_NETWORK' || code === 'ERR_TIMEOUT') {
         if (retryCount < 3) {
           const delay = Math.pow(2, retryCount) * 1000;

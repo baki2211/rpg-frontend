@@ -4,7 +4,7 @@ import React, { createContext, useContext, useState, useCallback, useEffect, use
 import { characterService } from '../../services/characterService';
 import { raceService } from '../../services/raceService';
 import { useToast } from './ToastContext';
-import { useAuth } from '../utils/AuthContext';
+import { useAuth } from './AuthContext';
 import { Character, Race } from '../../types/character';
 import { getErrorMessage } from '../../utils/errorHandling';
 

@@ -1,10 +1,14 @@
 import { API_CONFIG } from '../config/api';
-import { tokenService } from './tokenService';
+import { ROUTES } from '../config/routes';
+import { CSRF_HEADER_NAME, getCsrfToken } from './csrfService';
 
 // Hardcoded so a 401-response body can never steer the redirect target.
-const LOGIN_REDIRECT_PATH = '/pages/login';
+const LOGIN_REDIRECT_PATH = ROUTES.login;
 
 type HttpMethod = 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH';
+
+const MUTATING_METHODS: ReadonlySet<HttpMethod> = new Set(['POST', 'PUT', 'PATCH', 'DELETE']);
+const CSRF_EXEMPT_PATHS = ['/auth/login', '/auth/register'];
 
 export interface ApiRequestConfig {
   headers?: Record<string, string>;
@@ -133,16 +137,23 @@ const parseResponseBody = async <T>(response: Response): Promise<T> => {
   }
 };
 
-const buildHeaders = (data: unknown, config?: ApiRequestConfig) => {
+const needsCsrf = (method: HttpMethod, url: string) => {
+  if (!MUTATING_METHODS.has(method)) return false;
+  return !CSRF_EXEMPT_PATHS.some(path => url.includes(path));
+};
+
+const buildHeaders = (method: HttpMethod, url: string, data: unknown, config?: ApiRequestConfig) => {
   const headers = new Headers(DEFAULT_HEADERS);
 
   Object.entries(config?.headers || {}).forEach(([key, value]) => {
     headers.set(key, value);
   });
 
-  const token = tokenService.getToken();
-  if (token) {
-    headers.set('Authorization', `Bearer ${token}`);
+  if (needsCsrf(method, url)) {
+    const csrfToken = getCsrfToken();
+    if (csrfToken) {
+      headers.set(CSRF_HEADER_NAME, csrfToken);
+    }
   }
 
   if (isFormData(data)) {
@@ -209,19 +220,7 @@ const executeRequest = async <T>(
     _retryCount: retryCount,
   };
 
-  const token = tokenService.getToken();
-  const isRefreshRequest = url.includes('/auth/refresh');
-
-  if (token && !isRefreshRequest && tokenService.isTokenNearExpiry()) {
-    try {
-      const { authService } = await import('./authService');
-      await authService.refreshToken();
-    } catch (refreshError) {
-      console.warn('Token refresh failed:', refreshError);
-    }
-  }
-
-  const headers = buildHeaders(data, config);
+  const headers = buildHeaders(method, url, data, config);
   const body = buildBody(data);
   const timeout = config?.timeout ?? DEFAULT_TIMEOUT;
   const controller = new AbortController();
@@ -291,8 +290,6 @@ const executeRequest = async <T>(
       );
 
       if (response.status === 401) {
-        tokenService.clearAuth();
-
         if (typeof window !== 'undefined') {
           window.location.href = LOGIN_REDIRECT_PATH;
         }

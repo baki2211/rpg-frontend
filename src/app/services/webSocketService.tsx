@@ -1,14 +1,7 @@
 import { EventEmitter } from 'events';
 
-type ProtocolsValue = string | string[] | undefined;
-type ProtocolsProvider = ProtocolsValue | (() => ProtocolsValue);
-
 interface WebSocketOptions {
   url: string;
-  // Pass a function to refresh on every (re)connect — required when the value
-  // embeds a rotating bearer token, since the cached array would otherwise
-  // replay a stale token across the 5 reconnect attempts.
-  protocols?: ProtocolsProvider;
   onMessage?: (message: JSON) => void;
   onError?: (error: Event) => void;
   onClose?: (event: CloseEvent) => void;
@@ -18,7 +11,6 @@ interface WebSocketOptions {
 export class WebSocketService extends EventEmitter {
   private socket: WebSocket | null = null;
   private url: string;
-  private protocols?: ProtocolsProvider;
   private retryCount = 0;
   private retryDelay = 1000; // Start with 1 second
   private maxRetryDelay = 30000; // Max delay of 30 seconds
@@ -30,7 +22,6 @@ export class WebSocketService extends EventEmitter {
   constructor(private options: WebSocketOptions) {
     super();
     this.url = options.url;
-    this.protocols = options.protocols;
     this.connect();
   }
 
@@ -71,13 +62,7 @@ export class WebSocketService extends EventEmitter {
     this.isConnecting = true;
 
     try {
-      const resolvedProtocols = typeof this.protocols === 'function'
-        ? this.protocols()
-        : this.protocols;
-
-      this.socket = resolvedProtocols !== undefined
-        ? new WebSocket(this.url, resolvedProtocols)
-        : new WebSocket(this.url);
+      this.socket = new WebSocket(this.url);
 
       // Set a connection timeout
       this.connectionTimeout = setTimeout(() => {
