@@ -1,5 +1,3 @@
-'use client';
-
 import React from 'react';
 import { AppProviders } from './contexts/AppProviders';
 import NavMenu from './components/common/Nav'
@@ -9,15 +7,15 @@ import './globals.css';
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <AppProviders>
-      <html lang="en">
-        <body>
+    <html lang="en">
+      <body>
+        <AppProviders>
           <NavMenu />
           <ServerStatusNotification />
           {children}
           <GlobalCharacterSheet />
-        </body>
-      </html>
-    </AppProviders>
+        </AppProviders>
+      </body>
+    </html>
   );
 }

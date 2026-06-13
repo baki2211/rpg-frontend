@@ -18,7 +18,7 @@ class CharacterService {
   }
 
   async createCharacter(formData: FormData): Promise<Character> {
-    const response = await api.post<Character>('/characters/new', formData, {
+    const response = await api.post<Character>('/characters', formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
@@ -32,7 +32,7 @@ class CharacterService {
   }
 
   async deleteCharacter(characterId: number): Promise<void> {
-    const response = await api.delete<void>(`/characters/${characterId}/delete`);
+    const response = await api.delete<void>(`/characters/${characterId}`);
     return response.data;
   }
 
