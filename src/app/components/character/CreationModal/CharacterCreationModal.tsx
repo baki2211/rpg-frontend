@@ -3,8 +3,8 @@
 import React, { useEffect, useState, type SubmitEvent } from 'react';
 import './CharacterCreationModal.css';
 import { useUser } from '../../../contexts/UserContext';
-import { useRaces } from '../../../contexts/RacesContext';
-import { useStatDefinitions } from '../../../contexts/StatDefinitionsContext';
+import { usePlayableRaces } from '../../../hooks/queries/useRaces';
+import { usePrimaryStats } from '../../../hooks/queries/useStatDefinitions';
 
 interface CharacterForm {
   userId: number | null;
@@ -23,8 +23,8 @@ interface CharacterCreationModalPanelProps {
 
 const CharacterCreationModalPanel: React.FC<CharacterCreationModalPanelProps> = ({ onSuccess, createCharacter }) => {
   const { user, fetchProfile } = useUser();
-  const { playableRaces, fetchPlayableRaces } = useRaces();
-  const { primaryStats, fetchPrimaryStats } = useStatDefinitions();
+  const { data: playableRaces = [] } = usePlayableRaces();
+  const { data: primaryStats = [] } = usePrimaryStats();
 
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [characterData, setCharacterData] = useState<CharacterForm>({
@@ -43,19 +43,10 @@ const CharacterCreationModalPanel: React.FC<CharacterCreationModalPanelProps> = 
   const remainingPoints = TOTAL_POINTS - allocatedPoints;
 
   useEffect(() => {
-    const initializeData = async () => {
-      try {
-        await Promise.all([
-          fetchProfile(),
-          fetchPlayableRaces(),
-          fetchPrimaryStats()
-        ]);
-      } catch (error) {
-        console.error('Failed to initialize data:', error);
-        setErrorMessage('Failed to load initial data');
-      }
-    };
-    initializeData();
+    fetchProfile().catch((error) => {
+      console.error('Failed to initialize data:', error);
+      setErrorMessage('Failed to load initial data');
+    });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
