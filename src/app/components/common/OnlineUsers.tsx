@@ -32,14 +32,14 @@ const UserCard: React.FC<UserCardProps> = ({ username, location, isCurrentUser }
         .then(data => {
           const location = data.locations.find((loc: Location) => loc.name === locationName);
           if (location) {
-            router.push(`/pages/chat/${location.id}`);
+            router.push(`/chat/${location.id}`);
           }
         })
         .catch(error => console.error('Error fetching location:', error));
     } else if (location === 'Map') {
-      router.push('/pages/map');
+      router.push('/map');
     } else if (location === 'Dashboard') {
-      router.push('/pages/dashboard');
+      router.push('/dashboard');
     }
   };
 

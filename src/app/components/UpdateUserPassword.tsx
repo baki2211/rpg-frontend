@@ -2,8 +2,8 @@
 
 import React, { useState, useEffect, type SubmitEvent } from 'react';
 import { useUser } from '../contexts/UserContext';
-import '../pages/register/register.css';
-import '../pages/admin/admin.css';
+import '../register/register.css';
+import '../admin/admin.css';
 
 interface UpdateUserPasswordProps {
   isAdmin?: boolean;
