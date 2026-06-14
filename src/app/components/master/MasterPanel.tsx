@@ -2,7 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useChatUsers } from '../../hooks/queries/useChatUsers';
 import { useEngineLogsByLocation } from '../../hooks/queries/useEngineLogs';
-import { useCombatRounds } from '../../contexts/CombatRoundsContext';
+import {
+  useActiveCombatRound,
+  useResolvedCombatRounds,
+  useCreateCombatRound,
+  useResolveCombatRound,
+  useCancelCombatRound,
+} from '../../hooks/queries/useCombatRounds';
 import {
   useActiveEvent,
   useRecentEvents,
@@ -51,17 +57,24 @@ export const MasterPanel: React.FC<MasterPanelProps> = ({
 }) => {
   const { user } = useAuth();
   const { users: chatUsers } = useChatUsers(locationId);
-  const {
-    activeCombatRound,
-    resolvedCombatRounds,
-    roundActions,
-    fetchActiveCombatRound,
-    fetchResolvedCombatRounds,
-    createCombatRound,
-    resolveCombatRound: resolveCombatRoundContext,
-    cancelCombatRound: cancelCombatRoundContext
-  } = useCombatRounds();
   const [activeTab, setActiveTab] = useState<'logs' | 'hp' | 'status' | 'combat' | 'events'>('logs');
+
+  // Combat tab polls every 5s while open; mutations invalidate the
+  // location key, so non-polled tabs still see fresh data on next mount.
+  const isCombatTabActive = isOpen && activeTab === 'combat';
+  const { data: activeCombatRound = null } = useActiveCombatRound(locationId, {
+    enabled: isCombatTabActive,
+    refetchInterval: isCombatTabActive ? 5000 : false,
+  });
+  const { data: resolvedCombatRounds = [] } = useResolvedCombatRounds(locationId, 5, {
+    enabled: isCombatTabActive,
+    refetchInterval: isCombatTabActive ? 5000 : false,
+  });
+  const roundActions = activeCombatRound?.actions ?? [];
+
+  const createCombatRoundMutation = useCreateCombatRound();
+  const resolveCombatRoundMutation = useResolveCombatRound();
+  const cancelCombatRoundMutation = useCancelCombatRound();
 
   const isLogsTabActive = isOpen && activeTab === 'logs';
   const { data: engineLogs = [], refetch: refetchEngineLogs } = useEngineLogsByLocation(locationId, {
@@ -91,9 +104,8 @@ export const MasterPanel: React.FC<MasterPanelProps> = ({
   const [selectedStatus, setSelectedStatus] = useState<string>('');
   const [statusDuration, setStatusDuration] = useState<number>(1);
 
-  // Local loading states for UI feedback
-  const [isCreatingRound, setIsCreatingRound] = useState(false);
-  const [isResolvingRound, setIsResolvingRound] = useState(false);
+  const isCreatingRound = createCombatRoundMutation.isPending;
+  const isResolvingRound = resolveCombatRoundMutation.isPending;
   const isCreatingEvent = createEventMutation.isPending;
   const isClosingEvent = closeEventMutation.isPending;
   const isFreezingEvent = freezeEventMutation.isPending;
@@ -108,57 +120,40 @@ export const MasterPanel: React.FC<MasterPanelProps> = ({
   // Check if user has master permissions
   const isMaster = user?.role === 'master' || user?.role === 'admin';
 
-  const createNewRound = async () => {
+  const createNewRound = () => {
     if (!activeEvent) {
       alert('You must have an active event to create combat rounds');
       return;
     }
-
-    setIsCreatingRound(true);
-    try {
-      await createCombatRound(parseInt(locationId), activeEvent.id);
-      await fetchActiveCombatRound(locationId);
-    } catch (error) {
-      console.error('MASTER PANEL: Error creating round:', error);
-      alert('Failed to create combat round');
-    } finally {
-      setIsCreatingRound(false);
-    }
+    createCombatRoundMutation.mutate({
+      locationId: parseInt(locationId),
+      eventId: activeEvent.id,
+    });
   };
 
-  const resolveRound = async () => {
+  const resolveRound = () => {
     if (!activeCombatRound) return;
-
-    setIsResolvingRound(true);
-    try {
-      await resolveCombatRoundContext(activeCombatRound.id);
-      // Refresh all combat data
-      await Promise.all([
-        fetchActiveCombatRound(locationId),
-        fetchResolvedCombatRounds(locationId)
-      ]);
-      // Trigger a refresh of engine logs to pick up new logs
-      if (activeTab === 'logs') {
-        await refetchEngineLogs();
+    resolveCombatRoundMutation.mutate(
+      { roundId: activeCombatRound.id, locationId },
+      {
+        onSuccess: () => {
+          // Engine logs tab subscribes via its own query; refresh it
+          // immediately so the resolved-round logs show up without waiting
+          // for the next poll.
+          if (activeTab === 'logs') {
+            refetchEngineLogs();
+          }
+        },
       }
-    } catch (error) {
-      console.error('MASTER PANEL: Error resolving round:', error);
-      alert('Failed to resolve combat round');
-    } finally {
-      setIsResolvingRound(false);
-    }
+    );
   };
 
-  const cancelRound = async () => {
+  const cancelRound = () => {
     if (!activeCombatRound) return;
-
-    try {
-      await cancelCombatRoundContext(activeCombatRound.id);
-      await fetchActiveCombatRound(locationId);
-    } catch (error) {
-      console.error('Error cancelling round:', error);
-      alert('Failed to cancel combat round');
-    }
+    cancelCombatRoundMutation.mutate({
+      roundId: activeCombatRound.id,
+      locationId,
+    });
   };
 
   // Initialize character HP data
@@ -179,22 +174,6 @@ export const MasterPanel: React.FC<MasterPanelProps> = ({
       initializeHP();
     }
   }, [chatUsers]);
-
-  // Load combat data
-  useEffect(() => {
-    if (activeTab === 'combat') {
-      fetchActiveCombatRound(locationId);
-      fetchResolvedCombatRounds(locationId);
-
-      // Set up interval to refresh combat data periodically
-      const interval = setInterval(() => {
-        fetchActiveCombatRound(locationId);
-        fetchResolvedCombatRounds(locationId);
-      }, 5000); // Refresh every 5 seconds
-
-      return () => clearInterval(interval);
-    }
-  }, [activeTab, locationId, fetchActiveCombatRound, fetchResolvedCombatRounds]);
 
   const createNewEvent = () => {
     if (!eventForm.title || !eventForm.type) {

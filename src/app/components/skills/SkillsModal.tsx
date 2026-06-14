@@ -1,10 +1,10 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useCharacter } from '@/app/contexts/CharacterContext';
 import { SkillRow } from './SkillRow';
 import { Skill } from '@/types/character';
 import { useChatUsers, ChatUser } from '@/app/hooks/queries/useChatUsers';
 import { useAuth } from '@/app/contexts/AuthContext';
-import { useCombatRounds } from '@/app/contexts/CombatRoundsContext';
+import { useActiveCombatRound } from '@/app/hooks/queries/useCombatRounds';
 import { useActiveEvent } from '@/app/hooks/queries/useEvents';
 import { useAcquiredSkills } from '@/app/hooks/queries/useSkills';
 import { getErrorMessage } from '@/utils/errorHandling';
@@ -27,7 +27,9 @@ interface SkillsModalProps {
 export const SkillsModal: React.FC<SkillsModalProps> = ({ isOpen, onClose, onSelectSkill, onUnselectSkill, selectedSkill: externalSelectedSkill, locationId }) => {
   const { characters } = useCharacter();
   const { user } = useAuth();
-  const { activeCombatRound, fetchActiveCombatRound } = useCombatRounds();
+  const { data: activeCombatRound = null } = useActiveCombatRound(locationId ?? '', {
+    enabled: isOpen && Boolean(locationId),
+  });
   const { data: activeEvent = null } = useActiveEvent(locationId ?? '', {
     enabled: isOpen && Boolean(locationId),
   });
@@ -69,13 +71,6 @@ export const SkillsModal: React.FC<SkillsModalProps> = ({ isOpen, onClose, onSel
     // During events, all skills are available
     return acquiredSkills;
   }, [acquiredSkills, activeEvent]);
-
-  // Check for active combat round
-  useEffect(() => {
-    if (isOpen && locationId) {
-      fetchActiveCombatRound(locationId);
-    }
-  }, [isOpen, locationId, fetchActiveCombatRound]);
 
   const handleSkillClick = (skill: Skill) => {
     // Check if skill is restricted outside of events
