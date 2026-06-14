@@ -3,7 +3,7 @@
 import React from 'react';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import type { WikiSection } from '../types';
+import type { WikiSection } from '@/services/wikiService';
 
 export const SortableSection: React.FC<{
   section: WikiSection;

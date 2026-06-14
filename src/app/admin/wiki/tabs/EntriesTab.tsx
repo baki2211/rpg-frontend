@@ -1,42 +1,25 @@
 'use client';
 
 import React, { useState, type SubmitEvent } from 'react';
-import {
-  DndContext,
-  DragEndEvent,
-  DragOverlay,
-  DragStartEvent,
-  closestCenter,
-  KeyboardSensor,
-  PointerSensor,
-  useSensor,
-  useSensors,
-} from '@dnd-kit/core';
-import {
-  arrayMove,
-  SortableContext,
-  sortableKeyboardCoordinates,
-  verticalListSortingStrategy,
-} from '@dnd-kit/sortable';
-import { SortableEntry } from '../components/SortableEntry';
-import { EntryItem } from '../components/EntryItem';
 import { RichTextEditor } from '../components/RichTextEditor';
+import { EntriesHierarchicalList } from '../components/EntriesHierarchicalList';
+import { EntriesSortableList } from '../components/EntriesSortableList';
+import { EntriesPlainList } from '../components/EntriesPlainList';
 import {
   useWikiSections,
   useWikiEntries,
   useCreateWikiEntry,
   useUpdateWikiEntry,
   useDeleteWikiEntry,
-  useReorderWikiEntries,
 } from '../../../hooks/queries/useWiki';
-import type { WikiEntry, ShowMessage } from '../types';
+import { useToast } from '../../../contexts/ToastContext';
+import type { WikiEntry } from '@/services/wikiService';
 
 interface EntriesTabProps {
   active: boolean;
-  showMessage: ShowMessage;
 }
 
-export const EntriesTab: React.FC<EntriesTabProps> = ({ active, showMessage }) => {
+export const EntriesTab: React.FC<EntriesTabProps> = ({ active }) => {
   const [selectedSectionId, setSelectedSectionId] = useState<number | null>(null);
   const [showHierarchy, setShowHierarchy] = useState(false);
 
@@ -49,7 +32,7 @@ export const EntriesTab: React.FC<EntriesTabProps> = ({ active, showMessage }) =
   const createEntry = useCreateWikiEntry();
   const updateEntry = useUpdateWikiEntry();
   const deleteEntry = useDeleteWikiEntry();
-  const reorderEntries = useReorderWikiEntries();
+  const { showSuccess, showError } = useToast();
 
   const submitting = createEntry.isPending || updateEntry.isPending;
 
@@ -62,14 +45,6 @@ export const EntriesTab: React.FC<EntriesTabProps> = ({ active, showMessage }) =
     parentEntryId: '',
   });
   const [editingEntryId, setEditingEntryId] = useState<number | null>(null);
-
-  const [activeDragId, setActiveDragId] = useState<string | number | null>(null);
-  const [draggedEntry, setDraggedEntry] = useState<WikiEntry | null>(null);
-
-  const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
-    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
-  );
 
   const resetEntryForm = () => {
     setEntryForm({
@@ -101,11 +76,11 @@ export const EntriesTab: React.FC<EntriesTabProps> = ({ active, showMessage }) =
         await createEntry.mutateAsync(payload);
       }
 
-      showMessage('success', `Entry ${editingEntryId ? 'updated' : 'created'} successfully`);
+      showSuccess(`Entry ${editingEntryId ? 'updated' : 'created'} successfully`);
       resetEntryForm();
     } catch (error) {
       console.error('Network error:', error);
-      showMessage('error', 'Network error occurred');
+      showError('Network error occurred');
     }
   };
 
@@ -127,10 +102,10 @@ export const EntriesTab: React.FC<EntriesTabProps> = ({ active, showMessage }) =
     }
     try {
       await deleteEntry.mutateAsync(id);
-      showMessage('success', 'Entry deleted successfully');
+      showSuccess('Entry deleted successfully');
     } catch (error) {
       console.error('Network error:', error);
-      showMessage('error', 'Network error occurred');
+      showError('Network error occurred');
     }
   };
 
@@ -160,40 +135,46 @@ export const EntriesTab: React.FC<EntriesTabProps> = ({ active, showMessage }) =
       .sort((a, b) => a.level - b.level || a.title.localeCompare(b.title));
   };
 
-  const handleDragStart = (event: DragStartEvent) => {
-    const { active: dragActive } = event;
-    setActiveDragId(dragActive.id);
-    const entry = filteredEntries.find(e => e.id === dragActive.id);
-    setDraggedEntry(entry || null);
-  };
-
-  const handleDragEnd = async (event: DragEndEvent) => {
-    const { active: dragActive, over } = event;
-
-    setActiveDragId(null);
-    setDraggedEntry(null);
-
-    if (!over || dragActive.id === over.id) return;
-    if (!selectedSectionId) return;
-
-    const oldIndex = filteredEntries.findIndex(entry => entry.id === dragActive.id);
-    const newIndex = filteredEntries.findIndex(entry => entry.id === over.id);
-
-    if (oldIndex === -1 || newIndex === -1) return;
-
-    const newEntries = arrayMove(filteredEntries, oldIndex, newIndex);
-    const entryOrder = newEntries.map((entry, index) => ({
-      id: entry.id,
-      position: index + 1,
-    }));
-
-    try {
-      await reorderEntries.mutateAsync({ sectionId: selectedSectionId, entryOrder });
-      showMessage('success', 'Entries reordered successfully');
-    } catch (error) {
-      console.error('Error reordering entries:', error);
-      showMessage('error', 'Failed to reorder entries');
+  const renderEntries = () => {
+    if (entriesQuery.isLoading) {
+      return <div className="loading">Loading entries...</div>;
     }
+    if (filteredEntries.length === 0) {
+      return (
+        <div className="entries-container">
+          <div className="no-entries">
+            {selectedSectionId ? 'No entries found for this section.' : 'No entries found.'}
+          </div>
+        </div>
+      );
+    }
+    return (
+      <div className="entries-container">
+        {showHierarchy && selectedSectionId ? (
+          <EntriesHierarchicalList
+            entries={filteredEntries}
+            onEdit={handleEditEntry}
+            onDelete={handleDeleteEntry}
+            onAddChild={handleAddChildEntry}
+          />
+        ) : selectedSectionId ? (
+          <EntriesSortableList
+            entries={filteredEntries}
+            sectionId={selectedSectionId}
+            onEdit={handleEditEntry}
+            onDelete={handleDeleteEntry}
+            onAddChild={handleAddChildEntry}
+          />
+        ) : (
+          <EntriesPlainList
+            entries={filteredEntries}
+            onEdit={handleEditEntry}
+            onDelete={handleDeleteEntry}
+            onAddChild={handleAddChildEntry}
+          />
+        )}
+      </div>
+    );
   };
 
   return (
@@ -340,117 +321,7 @@ export const EntriesTab: React.FC<EntriesTabProps> = ({ active, showMessage }) =
             <small>Select a section to enable entry reordering</small>
           </div>
         )}
-        {entriesQuery.isLoading ? (
-          <div className="loading">Loading entries...</div>
-        ) : (
-          <div className="entries-container">
-            {showHierarchy && selectedSectionId ? (
-              <div className="entries-hierarchical">
-                {filteredEntries.map(entry => (
-                  <EntryItem
-                    key={entry.id}
-                    entry={entry}
-                    level={entry.level}
-                    onEdit={handleEditEntry}
-                    onDelete={handleDeleteEntry}
-                    onAddChild={handleAddChildEntry}
-                  />
-                ))}
-              </div>
-            ) : selectedSectionId ? (
-              <DndContext
-                sensors={sensors}
-                collisionDetection={closestCenter}
-                onDragStart={handleDragStart}
-                onDragEnd={handleDragEnd}
-              >
-                <SortableContext
-                  items={filteredEntries.map(e => e.id)}
-                  strategy={verticalListSortingStrategy}
-                >
-                  <div className="entries-flat">
-                    {filteredEntries.map(entry => (
-                      <SortableEntry
-                        key={entry.id}
-                        entry={entry}
-                        onEdit={handleEditEntry}
-                        onDelete={handleDeleteEntry}
-                        onAddChild={handleAddChildEntry}
-                        isDragging={activeDragId === entry.id}
-                      />
-                    ))}
-                  </div>
-                </SortableContext>
-                <DragOverlay>
-                  {activeDragId && draggedEntry ? (
-                    <SortableEntry
-                      entry={draggedEntry}
-                      onEdit={() => {}}
-                      onDelete={() => {}}
-                      onAddChild={() => {}}
-                      isDragging={true}
-                    />
-                  ) : null}
-                </DragOverlay>
-              </DndContext>
-            ) : (
-              <div className="entries-flat">
-                {filteredEntries.map(entry => (
-                  <div key={entry.id} className="entry-card">
-                    <div className="entry-header">
-                      <div className="entry-info">
-                        <h4>{entry.title}</h4>
-                        <div className="entry-meta">
-                          {entry.section && <span className="section-name">{entry.section.name}</span>}
-                          {entry.level > 1 && <span className="level-indicator">Level {entry.level}</span>}
-                          <span className={`status ${entry.isPublished ? 'published' : 'draft'}`}>
-                            {entry.isPublished ? 'Published' : 'Draft'}
-                          </span>
-                          <span className="views">{entry.viewCount} views</span>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="entry-excerpt">
-                      {entry.excerpt || 'No excerpt available'}
-                    </div>
-                    <div className="entry-tags">
-                      {entry.tags.map(tag => (
-                        <span key={tag} className="tag">{tag}</span>
-                      ))}
-                    </div>
-                    <div className="entry-actions">
-                      {entry.level < 4 && (
-                        <button
-                          className="btn btn-sm btn-secondary"
-                          onClick={() => handleAddChildEntry(entry)}
-                        >
-                          Add Sub-Entry
-                        </button>
-                      )}
-                      <button
-                        className="btn btn-sm btn-primary"
-                        onClick={() => handleEditEntry(entry)}
-                      >
-                        Edit
-                      </button>
-                      <button
-                        className="btn btn-sm btn-danger"
-                        onClick={() => handleDeleteEntry(entry.id)}
-                      >
-                        Delete
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-            {filteredEntries.length === 0 && (
-              <div className="no-entries">
-                {selectedSectionId ? 'No entries found for this section.' : 'No entries found.'}
-              </div>
-            )}
-          </div>
-        )}
+        {renderEntries()}
       </div>
     </div>
   );

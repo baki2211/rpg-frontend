@@ -26,14 +26,14 @@ import {
   useDeleteWikiSection,
   useReorderWikiSections,
 } from '../../../hooks/queries/useWiki';
-import type { WikiSection, ShowMessage } from '../types';
+import { useToast } from '../../../contexts/ToastContext';
+import type { WikiSection } from '@/services/wikiService';
 
 interface SectionsTabProps {
   active: boolean;
-  showMessage: ShowMessage;
 }
 
-export const SectionsTab: React.FC<SectionsTabProps> = ({ active, showMessage }) => {
+export const SectionsTab: React.FC<SectionsTabProps> = ({ active }) => {
   const sectionsQuery = useWikiSections();
   const sections = sectionsQuery.data ?? [];
 
@@ -41,6 +41,7 @@ export const SectionsTab: React.FC<SectionsTabProps> = ({ active, showMessage })
   const updateSection = useUpdateWikiSection();
   const deleteSection = useDeleteWikiSection();
   const reorderSections = useReorderWikiSections();
+  const { showSuccess, showError } = useToast();
 
   const submitting =
     createSection.isPending || updateSection.isPending;
@@ -74,11 +75,11 @@ export const SectionsTab: React.FC<SectionsTabProps> = ({ active, showMessage })
       } else {
         await createSection.mutateAsync(sectionForm);
       }
-      showMessage('success', `Section ${editingSectionId ? 'updated' : 'created'} successfully`);
+      showSuccess(`Section ${editingSectionId ? 'updated' : 'created'} successfully`);
       resetSectionForm();
     } catch (error) {
       console.error('Network error:', error);
-      showMessage('error', 'Network error occurred');
+      showError('Network error occurred');
     }
   };
 
@@ -98,10 +99,10 @@ export const SectionsTab: React.FC<SectionsTabProps> = ({ active, showMessage })
     }
     try {
       await deleteSection.mutateAsync(id);
-      showMessage('success', 'Section deleted successfully');
+      showSuccess('Section deleted successfully');
     } catch (error) {
       console.error('Network error:', error);
-      showMessage('error', 'Network error occurred');
+      showError('Network error occurred');
     }
   };
 
@@ -135,10 +136,10 @@ export const SectionsTab: React.FC<SectionsTabProps> = ({ active, showMessage })
 
     try {
       await reorderSections.mutateAsync(sectionOrder);
-      showMessage('success', 'Sections reordered successfully');
+      showSuccess('Sections reordered successfully');
     } catch (error) {
       console.error('Error reordering sections:', error);
-      showMessage('error', 'Failed to reorder sections');
+      showError('Failed to reorder sections');
     }
   };
 

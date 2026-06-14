@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import type { WikiEntry } from '../types';
+import type { WikiEntry } from '@/services/wikiService';
 
 export const EntryItem: React.FC<{
   entry: WikiEntry;
