@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
+import { useToast } from '../../contexts/ToastContext';
 import { useChatUsers } from '../../hooks/queries/useChatUsers';
 import { useEngineLogsByLocation } from '../../hooks/queries/useEngineLogs';
 import {
@@ -17,17 +18,12 @@ import {
   useFreezeEvent,
   useUnfreezeEvent,
 } from '../../hooks/queries/useEvents';
+import { HEALTH_COLOR, TABS, type TabKey } from './constants';
+import { TabBar } from './components/TabBar';
+import { CharacterSelect } from './components/CharacterSelect';
+import { useCharacterHP } from './hooks/useCharacterHP';
 import './MasterPanel.css';
 
-
-interface CharacterHP {
-  characterId: string;
-  characterName: string;
-  currentHP: number;
-  maxHP: number;
-  tempHP: number;
-  status: 'healthy' | 'injured' | 'critical' | 'unconscious';
-}
 
 interface StatusEffect {
   id: string;
@@ -56,8 +52,9 @@ export const MasterPanel: React.FC<MasterPanelProps> = ({
   onApplyStatus
 }) => {
   const { user } = useAuth();
+  const { showSuccess, showError, showWarning } = useToast();
   const { users: chatUsers } = useChatUsers(locationId);
-  const [activeTab, setActiveTab] = useState<'logs' | 'hp' | 'status' | 'combat' | 'events'>('logs');
+  const [activeTab, setActiveTab] = useState<TabKey>('logs');
 
   // Combat tab polls every 5s while open; mutations invalidate the
   // location key, so non-polled tabs still see fresh data on next mount.
@@ -97,7 +94,10 @@ export const MasterPanel: React.FC<MasterPanelProps> = ({
   const freezeEventMutation = useFreezeEvent();
   const unfreezeEventMutation = useUnfreezeEvent();
 
-  const [characterHP, setCharacterHP] = useState<CharacterHP[]>([]);
+  const { characterHP, applyDelta } = useCharacterHP(chatUsers, {
+    onApplyDamage,
+    onApplyHealing,
+  });
   const [selectedCharacter, setSelectedCharacter] = useState<string>('');
   const [damageAmount, setDamageAmount] = useState<number>(0);
   const [healingAmount, setHealingAmount] = useState<number>(0);
@@ -122,7 +122,7 @@ export const MasterPanel: React.FC<MasterPanelProps> = ({
 
   const createNewRound = () => {
     if (!activeEvent) {
-      alert('You must have an active event to create combat rounds');
+      showWarning('You must have an active event to create combat rounds');
       return;
     }
     createCombatRoundMutation.mutate({
@@ -156,28 +156,9 @@ export const MasterPanel: React.FC<MasterPanelProps> = ({
     });
   };
 
-  // Initialize character HP data
-  useEffect(() => {
-    const initializeHP = () => {
-      const hpData = chatUsers.map(chatUser => ({
-        characterId: chatUser.userId,
-        characterName: chatUser.characterName || chatUser.username,
-        currentHP: 100, // Default values - these should come from backend
-        maxHP: 100,
-        tempHP: 0,
-        status: 'healthy' as const
-      }));
-      setCharacterHP(hpData);
-    };
-
-    if (chatUsers.length > 0) {
-      initializeHP();
-    }
-  }, [chatUsers]);
-
   const createNewEvent = () => {
     if (!eventForm.title || !eventForm.type) {
-      alert('Please fill in title and type');
+      showError('Please fill in title and type');
       return;
     }
 
@@ -205,7 +186,7 @@ export const MasterPanel: React.FC<MasterPanelProps> = ({
       { eventId: activeEvent.id, locationId },
       {
         onSuccess: () =>
-          alert('🧊 Event frozen! Session state has been saved and cleared.'),
+          showSuccess('🧊 Event frozen! Session state has been saved and cleared.'),
       }
     );
   };
@@ -215,7 +196,7 @@ export const MasterPanel: React.FC<MasterPanelProps> = ({
     unfreezeEventMutation.mutate(
       { eventId: activeEvent.id, locationId },
       {
-        onSuccess: () => alert('Event unfrozen! Session state has been restored.'),
+        onSuccess: () => showSuccess('Event unfrozen! Session state has been restored.'),
       }
     );
   };
@@ -273,35 +254,15 @@ export const MasterPanel: React.FC<MasterPanelProps> = ({
   ];
 
   const handleApplyDamage = () => {
-    if (selectedCharacter && damageAmount > 0) {
-      const character = characterHP.find(c => c.characterId === selectedCharacter);
-      if (character) {
-        const newHP = Math.max(0, character.currentHP - damageAmount);
-        setCharacterHP(prev => prev.map(c => 
-          c.characterId === selectedCharacter 
-            ? { ...c, currentHP: newHP, status: getHealthStatus(newHP, c.maxHP) }
-            : c
-        ));
-        onApplyDamage?.(selectedCharacter, damageAmount);
-        setDamageAmount(0);
-      }
-    }
+    if (!selectedCharacter || damageAmount <= 0) return;
+    applyDelta(selectedCharacter, -damageAmount);
+    setDamageAmount(0);
   };
 
   const handleApplyHealing = () => {
-    if (selectedCharacter && healingAmount > 0) {
-      const character = characterHP.find(c => c.characterId === selectedCharacter);
-      if (character) {
-        const newHP = Math.min(character.maxHP, character.currentHP + healingAmount);
-        setCharacterHP(prev => prev.map(c => 
-          c.characterId === selectedCharacter 
-            ? { ...c, currentHP: newHP, status: getHealthStatus(newHP, c.maxHP) }
-            : c
-        ));
-        onApplyHealing?.(selectedCharacter, healingAmount);
-        setHealingAmount(0);
-      }
-    }
+    if (!selectedCharacter || healingAmount <= 0) return;
+    applyDelta(selectedCharacter, healingAmount);
+    setHealingAmount(0);
   };
 
   const handleApplyStatus = () => {
@@ -313,24 +274,6 @@ export const MasterPanel: React.FC<MasterPanelProps> = ({
         setSelectedStatus('');
         setStatusDuration(1);
       }
-    }
-  };
-
-  const getHealthStatus = (currentHP: number, maxHP: number): CharacterHP['status'] => {
-    const percentage = (currentHP / maxHP) * 100;
-    if (percentage <= 0) return 'unconscious';
-    if (percentage <= 25) return 'critical';
-    if (percentage <= 50) return 'injured';
-    return 'healthy';
-  };
-
-  const getHealthBarColor = (status: CharacterHP['status']) => {
-    switch (status) {
-      case 'healthy': return '#4ade80';
-      case 'injured': return '#fbbf24';
-      case 'critical': return '#f87171';
-      case 'unconscious': return '#6b7280';
-      default: return '#4ade80';
     }
   };
 
@@ -347,38 +290,7 @@ export const MasterPanel: React.FC<MasterPanelProps> = ({
         </button>
       </div>
 
-      <div className="master-panel-tabs">
-        <button 
-          className={`tab ${activeTab === 'logs' ? 'active' : ''}`}
-          onClick={() => setActiveTab('logs')}
-        >
-          Logs
-        </button>
-        <button 
-          className={`tab ${activeTab === 'hp' ? 'active' : ''}`}
-          onClick={() => setActiveTab('hp')}
-        >
-          HP Manager
-        </button>
-        <button 
-          className={`tab ${activeTab === 'status' ? 'active' : ''}`}
-          onClick={() => setActiveTab('status')}
-        >
-          Status Panel
-        </button>
-        <button 
-          className={`tab ${activeTab === 'combat' ? 'active' : ''}`}
-          onClick={() => setActiveTab('combat')}
-        >
-          Combat
-        </button>
-        <button 
-          className={`tab ${activeTab === 'events' ? 'active' : ''}`}
-          onClick={() => setActiveTab('events')}
-        >
-          Events
-        </button>
-      </div>
+      <TabBar tabs={TABS} active={activeTab} onChange={setActiveTab} />
 
       <div className="master-panel-content">
         {activeTab === 'logs' && (
@@ -511,7 +423,7 @@ export const MasterPanel: React.FC<MasterPanelProps> = ({
                         className="hp-fill"
                         style={{ 
                           width: `${(character.currentHP / character.maxHP) * 100}%`,
-                          backgroundColor: getHealthBarColor(character.status)
+                          backgroundColor: HEALTH_COLOR[character.status]
                         }}
                       />
                     </div>
@@ -525,20 +437,11 @@ export const MasterPanel: React.FC<MasterPanelProps> = ({
 
             <div className="hp-controls">
               <h4>Apply Damage/Healing</h4>
-              <div className="control-group">
-                <label>Target Character:</label>
-                <select 
-                  value={selectedCharacter} 
-                  onChange={(e) => setSelectedCharacter(e.target.value)}
-                >
-                  <option value="">Select character...</option>
-                  {characterHP.map((character) => (
-                    <option key={character.characterId} value={character.characterId}>
-                      {character.characterName}
-                    </option>
-                  ))}
-                </select>
-              </div>
+              <CharacterSelect
+                characters={characterHP}
+                value={selectedCharacter}
+                onChange={setSelectedCharacter}
+              />
 
               <div className="damage-healing-controls">
                 <div className="control-group">
@@ -584,20 +487,11 @@ export const MasterPanel: React.FC<MasterPanelProps> = ({
             <h3>Status Panel</h3>
             
             <div className="status-controls">
-              <div className="control-group">
-                <label>Target Character:</label>
-                <select 
-                  value={selectedCharacter} 
-                  onChange={(e) => setSelectedCharacter(e.target.value)}
-                >
-                  <option value="">Select character...</option>
-                  {characterHP.map((character) => (
-                    <option key={character.characterId} value={character.characterId}>
-                      {character.characterName}
-                    </option>
-                  ))}
-                </select>
-              </div>
+              <CharacterSelect
+                characters={characterHP}
+                value={selectedCharacter}
+                onChange={setSelectedCharacter}
+              />
 
               <div className="control-group">
                 <label>Status Effect:</label>
