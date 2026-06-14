@@ -1,12 +1,22 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import './MasteryTiers.css';
-import { useMasteryTiers } from '../../contexts/MasteryTiersContext';
+import {
+  useMasteryTiers,
+  useCreateMasteryTier,
+  useUpdateMasteryTier,
+  useDeleteMasteryTier,
+  useInitializeMasteryTierDefaults,
+} from '../../hooks/queries/useMasteryTiers';
 import { MasteryTier } from '../../../services/masteryTiersService';
 
 const MasteryTiersPanel: React.FC = () => {
-  const { tiers, loading, fetchTiers, createTier, updateTier, deleteTier, initializeDefaults } = useMasteryTiers();
+  const { data: tiers = [], isLoading: loading } = useMasteryTiers();
+  const createTier = useCreateMasteryTier();
+  const updateTier = useUpdateMasteryTier();
+  const deleteTier = useDeleteMasteryTier();
+  const initializeDefaults = useInitializeMasteryTierDefaults();
   const [editingId, setEditingId] = useState<number | null>(null);
   const [showCreateForm, setShowCreateForm] = useState(false);
 
@@ -19,12 +29,8 @@ const MasteryTiersPanel: React.FC = () => {
     isActive: true
   });
 
-  useEffect(() => {
-    fetchTiers();
-  }, [fetchTiers]);
-
   const handleCreate = async () => {
-    await createTier(newTier);
+    await createTier.mutateAsync(newTier);
     setShowCreateForm(false);
     setNewTier({
       tier: 1,
@@ -37,7 +43,7 @@ const MasteryTiersPanel: React.FC = () => {
   };
 
   const handleUpdate = async (id: number, updateData: Partial<MasteryTier>) => {
-    await updateTier(id, updateData);
+    await updateTier.mutateAsync({ id, updateData });
     setEditingId(null);
   };
 
@@ -45,14 +51,14 @@ const MasteryTiersPanel: React.FC = () => {
     if (!confirm('Are you sure you want to delete this mastery tier? This action cannot be undone.')) {
       return;
     }
-    await deleteTier(id);
+    await deleteTier.mutateAsync(id);
   };
 
   const handleInitializeDefaults = async () => {
     if (!confirm('Initialize default mastery tiers from system.txt? This will create the 10 standard tiers if they don\'t exist.')) {
       return;
     }
-    await initializeDefaults();
+    await initializeDefaults.mutateAsync();
   };
 
   const TierRow: React.FC<{ tier: MasteryTier }> = ({ tier }) => {

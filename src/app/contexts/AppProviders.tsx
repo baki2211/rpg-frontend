@@ -8,7 +8,6 @@ import { UserProvider } from './UserContext';
 import { CharacterProvider } from './CharacterContext';
 import { CharacterSheetProvider } from './CharacterSheetContext';
 import { PresenceProvider } from './PresenceContext';
-import { MasteryTiersProvider } from './MasteryTiersContext';
 import { SkillValidationProvider } from './SkillValidationContext';
 import { NPCProvider } from './NPCContext';
 import { CombatRoundsProvider } from './CombatRoundsContext';
@@ -30,11 +29,9 @@ export const AppProviders: React.FC<AppProvidersProps> = ({ children }) => {
                   <NPCProvider>
                     <CombatRoundsProvider>
                       <EventsProvider>
-                        <MasteryTiersProvider>
-                          <SkillValidationProvider>
-                            {children}
-                          </SkillValidationProvider>
-                        </MasteryTiersProvider>
+                        <SkillValidationProvider>
+                          {children}
+                        </SkillValidationProvider>
                       </EventsProvider>
                     </CombatRoundsProvider>
                   </NPCProvider>
