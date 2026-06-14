@@ -9,7 +9,6 @@ import { CharacterProvider } from './CharacterContext';
 import { CharacterSheetProvider } from './CharacterSheetContext';
 import { PresenceProvider } from './PresenceContext';
 import { CombatRoundsProvider } from './CombatRoundsContext';
-import { EventsProvider } from './EventsContext';
 
 interface AppProvidersProps {
   children: ReactNode;
@@ -25,9 +24,7 @@ export const AppProviders: React.FC<AppProvidersProps> = ({ children }) => {
               <CharacterSheetProvider>
                 <PresenceProvider>
                   <CombatRoundsProvider>
-                    <EventsProvider>
-                      {children}
-                    </EventsProvider>
+                    {children}
                   </CombatRoundsProvider>
                 </PresenceProvider>
               </CharacterSheetProvider>

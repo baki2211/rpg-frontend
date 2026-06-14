@@ -11,6 +11,7 @@ import { Skill } from '@/types/character';
 import { ChatUser, useChatUsers } from '@/app/hooks/queries/useChatUsers';
 import { useToast } from '@/app/contexts/ToastContext';
 import { usePresence } from '@/app/contexts/PresenceContext';
+import { useRealtimeInvalidation } from '@/app/hooks/useRealtimeInvalidation';
 import './chat.css';
 import { WS_URL } from '../../../config/api';
 import { api } from '../../../services/apiClient';
@@ -59,6 +60,9 @@ const ChatPage = () => {
 
   // Fetch users in this location
   const { users: chatUsers, loading: usersLoading, refreshing: usersRefreshing, refreshUsers, locationName } = useChatUsers(locationId);
+
+  // Route WS messages through the cache-invalidation glue (Events, EngineLogs, ...).
+  const handleRealtimeMessage = useRealtimeInvalidation(locationId);
 
   // Check if user has master permissions
   const isMaster = user?.role === 'master' || user?.role === 'admin';
@@ -112,14 +116,6 @@ const ChatPage = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
-  // Handle incoming skill engine logs from WebSocket
-  const handleSkillEngineLog = (logData: SkillEngineLogMessage) => {
-    if (isMaster && logData.type === 'skill_engine_log') {
-      // Master panel now fetches logs directly from API
-      // This WebSocket message could trigger a refresh if needed
-    }
-  };
-
   useEffect(() => {
     let hasAttemptedFirstConnect = false;
     
@@ -149,12 +145,14 @@ const ChatPage = () => {
       url: wsUrl,
       onMessage: (message: JSON) => {
         const messageData = message as unknown as ChatMessage | SkillEngineLogMessage;
-        
-        if ('type' in messageData && messageData.type === 'skill_engine_log') {
-          handleSkillEngineLog(messageData);
+
+        // Realtime invalidation handles all typed system messages
+        // (skill_engine_log, event_*, ...) via the query cache.
+        if ('type' in messageData && messageData.type) {
+          handleRealtimeMessage(messageData);
           return;
         }
-        
+
         if (!('username' in messageData) || !('createdAt' in messageData) || !('message' in messageData)) {
           return;
         }

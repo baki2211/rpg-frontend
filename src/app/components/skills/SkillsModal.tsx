@@ -5,7 +5,7 @@ import { Skill } from '@/types/character';
 import { useChatUsers, ChatUser } from '@/app/hooks/queries/useChatUsers';
 import { useAuth } from '@/app/contexts/AuthContext';
 import { useCombatRounds } from '@/app/contexts/CombatRoundsContext';
-import { useEvents } from '@/app/contexts/EventsContext';
+import { useActiveEvent } from '@/app/hooks/queries/useEvents';
 import { useAcquiredSkills } from '@/app/hooks/queries/useSkills';
 import { getErrorMessage } from '@/utils/errorHandling';
 import Modal from '../common/Modal';
@@ -28,7 +28,9 @@ export const SkillsModal: React.FC<SkillsModalProps> = ({ isOpen, onClose, onSel
   const { characters } = useCharacter();
   const { user } = useAuth();
   const { activeCombatRound, fetchActiveCombatRound } = useCombatRounds();
-  const { activeEvent, fetchActiveEvent } = useEvents();
+  const { data: activeEvent = null } = useActiveEvent(locationId ?? '', {
+    enabled: isOpen && Boolean(locationId),
+  });
   const activeCharacter = characters.find(char => char.isActive);
   const {
     data: acquiredSkills = [],
@@ -74,13 +76,6 @@ export const SkillsModal: React.FC<SkillsModalProps> = ({ isOpen, onClose, onSel
       fetchActiveCombatRound(locationId);
     }
   }, [isOpen, locationId, fetchActiveCombatRound]);
-
-  // Check for active event
-  useEffect(() => {
-    if (isOpen && locationId) {
-      fetchActiveEvent(locationId);
-    }
-  }, [isOpen, locationId, fetchActiveEvent]);
 
   const handleSkillClick = (skill: Skill) => {
     // Check if skill is restricted outside of events

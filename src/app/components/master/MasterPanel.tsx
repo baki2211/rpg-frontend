@@ -3,7 +3,14 @@ import { useAuth } from '../../contexts/AuthContext';
 import { useChatUsers } from '../../hooks/queries/useChatUsers';
 import { useEngineLogsByLocation } from '../../hooks/queries/useEngineLogs';
 import { useCombatRounds } from '../../contexts/CombatRoundsContext';
-import { useEvents } from '../../contexts/EventsContext';
+import {
+  useActiveEvent,
+  useRecentEvents,
+  useCreateEvent,
+  useCloseEvent,
+  useFreezeEvent,
+  useUnfreezeEvent,
+} from '../../hooks/queries/useEvents';
 import './MasterPanel.css';
 
 
@@ -54,24 +61,28 @@ export const MasterPanel: React.FC<MasterPanelProps> = ({
     resolveCombatRound: resolveCombatRoundContext,
     cancelCombatRound: cancelCombatRoundContext
   } = useCombatRounds();
-  const {
-    activeEvent,
-    recentEvents,
-    fetchActiveEvent,
-    fetchRecentEvents,
-    createEvent: createEventContext,
-    closeEvent: closeEventContext,
-    freezeEvent: freezeEventContext,
-    unfreezeEvent: unfreezeEventContext
-  } = useEvents();
-
   const [activeTab, setActiveTab] = useState<'logs' | 'hp' | 'status' | 'combat' | 'events'>('logs');
 
   const isLogsTabActive = isOpen && activeTab === 'logs';
   const { data: engineLogs = [], refetch: refetchEngineLogs } = useEngineLogsByLocation(locationId, {
     enabled: isLogsTabActive,
-    refetchInterval: isLogsTabActive ? 10000 : false,
   });
+
+  // Events tab gates Combat round creation on activeEvent — keep activeEvent
+  // enabled whenever the panel is open. Mutations + WS invalidation keep
+  // data fresh; no polling needed.
+  const isEventsTabActive = isOpen && activeTab === 'events';
+  const { data: activeEvent = null } = useActiveEvent(locationId, {
+    enabled: isOpen,
+  });
+  const { data: recentEvents = [] } = useRecentEvents(locationId, 5, {
+    enabled: isEventsTabActive,
+  });
+
+  const createEventMutation = useCreateEvent();
+  const closeEventMutation = useCloseEvent();
+  const freezeEventMutation = useFreezeEvent();
+  const unfreezeEventMutation = useUnfreezeEvent();
 
   const [characterHP, setCharacterHP] = useState<CharacterHP[]>([]);
   const [selectedCharacter, setSelectedCharacter] = useState<string>('');
@@ -83,10 +94,10 @@ export const MasterPanel: React.FC<MasterPanelProps> = ({
   // Local loading states for UI feedback
   const [isCreatingRound, setIsCreatingRound] = useState(false);
   const [isResolvingRound, setIsResolvingRound] = useState(false);
-  const [isCreatingEvent, setIsCreatingEvent] = useState(false);
-  const [isClosingEvent, setIsClosingEvent] = useState(false);
-  const [isFreezingEvent, setIsFreezingEvent] = useState(false);
-  const [isUnfreezingEvent, setIsUnfreezingEvent] = useState(false);
+  const isCreatingEvent = createEventMutation.isPending;
+  const isClosingEvent = closeEventMutation.isPending;
+  const isFreezingEvent = freezeEventMutation.isPending;
+  const isUnfreezingEvent = unfreezeEventMutation.isPending;
 
   const [eventForm, setEventForm] = useState({
     title: '',
@@ -185,91 +196,49 @@ export const MasterPanel: React.FC<MasterPanelProps> = ({
     }
   }, [activeTab, locationId, fetchActiveCombatRound, fetchResolvedCombatRounds]);
 
-  // Load event data
-  useEffect(() => {
-    if (activeTab === 'events') {
-      fetchActiveEvent(locationId);
-      fetchRecentEvents(locationId);
-
-      // Set up interval to refresh event data periodically
-      const interval = setInterval(() => {
-        fetchActiveEvent(locationId);
-        fetchRecentEvents(locationId);
-      }, 5000); // Refresh every 5 seconds
-
-      return () => clearInterval(interval);
-    }
-  }, [activeTab, locationId, fetchActiveEvent, fetchRecentEvents]);
-
-  const createNewEvent = async () => {
+  const createNewEvent = () => {
     if (!eventForm.title || !eventForm.type) {
       alert('Please fill in title and type');
       return;
     }
 
-    setIsCreatingEvent(true);
-    try {
-      await createEventContext(
-        eventForm.title,
-        eventForm.type,
-        parseInt(locationId),
-        eventForm.description
-      );
-      await fetchActiveEvent(locationId);
-      setEventForm({ title: '', type: 'lore', description: '' });
-    } catch (error) {
-      console.error('Error creating event:', error);
-      alert('Failed to create event');
-    } finally {
-      setIsCreatingEvent(false);
-    }
+    createEventMutation.mutate(
+      {
+        title: eventForm.title,
+        type: eventForm.type,
+        locationId: parseInt(locationId),
+        description: eventForm.description,
+      },
+      {
+        onSuccess: () => setEventForm({ title: '', type: 'lore', description: '' }),
+      }
+    );
   };
 
-  const closeEvent = async () => {
+  const closeEvent = () => {
     if (!activeEvent) return;
-
-    setIsClosingEvent(true);
-    try {
-      await closeEventContext(activeEvent.id);
-      await fetchRecentEvents(locationId);
-    } catch (error) {
-      console.error('Error closing event:', error);
-      alert('Failed to close event');
-    } finally {
-      setIsClosingEvent(false);
-    }
+    closeEventMutation.mutate({ eventId: activeEvent.id, locationId });
   };
 
-  const freezeEvent = async () => {
+  const freezeEvent = () => {
     if (!activeEvent) return;
-
-    setIsFreezingEvent(true);
-    try {
-      await freezeEventContext(activeEvent.id);
-      await fetchActiveEvent(locationId);
-      alert('🧊 Event frozen! Session state has been saved and cleared.');
-    } catch (error) {
-      console.error('Error freezing event:', error);
-      alert('Failed to freeze event');
-    } finally {
-      setIsFreezingEvent(false);
-    }
+    freezeEventMutation.mutate(
+      { eventId: activeEvent.id, locationId },
+      {
+        onSuccess: () =>
+          alert('🧊 Event frozen! Session state has been saved and cleared.'),
+      }
+    );
   };
 
-  const unfreezeEvent = async () => {
+  const unfreezeEvent = () => {
     if (!activeEvent) return;
-
-    setIsUnfreezingEvent(true);
-    try {
-      await unfreezeEventContext(activeEvent.id);
-      await fetchActiveEvent(locationId);
-      alert('Event unfrozen! Session state has been restored.');
-    } catch (error) {
-      console.error('Error unfreezing event:', error);
-      alert('Failed to unfreeze event');
-    } finally {
-      setIsUnfreezingEvent(false);
-    }
+    unfreezeEventMutation.mutate(
+      { eventId: activeEvent.id, locationId },
+      {
+        onSuccess: () => alert('Event unfrozen! Session state has been restored.'),
+      }
+    );
   };
 
   // Predefined status effects
