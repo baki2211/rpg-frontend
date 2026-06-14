@@ -290,7 +290,7 @@ const executeRequest = async <T>(
       );
 
       if (response.status === 401) {
-        if (typeof window !== 'undefined') {
+        if (typeof window !== 'undefined' && window.location.pathname !== LOGIN_REDIRECT_PATH) {
           window.location.href = LOGIN_REDIRECT_PATH;
         }
       }
