@@ -4,7 +4,7 @@ import React, { ReactNode } from 'react';
 import { AuthProvider } from './AuthContext';
 import { ToastProvider } from './ToastContext';
 import { QueryProvider } from './QueryProvider';
-import { CharacterProvider } from './CharacterContext';
+import { ActiveCharacterProvider } from './ActiveCharacterContext';
 import { CharacterSheetProvider } from './CharacterSheetContext';
 import { PresenceProvider } from './PresenceContext';
 
@@ -17,13 +17,13 @@ export const AppProviders: React.FC<AppProvidersProps> = ({ children }) => {
     <ToastProvider>
       <QueryProvider>
         <AuthProvider>
-          <CharacterProvider>
+          <ActiveCharacterProvider>
             <CharacterSheetProvider>
               <PresenceProvider>
                 {children}
               </PresenceProvider>
             </CharacterSheetProvider>
-          </CharacterProvider>
+          </ActiveCharacterProvider>
         </AuthProvider>
       </QueryProvider>
     </ToastProvider>

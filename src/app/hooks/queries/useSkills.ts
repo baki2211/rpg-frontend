@@ -6,6 +6,7 @@ import { Skill } from '../../../types/character';
 import { useToast } from '../../contexts/ToastContext';
 import { getErrorMessage } from '../../../utils/errorHandling';
 import { useToastOnError } from './_useToastOnError';
+import { charactersQueryKeys } from './useCharacters';
 
 export const skillsQueryKeys = {
   all: ['skills'] as const,
@@ -69,6 +70,9 @@ export function useAcquireSkill(characterId: number | null | undefined) {
       } else {
         queryClient.invalidateQueries({ queryKey: skillsQueryKeys.all });
       }
+      // Acquiring a skill mutates the character's skillPoints — refresh the
+      // characters cache so headers showing remaining points stay in sync.
+      queryClient.invalidateQueries({ queryKey: charactersQueryKeys.all });
     },
     onError: (err) => {
       showError(getErrorMessage(err, 'Failed to acquire skill'));

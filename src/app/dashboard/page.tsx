@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import CharacterCard from '../components/character/Card/CharacterCard';
 import OnlineUsers from '../components/common/OnlineUsers';
 import SessionList from '../sessions/page';
-import { useCharacter } from '../contexts/CharacterContext';
+import { useCharacters, useActivateCharacter, useDeleteCharacter } from '../hooks/queries/useCharacters';
 import { useDashboard } from '../hooks/queries/useUser';
 import { getErrorMessage } from '../../utils/errorHandling';
 import { ROUTES } from '../../config/routes';
@@ -14,7 +14,9 @@ const Dashboard = () => {
   const router = useRouter();
   const { data: dashboardData, isLoading: userLoading, error: userError } = useDashboard();
   const user = dashboardData?.user ?? null;
-  const { characters, activateCharacter, deleteCharacter } = useCharacter();
+  const { data: characters = [] } = useCharacters();
+  const activateMutation = useActivateCharacter();
+  const deleteMutation = useDeleteCharacter();
 
   useEffect(() => {
     if (userError) {
@@ -54,8 +56,8 @@ const Dashboard = () => {
                   key={character.id} 
                   character={character} 
                   isCharacterPanel={false}
-                  onActivate={activateCharacter}
-                  onDelete={deleteCharacter}
+                  onActivate={activateMutation.mutateAsync}
+                  onDelete={deleteMutation.mutateAsync}
                 />
               ))}
             </div>

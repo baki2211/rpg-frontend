@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { useCharacter } from '@/app/contexts/CharacterContext';
+import { useActiveCharacter } from '@/app/contexts/ActiveCharacterContext';
 import { SkillRow } from './SkillRow';
 import { Skill } from '@/types/character';
 import { useChatUsers, ChatUser } from '@/app/hooks/queries/useChatUsers';
@@ -25,7 +25,7 @@ interface SkillsModalProps {
 }
 
 export const SkillsModal: React.FC<SkillsModalProps> = ({ isOpen, onClose, onSelectSkill, onUnselectSkill, selectedSkill: externalSelectedSkill, locationId }) => {
-  const { characters } = useCharacter();
+  const activeCharacter = useActiveCharacter();
   const { user } = useAuth();
   const { data: activeCombatRound = null } = useActiveCombatRound(locationId ?? '', {
     enabled: isOpen && Boolean(locationId),
@@ -33,7 +33,6 @@ export const SkillsModal: React.FC<SkillsModalProps> = ({ isOpen, onClose, onSel
   const { data: activeEvent = null } = useActiveEvent(locationId ?? '', {
     enabled: isOpen && Boolean(locationId),
   });
-  const activeCharacter = characters.find(char => char.isActive);
   const {
     data: acquiredSkills = [],
     isLoading: loading,

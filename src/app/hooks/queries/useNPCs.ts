@@ -5,6 +5,7 @@ import { npcService, NPC, ActiveCharacter } from '../../../services/npcService';
 import { useToast } from '../../contexts/ToastContext';
 import { getErrorMessage } from '../../../utils/errorHandling';
 import { useToastOnError } from './_useToastOnError';
+import { charactersQueryKeys } from './useCharacters';
 
 export const npcQueryKeys = {
   all: ['npc'] as const,
@@ -30,13 +31,8 @@ export function useNPCActiveCharacter() {
   return query;
 }
 
-// Activating / deactivating an NPC changes which character is "active" for
-// the user, which is also tracked by CharacterContext (`characters`,
-// `activeNPCs`). Once Phase 5.2 lands and CharacterContext becomes
-// query-backed, this mutation should also invalidate that root key. For now
-// CharacterContext refetches on auth boot only; consumers that need fresh
-// character data after activate/deactivate must call its `fetchCharacters`
-// themselves (the legacy NPCSection page does not — preserved behavior).
+// Activating / deactivating an NPC flips which character is "active" for the
+// user, so invalidate the characters domain alongside the npc one.
 export function useActivateNPC() {
   const queryClient = useQueryClient();
   const { showSuccess, showError } = useToast();
@@ -46,6 +42,7 @@ export function useActivateNPC() {
     onSuccess: () => {
       showSuccess('NPC activated successfully');
       queryClient.invalidateQueries({ queryKey: npcQueryKeys.all });
+      queryClient.invalidateQueries({ queryKey: charactersQueryKeys.all });
     },
     onError: (err) => {
       showError(getErrorMessage(err, 'Failed to activate NPC'));
@@ -62,6 +59,7 @@ export function useDeactivateNPC() {
     onSuccess: () => {
       showSuccess('NPC deactivated successfully');
       queryClient.invalidateQueries({ queryKey: npcQueryKeys.all });
+      queryClient.invalidateQueries({ queryKey: charactersQueryKeys.all });
     },
     onError: (err) => {
       showError(getErrorMessage(err, 'Failed to deactivate NPC'));

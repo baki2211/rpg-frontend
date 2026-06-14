@@ -2,7 +2,8 @@
 
 import React from 'react';
 import { SkillCard } from '@/app/components/skills/SkillCard';
-import { useCharacter } from '@/app/contexts/CharacterContext';
+import { useCharacters } from '@/app/hooks/queries/useCharacters';
+import { useActiveCharacter } from '@/app/contexts/ActiveCharacterContext';
 import {
   useAcquiredSkills,
   useAvailableSkills,
@@ -12,10 +13,8 @@ import { getErrorMessage } from '@/utils/errorHandling';
 import './skills.css';
 
 export default function SkillsPage() {
-  const { characters, fetchCharacters } = useCharacter();
-
-  // Get the active character
-  const activeCharacter = characters.find(char => char.isActive);
+  const { data: characters = [] } = useCharacters();
+  const activeCharacter = useActiveCharacter();
   const characterId = activeCharacter?.id;
 
   const acquiredQuery = useAcquiredSkills(characterId, 'branch,type');
@@ -33,12 +32,7 @@ export default function SkillsPage() {
 
   const handleAcquireSkill = (skillId: number) => {
     if (!characterId) return;
-    acquireMutation.mutate(skillId, {
-      onSuccess: () => {
-        // Refresh character data so skillPoints update in the header.
-        fetchCharacters();
-      },
-    });
+    acquireMutation.mutate(skillId);
   };
 
   if (loading) {

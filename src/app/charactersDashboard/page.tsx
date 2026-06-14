@@ -1,15 +1,37 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import CharacterCreationModalPanel from '../components/character/CreationModal/CharacterCreationModal';
-import { useCharacter } from '../contexts/CharacterContext';
+import {
+  useCharacters,
+  useActiveNPC,
+  useActivateCharacter,
+  useDeleteCharacter,
+  useCreateCharacter,
+} from '../hooks/queries/useCharacters';
+import { useActiveCharacter } from '../contexts/ActiveCharacterContext';
+import { getErrorMessage } from '../../utils/errorHandling';
 import CharacterCard from '../components/character/Card/CharacterCard';
 import Modal from '../components/common/Modal';
 import './CharactersDashboard.css';
 
 const CharactersDashboard = () => {
-  const { allCharacters, activeCharacter, loading, error, activateCharacter, deleteCharacter, createCharacter } = useCharacter();
+  const charactersQuery = useCharacters();
+  const activeNPCQuery = useActiveNPC();
+  const activateMutation = useActivateCharacter();
+  const deleteMutation = useDeleteCharacter();
+  const createMutation = useCreateCharacter();
+  const activeCharacter = useActiveCharacter();
   const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const allCharacters = useMemo(() => {
+    const characters = charactersQuery.data ?? [];
+    const activeNPC = activeNPCQuery.data;
+    return activeNPC ? [...characters, activeNPC] : characters;
+  }, [charactersQuery.data, activeNPCQuery.data]);
+
+  const loading = charactersQuery.isLoading;
+  const queryError = charactersQuery.error;
 
   if (loading) {
     return (
@@ -18,11 +40,11 @@ const CharactersDashboard = () => {
       </div>
     );
   }
-  
-  if (error) {
+
+  if (queryError) {
     return (
       <div className="page-container">
-        <div className="error">{error}</div>
+        <div className="error">{getErrorMessage(queryError, 'Failed to fetch characters')}</div>
       </div>
     );
   }
@@ -67,8 +89,8 @@ const CharactersDashboard = () => {
               key={`${character.isNPC ? 'npc' : 'char'}-${character.id}`} 
               character={character} 
               isCharacterPanel={true}
-              onActivate={activateCharacter}
-              onDelete={deleteCharacter}
+              onActivate={activateMutation.mutateAsync}
+              onDelete={deleteMutation.mutateAsync}
             />
           ))}
         </div>
@@ -96,7 +118,7 @@ const CharactersDashboard = () => {
         <CharacterCreationModalPanel
           onSuccess={() => setIsModalOpen(false)}
           createCharacter={async (formData) => {
-            await createCharacter(formData);
+            await createMutation.mutateAsync(formData);
           }}
         />
       </Modal>
