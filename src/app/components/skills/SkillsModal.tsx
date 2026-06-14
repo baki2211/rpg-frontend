@@ -6,7 +6,8 @@ import { useChatUsers, ChatUser } from '@/app/hooks/queries/useChatUsers';
 import { useAuth } from '@/app/contexts/AuthContext';
 import { useCombatRounds } from '@/app/contexts/CombatRoundsContext';
 import { useEvents } from '@/app/contexts/EventsContext';
-import { useSkills } from '@/app/contexts/SkillsContext';
+import { useAcquiredSkills } from '@/app/hooks/queries/useSkills';
+import { getErrorMessage } from '@/utils/errorHandling';
 import Modal from '../common/Modal';
 import './SkillsModal.css';
 
@@ -28,14 +29,20 @@ export const SkillsModal: React.FC<SkillsModalProps> = ({ isOpen, onClose, onSel
   const { user } = useAuth();
   const { activeCombatRound, fetchActiveCombatRound } = useCombatRounds();
   const { activeEvent, fetchActiveEvent } = useEvents();
-  const { acquiredSkills, loading, error, fetchAcquiredSkills } = useSkills();
+  const activeCharacter = characters.find(char => char.isActive);
+  const {
+    data: acquiredSkills = [],
+    isLoading: loading,
+    error: acquiredSkillsError,
+  } = useAcquiredSkills(activeCharacter?.id, 'branch,type', { enabled: isOpen });
+  const error = acquiredSkillsError
+    ? getErrorMessage(acquiredSkillsError, 'Failed to fetch acquired skills')
+    : null;
   const [currentlySelectedSkill, setCurrentlySelectedSkill] = useState<Skill | null>(null);
   const [selectedTarget, setSelectedTarget] = useState<ChatUser | null>(null);
   const [showTargetSelection, setShowTargetSelection] = useState(false);
 
   const { users: chatUsers, loading: usersLoading } = useChatUsers(locationId || '');
-
-  const activeCharacter = characters.find(char => char.isActive);
 
   // Filter out current user from target list for "other" target skills
   // For "any" target skills, include all users (including self)
@@ -60,12 +67,6 @@ export const SkillsModal: React.FC<SkillsModalProps> = ({ isOpen, onClose, onSel
     // During events, all skills are available
     return acquiredSkills;
   }, [acquiredSkills, activeEvent]);
-
-  useEffect(() => {
-    if (isOpen && activeCharacter) {
-      fetchAcquiredSkills(activeCharacter.id, 'branch,type');
-    }
-  }, [isOpen, activeCharacter, fetchAcquiredSkills]);
 
   // Check for active combat round
   useEffect(() => {

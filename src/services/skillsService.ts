@@ -23,9 +23,10 @@ class SkillsService {
   /**
    * Get available skills that a character can acquire
    */
-  async getAvailableSkills(characterId: number): Promise<Skill[]> {
+  async getAvailableSkills(characterId: number, include?: string): Promise<Skill[]> {
+    const queryParams = include ? `?include=${include}` : '';
     const response = await api.get<Skill[]>(
-      `/character-skills/${characterId}/available-skills`
+      `/character-skills/${characterId}/available-skills${queryParams}`
     );
     return response.data;
   }

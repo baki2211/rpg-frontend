@@ -1,68 +1,44 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { SkillCard } from '@/app/components/skills/SkillCard';
 import { useCharacter } from '@/app/contexts/CharacterContext';
-import { type Skill } from '@/types/character';
+import {
+  useAcquiredSkills,
+  useAvailableSkills,
+  useAcquireSkill,
+} from '@/app/hooks/queries/useSkills';
+import { getErrorMessage } from '@/utils/errorHandling';
 import './skills.css';
-import { api } from '../../services/apiClient';
 
 export default function SkillsPage() {
   const { characters, fetchCharacters } = useCharacter();
-  const [availableSkills, setAvailableSkills] = useState<Skill[]>([]);
-  const [acquiredSkills, setAcquiredSkills] = useState<Skill[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
 
   // Get the active character
   const activeCharacter = characters.find(char => char.isActive);
+  const characterId = activeCharacter?.id;
 
-  useEffect(() => {
-    const fetchSkills = async () => {
-      if (!activeCharacter) {
-        setLoading(false);
-        return;
-      }
-      
-      try {
-        setLoading(true);
-        // Fetch available skills
-        const availableSkillsResponse = await api.get<Skill[]>(`/character-skills/${activeCharacter.id}/available-skills?include=branch,type`);
-        setAvailableSkills(availableSkillsResponse.data);
+  const acquiredQuery = useAcquiredSkills(characterId, 'branch,type');
+  const availableQuery = useAvailableSkills(characterId, 'branch,type');
+  const acquireMutation = useAcquireSkill(characterId);
 
-        // Fetch acquired skills
-        const acquiredSkillsResponse = await api.get<Skill[]>(`/character-skills/${activeCharacter.id}/acquired-skills?include=branch,type`);
-        setAcquiredSkills(acquiredSkillsResponse.data);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'An error occurred');
-      } finally {
-        setLoading(false);
-      }
-    };
+  const acquiredSkills = acquiredQuery.data ?? [];
+  const availableSkills = availableQuery.data ?? [];
+  const loading =
+    !!characterId && (acquiredQuery.isLoading || availableQuery.isLoading);
+  const queryError = acquiredQuery.error ?? availableQuery.error;
+  const error = queryError
+    ? getErrorMessage(queryError, 'Failed to fetch skills')
+    : null;
 
-    fetchSkills();
-  }, [activeCharacter]);
-
-  const acquireSkill = async (skillId: number) => {
-    if (!activeCharacter) return;
-    
-    try {
-      await api.post(`/character-skills/${skillId}`);
-
-      // Refresh character data
-      await fetchCharacters();
-      
-      // Fetch both available and acquired skills again
-      const [availableSkillsResponse, acquiredSkillsResponse] = await Promise.all([
-        api.get<Skill[]>(`/character-skills/${activeCharacter.id}/available-skills?include=branch,type`),
-        api.get<Skill[]>(`/character-skills/${activeCharacter.id}/acquired-skills?include=branch,type`)
-      ]);
-
-      setAvailableSkills(availableSkillsResponse.data);
-      setAcquiredSkills(acquiredSkillsResponse.data);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to acquire skill');
-    }
+  const handleAcquireSkill = (skillId: number) => {
+    if (!characterId) return;
+    acquireMutation.mutate(skillId, {
+      onSuccess: () => {
+        // Refresh character data so skillPoints update in the header.
+        fetchCharacters();
+      },
+    });
   };
 
   if (loading) {
@@ -143,7 +119,7 @@ export default function SkillsPage() {
             )}
           </div>
         </div>
-        
+
         {/* Available Skills Section */}
         <div className="skills-section">
           <h2>Available Skills</h2>
@@ -151,14 +127,14 @@ export default function SkillsPage() {
             {availableSkills.length > 0 ? (
               availableSkills.map((skill) => {
                 const canAcquire = (activeCharacter?.skillPoints || 0) >= skill.skillPointCost;
-                
+
                 return (
                   <SkillCard
                     key={skill.id}
                     skill={skill}
                     isAcquired={false}
                     canAcquire={canAcquire}
-                    onAcquire={acquireSkill}
+                    onAcquire={handleAcquireSkill}
                   />
                 );
               })
@@ -170,4 +146,4 @@ export default function SkillsPage() {
       </div>
     </div>
   );
-} 
+}
