@@ -91,7 +91,7 @@ const RacePanel: React.FC = () => {
     }));
   };
 
-  const addRace = async (e: React.FormEvent) => {
+  const addRace = async (e: React.SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
     try {
       const response = await api.post<Race>('/admin/races/new', newRace);

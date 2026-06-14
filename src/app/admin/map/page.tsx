@@ -49,7 +49,7 @@ const AdminMapPanel = () => {
     })();
   }, [user, router]);
 
-  const handleMapUpload = async (e: React.FormEvent) => {
+  const handleMapUpload = async (e: React.SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!map || !mapName) {
       setErrorMessage('Map name and file are required');
@@ -87,7 +87,7 @@ const AdminMapPanel = () => {
     }
   };
 
-  const handleLocationSubmit = async (e: React.FormEvent) => {
+  const handleLocationSubmit = async (e: React.SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     try {

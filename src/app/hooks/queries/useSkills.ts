@@ -71,9 +71,10 @@ export function useAcquireSkill(characterId: number | null | undefined) {
       } else {
         queryClient.invalidateQueries({ queryKey: skillsQueryKeys.all });
       }
-      // Acquiring a skill mutates the character's skillPoints — refresh the
-      // characters cache so headers showing remaining points stay in sync.
-      queryClient.invalidateQueries({ queryKey: charactersQueryKeys.all });
+      // Acquiring a skill mutates the player character's skillPoints — refresh
+      // the characters list so headers showing remaining points stay in sync.
+      // The active-NPC endpoint is unaffected (skill points live on the PC).
+      queryClient.invalidateQueries({ queryKey: charactersQueryKeys.list });
     },
     onError: (err) => {
       showError(getErrorMessage(err, 'Failed to acquire skill'));

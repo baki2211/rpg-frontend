@@ -45,7 +45,10 @@ export function useActivateNPC() {
     onSuccess: () => {
       showSuccess('NPC activated successfully');
       queryClient.invalidateQueries({ queryKey: npcQueryKeys.all });
-      queryClient.invalidateQueries({ queryKey: charactersQueryKeys.all });
+      // active-NPC endpoint is the source of truth; list is invalidated for the
+      // `isActive` flag surfaced in character cards.
+      queryClient.invalidateQueries({ queryKey: charactersQueryKeys.activeNPC });
+      queryClient.invalidateQueries({ queryKey: charactersQueryKeys.list });
     },
     onError: (err) => {
       showError(getErrorMessage(err, 'Failed to activate NPC'));
@@ -62,7 +65,8 @@ export function useDeactivateNPC() {
     onSuccess: () => {
       showSuccess('NPC deactivated successfully');
       queryClient.invalidateQueries({ queryKey: npcQueryKeys.all });
-      queryClient.invalidateQueries({ queryKey: charactersQueryKeys.all });
+      queryClient.invalidateQueries({ queryKey: charactersQueryKeys.activeNPC });
+      queryClient.invalidateQueries({ queryKey: charactersQueryKeys.list });
     },
     onError: (err) => {
       showError(getErrorMessage(err, 'Failed to deactivate NPC'));
