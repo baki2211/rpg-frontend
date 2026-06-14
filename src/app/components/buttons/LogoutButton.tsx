@@ -2,6 +2,7 @@
 
 import React from "react";
 import { useRouter } from 'next/navigation';
+import { useQueryClient } from '@tanstack/react-query';
 import { useAuth } from "../../contexts/AuthContext";
 import { usePresence } from "../../contexts/PresenceContext";
 import { authService } from '../../../services/authService';
@@ -10,6 +11,7 @@ import { ROUTES } from '../../../config/routes';
 
 const LogoutButton: React.FC = () => {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const { setIsAuthenticated, setUser } = useAuth();
   const { currentUser } = usePresence();
 
@@ -29,6 +31,7 @@ const LogoutButton: React.FC = () => {
       // Update global state
       setIsAuthenticated(false);
       setUser(null);
+      queryClient.clear();
 
       // Redirect to login page
       router.push(ROUTES.login);
@@ -38,6 +41,7 @@ const LogoutButton: React.FC = () => {
       await authService.logout();
       setIsAuthenticated(false);
       setUser(null);
+      queryClient.clear();
       router.push(ROUTES.login);
     }
   };

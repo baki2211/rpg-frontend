@@ -1,7 +1,7 @@
 'use client';
 
-import React, { useState, useEffect, type SubmitEvent } from 'react';
-import { useUser } from '../contexts/UserContext';
+import React, { useState, type SubmitEvent } from 'react';
+import { useAllUsers, useUpdateUserPassword, useAdminResetUserPassword } from '../hooks/queries/useUser';
 import '../register/register.css';
 import '../admin/admin.css';
 
@@ -11,34 +11,17 @@ interface UpdateUserPasswordProps {
 }
 
 const UpdateUserPassword: React.FC<UpdateUserPasswordProps> = ({ isAdmin = true, currentUserId }) => {
-    const { allUsers, loading, getAllUsers, updateUserPassword: updateUserPasswordContext, adminResetUserPassword } = useUser();
+    const { data: allUsers = [], isLoading: loading } = useAllUsers({ enabled: isAdmin });
+    const updateUserPasswordMutation = useUpdateUserPassword();
+    const adminResetUserPasswordMutation = useAdminResetUserPassword();
     const [selectedUserId, setSelectedUserId] = useState<number | null>(null);
     const [oldPassword, setOldPassword] = useState('');
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
-    const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
-    const fetchUsers = async () => {
-          try {
-            setError(null);
-            setSuccessMessage(null);
-            await getAllUsers();
-          } catch (error) {
-            console.error('Error fetching users:', error);
-            setError('Failed to fetch users. Make sure you have admin permissions.');
-          }
-        };
-
-      useEffect(() => {
-        if (isAdmin) {
-          (async () => {
-            await fetchUsers();
-          })();
-        }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-      }, [isAdmin]);
+    const isLoading = updateUserPasswordMutation.isPending || adminResetUserPasswordMutation.isPending;
 
       // For non-admins the password change targets their own account; admins pick from the list.
       const targetUserId = isAdmin ? selectedUserId : (currentUserId ?? null);
@@ -62,7 +45,6 @@ const UpdateUserPassword: React.FC<UpdateUserPasswordProps> = ({ isAdmin = true,
               return;
             }
 
-            setIsLoading(true);
         try {
               setError(null);
               setSuccessMessage(null);
@@ -70,9 +52,9 @@ const UpdateUserPassword: React.FC<UpdateUserPasswordProps> = ({ isAdmin = true,
               // Admin path uses a dedicated reset endpoint that authorizes via the admin's
               // session/role and bypasses the old-password check on the server.
               if (isAdmin) {
-                await adminResetUserPassword(targetUserId, password);
+                await adminResetUserPasswordMutation.mutateAsync({ userId: targetUserId, newPassword: password });
               } else {
-                await updateUserPasswordContext(targetUserId, oldPassword, password);
+                await updateUserPasswordMutation.mutateAsync({ userId: targetUserId, oldPassword, newPassword: password });
               }
               setSuccessMessage(`Password updated successfully!`);
 
@@ -89,8 +71,6 @@ const UpdateUserPassword: React.FC<UpdateUserPasswordProps> = ({ isAdmin = true,
             } catch (error) {
               console.error('Error updating user password:', error);
               setError('Failed to update user password. Please try again.');
-            } finally {
-              setIsLoading(false);
             }
         };
 

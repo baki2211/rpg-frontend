@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState, type SubmitEvent } from 'react';
 import './CharacterCreationModal.css';
-import { useUser } from '../../../contexts/UserContext';
+import { useProfile } from '../../../hooks/queries/useUser';
 import { usePlayableRaces } from '../../../hooks/queries/useRaces';
 import { usePrimaryStats } from '../../../hooks/queries/useStatDefinitions';
 
@@ -22,7 +22,7 @@ interface CharacterCreationModalPanelProps {
 }
 
 const CharacterCreationModalPanel: React.FC<CharacterCreationModalPanelProps> = ({ onSuccess, createCharacter }) => {
-  const { user, fetchProfile } = useUser();
+  const { data: user } = useProfile();
   const { data: playableRaces = [] } = usePlayableRaces();
   const { data: primaryStats = [] } = usePrimaryStats();
 
@@ -41,14 +41,6 @@ const CharacterCreationModalPanel: React.FC<CharacterCreationModalPanelProps> = 
   const TOTAL_POINTS = 45;
   const allocatedPoints = Object.values(characterData.stats).reduce((sum, val) => sum + (typeof val === 'number' ? val : 0), 0);
   const remainingPoints = TOTAL_POINTS - allocatedPoints;
-
-  useEffect(() => {
-    fetchProfile().catch((error) => {
-      console.error('Failed to initialize data:', error);
-      setErrorMessage('Failed to load initial data');
-    });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
   useEffect(() => {
     if (user) {

@@ -6,23 +6,29 @@ import CharacterCard from '../components/character/Card/CharacterCard';
 import OnlineUsers from '../components/common/OnlineUsers';
 import SessionList from '../sessions/page';
 import { useCharacter } from '../contexts/CharacterContext';
-import { useUser } from '../contexts/UserContext';
+import { useDashboard } from '../hooks/queries/useUser';
+import { getErrorMessage } from '../../utils/errorHandling';
+import { ROUTES } from '../../config/routes';
 
 const Dashboard = () => {
   const router = useRouter();
-  const { user, loading: userLoading, error: userError, fetchDashboard } = useUser();
+  const { data: dashboardData, isLoading: userLoading, error: userError } = useDashboard();
+  const user = dashboardData?.user ?? null;
   const { characters, activateCharacter, deleteCharacter } = useCharacter();
 
   useEffect(() => {
-    fetchDashboard().catch(() => {
-      setTimeout(() => router.push('/login'), 2000);
-    });
-  }, [fetchDashboard, router]);
+    if (userError) {
+      const timeout = setTimeout(() => router.push(ROUTES.login), 2000);
+      return () => clearTimeout(timeout);
+    }
+  }, [userError, router]);
 
   if (userLoading || !user) {
     return (
       <div className="page-container">
-        <div className="loading">{userError || 'Loading your dashboard...'}</div>
+        <div className="loading">
+          {userError ? getErrorMessage(userError, 'Failed to fetch dashboard') : 'Loading your dashboard...'}
+        </div>
       </div>
     );
   }
