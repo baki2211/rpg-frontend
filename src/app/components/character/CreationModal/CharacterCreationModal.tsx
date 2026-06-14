@@ -1,13 +1,15 @@
 'use client';
 
-import React, { useEffect, useState, type SubmitEvent } from 'react';
+import React, { useState, type SubmitEvent } from 'react';
 import './CharacterCreationModal.css';
 import { useProfile } from '@/app/hooks/queries/useUser';
 import { usePlayableRaces } from '@/app/hooks/queries/useRaces';
 import { usePrimaryStats } from '@/app/hooks/queries/useStatDefinitions';
+import type { User } from '@/types/user';
+import type { Race } from '@/types/character';
+import type { StatDefinition } from '@/services/statDefinitionsService';
 
 interface CharacterForm {
-  userId: number | null;
   name: string;
   surname: string;
   age: number;
@@ -26,41 +28,61 @@ const CharacterCreationModalPanel: React.FC<CharacterCreationModalPanelProps> = 
   const { data: playableRaces = [] } = usePlayableRaces();
   const { data: primaryStats = [] } = usePrimaryStats();
 
+  // Gate the form on its required inputs so the inner component can seed state
+  // synchronously from primaryStats — no auth-sync useEffect needed.
+  if (!user || primaryStats.length === 0) {
+    return (
+      <div className="character-creation-modal">
+        <div className="character-creation-header">
+          <h2>Create Your Character</h2>
+          <p className="character-creation-subtitle">Loading…</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <CharacterCreationForm
+      user={user}
+      playableRaces={playableRaces}
+      primaryStats={primaryStats}
+      onSuccess={onSuccess}
+      createCharacter={createCharacter}
+    />
+  );
+};
+
+interface CharacterCreationFormProps {
+  user: User;
+  playableRaces: Race[];
+  primaryStats: StatDefinition[];
+  onSuccess?: () => void;
+  createCharacter: (formData: FormData) => Promise<void>;
+}
+
+const TOTAL_POINTS = 45;
+
+const CharacterCreationForm: React.FC<CharacterCreationFormProps> = ({
+  user,
+  playableRaces,
+  primaryStats,
+  onSuccess,
+  createCharacter,
+}) => {
   const [imageFile, setImageFile] = useState<File | null>(null);
-  const [characterData, setCharacterData] = useState<CharacterForm>({
-    userId: null,
+  const [characterData, setCharacterData] = useState<CharacterForm>(() => ({
     name: '',
     surname: '',
     age: 0,
     gender: '',
     raceId: null,
-    stats: {}
-  });
+    stats: Object.fromEntries(primaryStats.map((d) => [d.internalName, d.defaultValue])),
+  }));
   const [errorMessage, setErrorMessage] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
-  const TOTAL_POINTS = 45;
+
   const allocatedPoints = Object.values(characterData.stats).reduce((sum, val) => sum + (typeof val === 'number' ? val : 0), 0);
   const remainingPoints = TOTAL_POINTS - allocatedPoints;
-
-  useEffect(() => {
-    if (user) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setCharacterData((prev) => ({
-        ...prev,
-        userId: user.id,
-      }));
-    }
-  }, [user]);
-
-  useEffect(() => {
-    if (primaryStats.length > 0) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setCharacterData(prev => ({
-        ...prev,
-        stats: Object.fromEntries(primaryStats.map((d) => [d.internalName, d.defaultValue]))
-      }));
-    }
-  }, [primaryStats]);
 
   const handleStatChange = (stat: string, value: number) => {
     const cleanValue = isNaN(value) ? 0 : value;
@@ -71,18 +93,12 @@ const CharacterCreationModalPanel: React.FC<CharacterCreationModalPanelProps> = 
       return;
     }
     setCharacterData({ ...characterData, stats: newStats });
-    setErrorMessage(''); 
+    setErrorMessage('');
   };
 
   const handleCharacterSubmit = async (e: SubmitEvent) => {
     e.preventDefault();
-  
-    if (!user || !characterData.userId) {
-      console.error('User or userId not found');
-      setErrorMessage('You must be logged in to create a character');
-      return;
-    }
-  
+
     if (!characterData.raceId) {
       console.error('RaceId not selected');
       setErrorMessage('Please select a race');
@@ -99,13 +115,13 @@ const CharacterCreationModalPanel: React.FC<CharacterCreationModalPanelProps> = 
     formData.append('surname', characterData.surname);
     formData.append('age', characterData.age.toString());
     formData.append('gender', characterData.gender);
-    formData.append('raceId', characterData.raceId!.toString());
+    formData.append('raceId', characterData.raceId.toString());
     formData.append('stats', JSON.stringify(characterData.stats));
     if (imageFile) {
       formData.append('image', imageFile);
     }
-    formData.append('userId', characterData.userId.toString());
-  
+    formData.append('userId', user.id.toString());
+
     try {
       await createCharacter(formData);
       setSuccessMessage('Character created successfully');
@@ -115,7 +131,7 @@ const CharacterCreationModalPanel: React.FC<CharacterCreationModalPanelProps> = 
       setErrorMessage('Failed to create character');
     }
   };
-  
+
   return (
     <div className="character-creation-modal">
       <div className="character-creation-header">
@@ -218,14 +234,14 @@ const CharacterCreationModalPanel: React.FC<CharacterCreationModalPanelProps> = 
               <label>Character Portrait</label>
               <div className="character-file-input">
                 <label className="character-file-label">
-                  <input 
-                    type="file" 
-                    accept="image/*" 
+                  <input
+                    type="file"
+                    accept="image/*"
                     onChange={(e) => {
                       if (e.target.files && e.target.files[0]) {
                         setImageFile(e.target.files[0]);
                       }
-                    }} 
+                    }}
                   />
                   {imageFile ? `Selected: ${imageFile.name}` : 'Click to upload character image (optional)'}
                 </label>

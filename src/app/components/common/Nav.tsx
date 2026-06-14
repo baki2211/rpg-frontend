@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import Link from 'next/link';
 import { useAuth } from "@/app/contexts/AuthContext";
 import { useCharacterSheet } from "@/app/contexts/CharacterSheetContext";
@@ -10,18 +10,6 @@ import LogoutButton from "@/app/components/buttons/LogoutButton";
 const NavMenu: React.FC = () => {
   const { isAuthenticated, user } = useAuth();
   const { openCharacterSheet } = useCharacterSheet();
-  const [isClient, setIsClient] = useState(false);
-
-  useEffect(() => {
-    // SSR hydration guard: mark client after first commit.
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setIsClient(true);
-  }, []);
-
-  if (!isClient) {
-    // Prevent rendering during SSR
-    return null;
-  }
 
   return (
     <nav className="navbar">

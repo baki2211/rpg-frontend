@@ -36,9 +36,8 @@ export const usePresence = () => {
 };
 
 export const PresenceProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [onlineUsers, setOnlineUsers] = useState<PresenceUser[]>([]);
-  const [currentUser, setCurrentUser] = useState<{ id: string; username: string } | null>(null);
-  const [connectionStatus, setConnectionStatus] = useState<'connected' | 'connecting' | 'disconnected' | 'error'>('disconnected');
+  const [internalOnlineUsers, setOnlineUsers] = useState<PresenceUser[]>([]);
+  const [internalConnectionStatus, setConnectionStatus] = useState<'connected' | 'connecting' | 'disconnected' | 'error'>('disconnected');
   const [serverMessage, setServerMessage] = useState<string | null>(null);
   const [isPresenceEnabled, setIsPresenceEnabled] = useState(true);
   const pathname = usePathname();
@@ -46,17 +45,21 @@ export const PresenceProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const heartbeatIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const { user, isAuthenticated } = useAuth();
 
-  // Update current user when auth changes
-  useEffect(() => {
-    if (isAuthenticated && user) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setCurrentUser({ id: String(user.id), username: user.username });
-    } else {
-      setCurrentUser(null);
-      setOnlineUsers([]);
-      setConnectionStatus('disconnected');
-    }
-  }, [isAuthenticated, user]);
+  // Derived from auth — no setState-in-effect needed.
+  const currentUser = useMemo(
+    () => (isAuthenticated && user
+      ? { id: String(user.id), username: user.username }
+      : null),
+    [isAuthenticated, user]
+  );
+
+  // When not signed in, expose empty/idle values regardless of internal state
+  // (which may still hold the previous session's last SSE snapshot).
+  const onlineUsers = useMemo(
+    () => (currentUser ? internalOnlineUsers : []),
+    [currentUser, internalOnlineUsers]
+  );
+  const connectionStatus = currentUser ? internalConnectionStatus : 'disconnected';
 
   // Connect to SSE endpoint
   const connect = useCallback(async (userId: string, username: string) => {
@@ -78,6 +81,7 @@ export const PresenceProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
     try {
       setConnectionStatus('disconnected');
+      setOnlineUsers([]);
       setServerMessage(null);
 
       const eventSource = new EventSource(`${API_CONFIG.baseUrl}/api/presence/events?userId=${userId}&username=${encodeURIComponent(username)}`);
@@ -172,10 +176,19 @@ export const PresenceProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     }
   }, [pathname, isAuthenticated, currentUser, connectionStatus]);
 
-  // Connect when user is authenticated
+  // Connect when authenticated; tear down the SSE on logout or when presence is disabled
   useEffect(() => {
     if (isAuthenticated && currentUser && isPresenceEnabled) {
       connect(currentUser.id, currentUser.username);
+      return;
+    }
+    if (eventSourceRef.current) {
+      eventSourceRef.current.close();
+      eventSourceRef.current = null;
+    }
+    if (heartbeatIntervalRef.current) {
+      clearInterval(heartbeatIntervalRef.current);
+      heartbeatIntervalRef.current = null;
     }
   }, [isAuthenticated, currentUser, isPresenceEnabled, connect]);
 
