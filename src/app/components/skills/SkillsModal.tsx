@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useCharacter } from '@/app/contexts/CharacterContext';
 import { SkillRow } from './SkillRow';
 import { Skill } from '@/types/character';
-import { useChatUsers, ChatUser } from '@/app/hooks/useChatUsers';
+import { useChatUsers, ChatUser } from '@/app/hooks/queries/useChatUsers';
 import { useAuth } from '@/app/contexts/AuthContext';
 import { useCombatRounds } from '@/app/contexts/CombatRoundsContext';
 import { useEvents } from '@/app/contexts/EventsContext';

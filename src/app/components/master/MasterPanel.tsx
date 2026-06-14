@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
-import { useChatUsers } from '../../hooks/useChatUsers';
-import { useEngineLogs } from '../../contexts/EngineLogsContext';
+import { useChatUsers } from '../../hooks/queries/useChatUsers';
+import { useEngineLogsByLocation } from '../../hooks/queries/useEngineLogs';
 import { useCombatRounds } from '../../contexts/CombatRoundsContext';
 import { useEvents } from '../../contexts/EventsContext';
 import './MasterPanel.css';
@@ -44,7 +44,6 @@ export const MasterPanel: React.FC<MasterPanelProps> = ({
 }) => {
   const { user } = useAuth();
   const { users: chatUsers } = useChatUsers(locationId);
-  const { logs: engineLogs, fetchLogsByLocation } = useEngineLogs();
   const {
     activeCombatRound,
     resolvedCombatRounds,
@@ -67,6 +66,13 @@ export const MasterPanel: React.FC<MasterPanelProps> = ({
   } = useEvents();
 
   const [activeTab, setActiveTab] = useState<'logs' | 'hp' | 'status' | 'combat' | 'events'>('logs');
+
+  const isLogsTabActive = isOpen && activeTab === 'logs';
+  const { data: engineLogs = [], refetch: refetchEngineLogs } = useEngineLogsByLocation(locationId, {
+    enabled: isLogsTabActive,
+    refetchInterval: isLogsTabActive ? 10000 : false,
+  });
+
   const [characterHP, setCharacterHP] = useState<CharacterHP[]>([]);
   const [selectedCharacter, setSelectedCharacter] = useState<string>('');
   const [damageAmount, setDamageAmount] = useState<number>(0);
@@ -90,18 +96,6 @@ export const MasterPanel: React.FC<MasterPanelProps> = ({
 
   // Check if user has master permissions
   const isMaster = user?.role === 'master' || user?.role === 'admin';
-
-  // Load engine logs when the logs tab is active
-  useEffect(() => {
-    if (activeTab === 'logs' && isOpen) {
-      fetchLogsByLocation(locationId);
-      // Set up interval to refresh logs periodically
-      const interval = setInterval(() => fetchLogsByLocation(locationId), 10000); // Refresh every 10 seconds
-      return () => clearInterval(interval);
-    }
-  }, [activeTab, isOpen, locationId, fetchLogsByLocation]);
-
-  // No need for fetch functions - using context methods directly
 
   const createNewRound = async () => {
     if (!activeEvent) {
@@ -134,7 +128,7 @@ export const MasterPanel: React.FC<MasterPanelProps> = ({
       ]);
       // Trigger a refresh of engine logs to pick up new logs
       if (activeTab === 'logs') {
-        await fetchLogsByLocation(locationId);
+        await refetchEngineLogs();
       }
     } catch (error) {
       console.error('MASTER PANEL: Error resolving round:', error);

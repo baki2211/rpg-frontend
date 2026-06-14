@@ -14,7 +14,7 @@ const PUBLIC_PATHS = new Set<string>([
   ROUTES.wiki,
 ]);
 
-export function middleware(request: NextRequest) {
+export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   if (PUBLIC_PATHS.has(pathname)) {

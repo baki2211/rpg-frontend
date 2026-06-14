@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from 'react';
-import { usePresence, PresenceUser } from '../contexts/PresenceContext';
-import { api } from '../../services/apiClient';
+import { usePresence, PresenceUser } from '../../contexts/PresenceContext';
+import { useLocation } from './useLocations';
 
 // Export ChatUser type as an alias for PresenceUser
 export type ChatUser = PresenceUser;
@@ -9,31 +9,13 @@ export const useChatUsers = (locationId: string | null) => {
   const [users, setUsers] = useState<ChatUser[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const [locationName, setLocationName] = useState<string | null>(null);
   const mountedRef = useRef(true);
   const { onlineUsers, connectionStatus } = usePresence();
+  const { data: location, isError: locationError } = useLocation(locationId);
 
-  // Get the location name from locationId
-  useEffect(() => {
-    const fetchLocationName = async () => {
-      if (!locationId) return;
-      
-      try {
-        const response = await api.get(`/locations/byId/${locationId}`);
-        const fetchedLocationName = (response.data as { location: { name: string } }).location?.name || 
-                                   (response.data as { name: string }).name || 
-                                   `Location ${locationId}`;
-        setLocationName(fetchedLocationName);
-      } catch (error) {
-        console.error('Error fetching location name:', error);
-        // Fallback to generic location name
-        const fallbackName = `Location ${locationId}`;
-        setLocationName(fallbackName);
-      }
-    };
-
-    fetchLocationName();
-  }, [locationId]);
+  const locationName = locationId
+    ? location?.name ?? (locationError ? `Location ${locationId}` : null)
+    : null;
 
   // Filter users by location whenever onlineUsers or locationName changes
   useEffect(() => {
@@ -49,7 +31,7 @@ export const useChatUsers = (locationId: string | null) => {
                  user.location === `Location ${locationId}` || // "Location X" format
                  (user.location && user.location.toLowerCase().includes(locationId.toLowerCase())); // Partial match
         });
-        
+
         setUsers(filteredUsers);
         setLoading(false);
         setRefreshing(false);
@@ -72,7 +54,7 @@ export const useChatUsers = (locationId: string | null) => {
 
   const refreshUsers = async () => {
     if (!mountedRef.current || !locationId || !locationName) return;
-    
+
     setRefreshing(true);
     try {
       // Use the presence context's online users with location name matching
@@ -96,6 +78,6 @@ export const useChatUsers = (locationId: string | null) => {
     refreshing,
     refreshUsers,
     connectionStatus,
-    locationName
+    locationName,
   };
-}; 
+};

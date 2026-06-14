@@ -9,10 +9,17 @@ export const engineLogsQueryKeys = {
   byLocation: (locationId: string) => ['engineLogs', { locationId }] as const,
 };
 
-export function useEngineLogsByLocation(locationId: string) {
+interface UseEngineLogsOptions {
+  enabled?: boolean;
+  refetchInterval?: number | false;
+}
+
+export function useEngineLogsByLocation(locationId: string, options?: UseEngineLogsOptions) {
   const query = useQuery({
     queryKey: engineLogsQueryKeys.byLocation(locationId),
     queryFn: () => engineLogsService.getLogsByLocation(locationId),
+    enabled: options?.enabled ?? true,
+    refetchInterval: options?.refetchInterval,
   });
   useToastOnError(query.error, 'Failed to fetch engine logs');
   return query;
