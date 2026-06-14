@@ -111,13 +111,11 @@ const WikiBrowser: React.FC = () => {
 
   const fetchNavigation = async () => {
     try {
-      const response = await api.get<{success: boolean, data: WikiNavigation}>('/wiki/navigation');
+      const response = await api.get<WikiNavigation>('/wiki/navigation');
 
-      if (response.data && response.data.data && response.data.data.sections) {
-        setNavigation(response.data.data);
-        // Expand all sections by default
-        const allSectionIds = response.data.data.sections.map(s => s.id);
-        setExpandedSections(new Set(allSectionIds));
+      if (response.data?.sections) {
+        setNavigation(response.data);
+        setExpandedSections(new Set(response.data.sections.map(s => s.id)));
       } else {
         console.warn('Navigation data structure unexpected:', response.data);
         setNavigation({ sections: [] });
