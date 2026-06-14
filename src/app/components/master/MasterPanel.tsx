@@ -18,21 +18,19 @@ import {
   useFreezeEvent,
   useUnfreezeEvent,
 } from '../../hooks/queries/useEvents';
-import { HEALTH_COLOR, TABS, type TabKey } from './constants';
+import {
+  HEALTH_COLOR,
+  STATUS_EFFECTS,
+  TABS,
+  type StatusEffect,
+  type TabKey,
+} from './constants';
 import { TabBar } from './components/TabBar';
 import { CharacterSelect } from './components/CharacterSelect';
+import { LogEntry } from './components/LogEntry';
 import { useCharacterHP } from './hooks/useCharacterHP';
 import './MasterPanel.css';
 
-
-interface StatusEffect {
-  id: string;
-  name: string;
-  type: 'buff' | 'debuff' | 'condition';
-  description: string;
-  duration: number;
-  effects: Record<string, number>;
-}
 
 interface MasterPanelProps {
   isOpen: boolean;
@@ -54,6 +52,7 @@ export const MasterPanel: React.FC<MasterPanelProps> = ({
   const { user } = useAuth();
   const { showSuccess, showError, showWarning } = useToast();
   const { users: chatUsers } = useChatUsers(locationId);
+  const locationIdNum = parseInt(locationId);
   const [activeTab, setActiveTab] = useState<TabKey>('logs');
 
   // Combat tab polls every 5s while open; mutations invalidate the
@@ -104,13 +103,6 @@ export const MasterPanel: React.FC<MasterPanelProps> = ({
   const [selectedStatus, setSelectedStatus] = useState<string>('');
   const [statusDuration, setStatusDuration] = useState<number>(1);
 
-  const isCreatingRound = createCombatRoundMutation.isPending;
-  const isResolvingRound = resolveCombatRoundMutation.isPending;
-  const isCreatingEvent = createEventMutation.isPending;
-  const isClosingEvent = closeEventMutation.isPending;
-  const isFreezingEvent = freezeEventMutation.isPending;
-  const isUnfreezingEvent = unfreezeEventMutation.isPending;
-
   const [eventForm, setEventForm] = useState({
     title: '',
     type: 'lore' as 'lore' | 'duel' | 'quest',
@@ -126,7 +118,7 @@ export const MasterPanel: React.FC<MasterPanelProps> = ({
       return;
     }
     createCombatRoundMutation.mutate({
-      locationId: parseInt(locationId),
+      locationId: locationIdNum,
       eventId: activeEvent.id,
     });
   };
@@ -166,7 +158,7 @@ export const MasterPanel: React.FC<MasterPanelProps> = ({
       {
         title: eventForm.title,
         type: eventForm.type,
-        locationId: parseInt(locationId),
+        locationId: locationIdNum,
         description: eventForm.description,
       },
       {
@@ -201,58 +193,6 @@ export const MasterPanel: React.FC<MasterPanelProps> = ({
     );
   };
 
-  // Predefined status effects
-  const statusEffects: StatusEffect[] = [
-    {
-      id: 'blessed',
-      name: 'Blessed',
-      type: 'buff',
-      description: 'Increased accuracy and damage',
-      duration: 3,
-      effects: { accuracy: 2, damage: 5 }
-    },
-    {
-      id: 'cursed',
-      name: 'Cursed',
-      type: 'debuff',
-      description: 'Decreased accuracy and damage',
-      duration: 3,
-      effects: { accuracy: -2, damage: -5 }
-    },
-    {
-      id: 'poisoned',
-      name: 'Poisoned',
-      type: 'debuff',
-      description: 'Takes damage over time',
-      duration: 5,
-      effects: { damagePerTurn: 3 }
-    },
-    {
-      id: 'regenerating',
-      name: 'Regenerating',
-      type: 'buff',
-      description: 'Heals over time',
-      duration: 5,
-      effects: { healingPerTurn: 5 }
-    },
-    {
-      id: 'stunned',
-      name: 'Stunned',
-      type: 'condition',
-      description: 'Cannot act for 1 turn',
-      duration: 1,
-      effects: { canAct: 0 }
-    },
-    {
-      id: 'shielded',
-      name: 'Shielded',
-      type: 'buff',
-      description: 'Reduced incoming damage',
-      duration: 3,
-      effects: { damageReduction: 50 }
-    }
-  ];
-
   const handleApplyDamage = () => {
     if (!selectedCharacter || damageAmount <= 0) return;
     applyDelta(selectedCharacter, -damageAmount);
@@ -267,7 +207,7 @@ export const MasterPanel: React.FC<MasterPanelProps> = ({
 
   const handleApplyStatus = () => {
     if (selectedCharacter && selectedStatus) {
-      const status = statusEffects.find(s => s.id === selectedStatus);
+      const status = STATUS_EFFECTS.find(s => s.id === selectedStatus);
       if (status) {
         const statusWithDuration = { ...status, duration: statusDuration };
         onApplyStatus?.(selectedCharacter, statusWithDuration);
@@ -321,84 +261,8 @@ export const MasterPanel: React.FC<MasterPanelProps> = ({
                     .slice()
                     .reverse() // Show newest first
                     .map((log) => (
-                    <div key={log.id} className={`log-entry ${log.type}`}>
-                      <div className="log-header">
-                        <div className="log-timestamp">
-                          {log.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
-                        </div>
-                        <div className={`log-type-badge ${log.type}`}>
-                          {log.type.replace('_', ' ').toUpperCase()}
-                        </div>
-                      </div>
-                      <div className="log-content">
-                        {log.type === 'clash' ? (
-                          <div className="clash-content">
-                            <div className="log-main-line">
-                              <span className="log-actor">{log.actor}</span>
-                              <span className="clash-vs">VS</span>
-                              <span className="log-actor">{log.target}</span>
-                            </div>
-                            
-                            {log.skill && (
-                              <div className="log-action">
-                                <strong>Skills:</strong> {log.skill}
-                              </div>
-                            )}
-                            
-                            {log.effects && log.effects.length > 0 && (
-                              <div className="log-effects">
-                                {log.effects.map((effect, index) => (
-                                  <span key={index} className="effect-tag">
-                                    {effect}
-                                  </span>
-                                ))}
-                              </div>
-                            )}
-                            
-                            {log.damage && log.damage > 0 && (
-                              <div className="log-damage">
-                                <span className="damage-label">Damage Dealt:</span> {log.damage}
-                              </div>
-                            )}
-                            
-                            <div className="log-details">{log.details}</div>
-                          </div>
-                        ) : (
-                          <div className="regular-content">
-                            <div className="log-main-line">
-                              <span className="log-actor">{log.actor}</span>
-                              {log.skill && (
-                                <span className="log-action">
-                                  used <span className="log-skill">{log.skill}</span>
-                                </span>
-                              )}
-                              {log.target && log.target !== log.actor && (
-                                <span className="log-target">on {log.target}</span>
-                              )}
-                            </div>
-                            
-                            {log.effects && log.effects.length > 0 && (
-                              <div className="log-effects">
-                                {log.effects.map((effect, index) => (
-                                  <span key={index} className="effect-tag">
-                                    {effect}
-                                  </span>
-                                ))}
-                              </div>
-                            )}
-                            
-                            {log.damage && (
-                              <div className="log-damage">
-                                <span className="damage-label">Result:</span> {log.damage}
-                              </div>
-                            )}
-                            
-                            <div className="log-details">{log.details}</div>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  ))}
+                      <LogEntry key={log.id} log={log} />
+                    ))}
                 </div>
               )}
             </div>
@@ -500,7 +364,7 @@ export const MasterPanel: React.FC<MasterPanelProps> = ({
                   onChange={(e) => setSelectedStatus(e.target.value)}
                 >
                   <option value="">Select status...</option>
-                  {statusEffects.map((status) => (
+                  {STATUS_EFFECTS.map((status) => (
                     <option key={status.id} value={status.id}>
                       {status.name} ({status.type})
                     </option>
@@ -531,7 +395,7 @@ export const MasterPanel: React.FC<MasterPanelProps> = ({
             <div className="status-effects-reference">
               <h4>Available Status Effects</h4>
               <div className="status-grid">
-                {statusEffects.map((status) => (
+                {STATUS_EFFECTS.map((status) => (
                   <div key={status.id} className={`status-card ${status.type}`}>
                     <div className="status-name">{status.name}</div>
                     <div className="status-type">{status.type}</div>
@@ -559,12 +423,12 @@ export const MasterPanel: React.FC<MasterPanelProps> = ({
                 <div className="round-header">
                   <h4>Round {activeCombatRound.roundNumber} - Active</h4>
                   <div className="round-actions">
-                    <button 
+                    <button
                       onClick={resolveRound}
-                      disabled={isResolvingRound || roundActions.length === 0}
+                      disabled={resolveCombatRoundMutation.isPending || roundActions.length === 0}
                       className="resolve-button"
                     >
-                      {isResolvingRound ? 'Resolving...' : 'Resolve Round'}
+                      {resolveCombatRoundMutation.isPending ? 'Resolving...' : 'Resolve Round'}
                     </button>
                     <button 
                       onClick={cancelRound}
@@ -608,12 +472,12 @@ export const MasterPanel: React.FC<MasterPanelProps> = ({
                       <h4>No Active Combat Round</h4>
                       <p>Create a new round for the current event: <strong>{activeEvent.title}</strong></p>
                     </div>
-                    <button 
+                    <button
                       onClick={createNewRound}
-                      disabled={isCreatingRound}
+                      disabled={createCombatRoundMutation.isPending}
                       className="create-round-button"
                     >
-                      {isCreatingRound ? 'Creating...' : 'Start New Round'}
+                      {createCombatRoundMutation.isPending ? 'Creating...' : 'Start New Round'}
                     </button>
                   </>
                 ) : (
@@ -667,30 +531,30 @@ export const MasterPanel: React.FC<MasterPanelProps> = ({
                   <h4>{activeEvent.title} - {activeEvent.type.toUpperCase()}</h4>
                   <div className="event-actions">
                     {activeEvent.session?.status === 'frozen' ? (
-                      <button 
+                      <button
                         onClick={unfreezeEvent}
-                        disabled={isUnfreezingEvent}
+                        disabled={unfreezeEventMutation.isPending}
                         className="unfreeze-event-button"
                         title="Unfreeze event and session"
                       >
-                        {isUnfreezingEvent ? 'Unfreezing...' : 'Unfreeze'}
+                        {unfreezeEventMutation.isPending ? 'Unfreezing...' : 'Unfreeze'}
                       </button>
                     ) : (
-                      <button 
+                      <button
                         onClick={freezeEvent}
-                        disabled={isFreezingEvent}
+                        disabled={freezeEventMutation.isPending}
                         className="freeze-event-button"
                         title="Freeze event and session"
                       >
-                        {isFreezingEvent ? 'Freezing...' : 'Freeze'}
+                        {freezeEventMutation.isPending ? 'Freezing...' : 'Freeze'}
                       </button>
                     )}
-                    <button 
+                    <button
                       onClick={closeEvent}
-                      disabled={isClosingEvent}
+                      disabled={closeEventMutation.isPending}
                       className="close-event-button"
                     >
-                      {isClosingEvent ? 'Closing...' : 'Close Event'}
+                      {closeEventMutation.isPending ? 'Closing...' : 'Close Event'}
                     </button>
                   </div>
                 </div>
@@ -762,12 +626,12 @@ export const MasterPanel: React.FC<MasterPanelProps> = ({
                     />
                   </div>
                   
-                  <button 
+                  <button
                     onClick={createNewEvent}
-                    disabled={isCreatingEvent || !eventForm.title}
+                    disabled={createEventMutation.isPending || !eventForm.title}
                     className="create-event-button"
                   >
-                    {isCreatingEvent ? 'Creating...' : 'Create Event'}
+                    {createEventMutation.isPending ? 'Creating...' : 'Create Event'}
                   </button>
                 </div>
               </div>
