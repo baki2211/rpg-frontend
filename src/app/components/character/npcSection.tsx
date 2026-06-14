@@ -1,20 +1,25 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { useNPC } from '../../contexts/NPCContext';
+import React, { useState } from 'react';
+import {
+  useAvailableNPCs,
+  useNPCActiveCharacter,
+  useActivateNPC,
+  useDeactivateNPC,
+} from '../../hooks/queries/useNPCs';
 
 const NPCSection: React.FC = () => {
-  const { availableNPCs, activeCharacter, loading, error, activateNPC, deactivateNPC, refreshNPCData } = useNPC();
+  const { data: availableNPCs = [], isLoading: availableLoading } = useAvailableNPCs();
+  const { data: activeCharacter, isLoading: activeLoading } = useNPCActiveCharacter();
+  const activateMutation = useActivateNPC();
+  const deactivateMutation = useDeactivateNPC();
   const [selectedNPC, setSelectedNPC] = useState<number | null>(null);
 
-  useEffect(() => {
-    refreshNPCData();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  const loading = availableLoading || activeLoading;
 
   const handleActivateNPC = async (npcId: number) => {
     try {
-      await activateNPC(npcId);
+      await activateMutation.mutateAsync(npcId);
       setSelectedNPC(null);
     } catch (error) {
       console.error('Error activating NPC:', error);
@@ -25,7 +30,7 @@ const NPCSection: React.FC = () => {
     if (!activeCharacter?.isNPC || !activeCharacter.id) return;
 
     try {
-      await deactivateNPC(activeCharacter.id);
+      await deactivateMutation.mutateAsync(activeCharacter.id);
     } catch (error) {
       console.error('Error deactivating NPC:', error);
     }
@@ -45,13 +50,11 @@ const NPCSection: React.FC = () => {
       <h3>Available NPCs</h3>
       <p>Activate an NPC to play as them in chat and use their skills.</p>
 
-      {error && <div className="error-message">{error}</div>}
-      
       {activeCharacter?.isNPC && (
         <div className="active-npc-info">
           <h4>Currently Active NPC</h4>
           <p><strong>{activeCharacter.name} {activeCharacter.surname}</strong></p>
-          <button 
+          <button
             onClick={handleDeactivateNPC}
             className="btn btn-sm btn-secondary"
           >
@@ -66,8 +69,8 @@ const NPCSection: React.FC = () => {
         <>
           <div className="available-npcs">
             {availableNPCs.map((npc) => (
-              <div 
-                key={npc.id} 
+              <div
+                key={npc.id}
                 className={`npc-option ${selectedNPC === npc.id ? 'selected' : ''}`}
                 onClick={() => setSelectedNPC(selectedNPC === npc.id ? null : npc.id)}
               >
@@ -85,14 +88,14 @@ const NPCSection: React.FC = () => {
 
           {selectedNPC && (
             <div className="npc-controls">
-              <button 
+              <button
                 onClick={() => handleActivateNPC(selectedNPC)}
                 className="btn btn-primary"
                 disabled={!!activeCharacter?.isNPC}
               >
                 {activeCharacter?.isNPC ? 'Deactivate current NPC first' : 'Activate Selected NPC'}
               </button>
-              <button 
+              <button
                 onClick={() => setSelectedNPC(null)}
                 className="btn btn-secondary"
               >
@@ -106,4 +109,4 @@ const NPCSection: React.FC = () => {
   );
 };
 
-export default NPCSection; 
+export default NPCSection;
