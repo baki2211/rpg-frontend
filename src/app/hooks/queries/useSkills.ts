@@ -5,6 +5,7 @@ import { skillsService } from '../../../services/skillsService';
 import { Skill } from '../../../types/character';
 import { useToast } from '../../contexts/ToastContext';
 import { getErrorMessage } from '../../../utils/errorHandling';
+import { useAuthGate } from './_useAuthGate';
 import { useToastOnError } from './_useToastOnError';
 import { charactersQueryKeys } from './useCharacters';
 
@@ -31,7 +32,7 @@ export function useAcquiredSkills(
   include?: string,
   options?: UseSkillsQueryOptions,
 ) {
-  const enabled = (options?.enabled ?? true) && characterId != null;
+  const enabled = useAuthGate((options?.enabled ?? true) && characterId != null);
   const query = useQuery<Skill[]>({
     queryKey: skillsQueryKeys.acquired(characterId ?? 0, include),
     queryFn: () => skillsService.getAcquiredSkills(characterId as number, include),
@@ -46,7 +47,7 @@ export function useAvailableSkills(
   include?: string,
   options?: UseSkillsQueryOptions,
 ) {
-  const enabled = (options?.enabled ?? true) && characterId != null;
+  const enabled = useAuthGate((options?.enabled ?? true) && characterId != null);
   const query = useQuery<Skill[]>({
     queryKey: skillsQueryKeys.available(characterId ?? 0, include),
     queryFn: () => skillsService.getAvailableSkills(characterId as number, include),

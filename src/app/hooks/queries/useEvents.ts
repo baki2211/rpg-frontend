@@ -4,6 +4,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { eventsService, GameEvent } from '../../../services/eventsService';
 import { useToast } from '../../contexts/ToastContext';
 import { getErrorMessage } from '../../../utils/errorHandling';
+import { useAuthGate } from './_useAuthGate';
 import { useToastOnError } from './_useToastOnError';
 
 export const eventsQueryKeys = {
@@ -27,7 +28,7 @@ export function useActiveEvent(
   const query = useQuery<GameEvent | null>({
     queryKey: eventsQueryKeys.active(locationId),
     queryFn: () => eventsService.getActiveEvent(locationId),
-    enabled: enabled && Boolean(locationId),
+    enabled: useAuthGate(enabled && Boolean(locationId)),
     refetchInterval,
   });
   useToastOnError(query.error, 'Failed to fetch active event');
@@ -42,7 +43,7 @@ export function useRecentEvents(
   const query = useQuery<GameEvent[]>({
     queryKey: eventsQueryKeys.recent(locationId, limit),
     queryFn: () => eventsService.getRecentEvents(locationId, limit),
-    enabled: enabled && Boolean(locationId),
+    enabled: useAuthGate(enabled && Boolean(locationId)),
     refetchInterval,
   });
   useToastOnError(query.error, 'Failed to fetch recent events');

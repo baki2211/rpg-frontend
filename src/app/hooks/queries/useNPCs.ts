@@ -4,6 +4,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { npcService, NPC, ActiveCharacter } from '../../../services/npcService';
 import { useToast } from '../../contexts/ToastContext';
 import { getErrorMessage } from '../../../utils/errorHandling';
+import { useAuthGate } from './_useAuthGate';
 import { useToastOnError } from './_useToastOnError';
 import { charactersQueryKeys } from './useCharacters';
 
@@ -17,6 +18,7 @@ export function useAvailableNPCs() {
   const query = useQuery<NPC[]>({
     queryKey: npcQueryKeys.available,
     queryFn: () => npcService.getAvailableNPCs(),
+    enabled: useAuthGate(),
   });
   useToastOnError(query.error, 'Failed to fetch available NPCs');
   return query;
@@ -26,6 +28,7 @@ export function useNPCActiveCharacter() {
   const query = useQuery<ActiveCharacter | null>({
     queryKey: npcQueryKeys.activeCharacter,
     queryFn: () => npcService.getActiveCharacter(),
+    enabled: useAuthGate(),
   });
   useToastOnError(query.error, 'Failed to fetch active character');
   return query;

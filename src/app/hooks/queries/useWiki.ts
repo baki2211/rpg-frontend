@@ -11,6 +11,7 @@ import {
   SectionOrderItem,
   EntryOrderItem,
 } from '../../../services/wikiService';
+import { useAuthGate } from './_useAuthGate';
 
 export const wikiQueryKeys = {
   all: ['wiki'] as const,
@@ -26,6 +27,7 @@ export function useWikiSections() {
   return useQuery<WikiSection[]>({
     queryKey: wikiQueryKeys.sections,
     queryFn: () => wikiService.getSections(),
+    enabled: useAuthGate(),
   });
 }
 
@@ -45,6 +47,7 @@ export function useWikiEntries({ selectedSectionId, hierarchical }: UseWikiEntri
       useHierarchical
         ? wikiService.getHierarchicalEntries(selectedSectionId as number)
         : wikiService.getEntries(),
+    enabled: useAuthGate(),
   });
 }
 
@@ -52,6 +55,7 @@ export function useWikiStats() {
   return useQuery<WikiStats>({
     queryKey: wikiQueryKeys.stats,
     queryFn: () => wikiService.getStats(),
+    enabled: useAuthGate(),
   });
 }
 

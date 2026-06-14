@@ -4,6 +4,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { masteryTiersService, MasteryTier } from '../../../services/masteryTiersService';
 import { useToast } from '../../contexts/ToastContext';
 import { getErrorMessage } from '../../../utils/errorHandling';
+import { useAuthGate } from './_useAuthGate';
 import { useToastOnError } from './_useToastOnError';
 
 export const masteryTiersQueryKeys = {
@@ -15,6 +16,7 @@ export function useMasteryTiers() {
   const query = useQuery<MasteryTier[]>({
     queryKey: masteryTiersQueryKeys.list,
     queryFn: () => masteryTiersService.getTiers(),
+    enabled: useAuthGate(),
   });
   useToastOnError(query.error, 'Failed to fetch mastery tiers');
   return query;

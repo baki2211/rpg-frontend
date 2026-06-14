@@ -8,6 +8,7 @@ import {
 } from '../../../services/combatConstantsService';
 import { useToast } from '../../contexts/ToastContext';
 import { getErrorMessage } from '../../../utils/errorHandling';
+import { useAuthGate } from './_useAuthGate';
 import { useToastOnError } from './_useToastOnError';
 
 export const combatConstantsQueryKeys = {
@@ -19,6 +20,7 @@ export function useCombatConstants() {
   const query = useQuery<ConstantsByCategory>({
     queryKey: combatConstantsQueryKeys.byCategory,
     queryFn: () => combatConstantsService.getConstantsByCategory(),
+    enabled: useAuthGate(),
   });
   useToastOnError(query.error, 'Failed to fetch combat constants');
   return query;

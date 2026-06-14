@@ -3,9 +3,9 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { characterService } from '../../../services/characterService';
 import { Character } from '../../../types/character';
-import { useAuth } from '../../contexts/AuthContext';
 import { useToast } from '../../contexts/ToastContext';
 import { getErrorMessage } from '../../../utils/errorHandling';
+import { useAuthGate } from './_useAuthGate';
 import { useToastOnError } from './_useToastOnError';
 
 export const charactersQueryKeys = {
@@ -19,19 +19,17 @@ interface UseCharactersQueryOptions {
 }
 
 export function useCharacters({ enabled = true }: UseCharactersQueryOptions = {}) {
-  const { isAuthenticated, isLoading } = useAuth();
   const query = useQuery<Character[], unknown, Character[]>({
     queryKey: charactersQueryKeys.list,
     queryFn: () => characterService.getCharacters(),
     select: (data) => data.filter((char) => !char.isNPC),
-    enabled: enabled && isAuthenticated && !isLoading,
+    enabled: useAuthGate(enabled),
   });
   useToastOnError(query.error, 'Failed to fetch characters');
   return query;
 }
 
 export function useActiveNPC({ enabled = true }: UseCharactersQueryOptions = {}) {
-  const { isAuthenticated, isLoading } = useAuth();
   // Legacy CharacterContext swallowed errors on this endpoint (no toast,
   // just set empty array). Preserve that — the endpoint 404s when no NPC is
   // active and that's normal.
@@ -46,7 +44,7 @@ export function useActiveNPC({ enabled = true }: UseCharactersQueryOptions = {})
     },
     // `isNPC` is optional on Character — pin it for downstream NPC branches.
     select: (data) => (data ? { ...data, isNPC: true } : null),
-    enabled: enabled && isAuthenticated && !isLoading,
+    enabled: useAuthGate(enabled),
   });
 }
 

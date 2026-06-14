@@ -5,6 +5,7 @@ import { userService } from '../../../services/userService';
 import { User, DashboardData } from '../../../types/user';
 import { useToast } from '../../contexts/ToastContext';
 import { getErrorMessage } from '../../../utils/errorHandling';
+import { useAuthGate } from './_useAuthGate';
 import { useToastOnError } from './_useToastOnError';
 
 export const userQueryKeys = {
@@ -22,7 +23,7 @@ export function useDashboard({ enabled = true }: UseUserQueryOptions = {}) {
   const query = useQuery<DashboardData>({
     queryKey: userQueryKeys.dashboard,
     queryFn: () => userService.getDashboard(),
-    enabled,
+    enabled: useAuthGate(enabled),
   });
   useToastOnError(query.error, 'Failed to fetch dashboard');
   return query;
@@ -32,7 +33,7 @@ export function useProfile({ enabled = true }: UseUserQueryOptions = {}) {
   const query = useQuery<User>({
     queryKey: userQueryKeys.profile,
     queryFn: () => userService.getProfile(),
-    enabled,
+    enabled: useAuthGate(enabled),
   });
   useToastOnError(query.error, 'Failed to fetch profile');
   return query;
@@ -42,7 +43,7 @@ export function useAllUsers({ enabled = true }: UseUserQueryOptions = {}) {
   const query = useQuery<User[]>({
     queryKey: userQueryKeys.allUsers,
     queryFn: () => userService.getAllUsers(),
-    enabled,
+    enabled: useAuthGate(enabled),
   });
   useToastOnError(query.error, 'Failed to fetch users');
   return query;
