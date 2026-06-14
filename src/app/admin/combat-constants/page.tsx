@@ -1,9 +1,21 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import './CombatConstants.css';
-import { useCombatConstants } from '../../contexts/CombatConstantsContext';
-import { CombatConstant } from '../../../services/combatConstantsService';
+import {
+  useCombatConstants,
+  useUpdateCombatConstant,
+  useInitializeCombatConstantDefaults,
+} from '../../hooks/queries/useCombatConstants';
+import { CombatConstant, ConstantsByCategory } from '../../../services/combatConstantsService';
+
+const EMPTY_CONSTANTS: ConstantsByCategory = {
+  hp_system: [],
+  aether_system: [],
+  damage_system: [],
+  mastery_system: [],
+  outcome_system: [],
+};
 
 const categoryLabels = {
   hp_system: 'Health & Survivability System',
@@ -22,23 +34,21 @@ const categoryDescriptions = {
 };
 
 const CombatConstantsPanel: React.FC = () => {
-  const { constants, loading, fetchConstants, updateConstant, initializeDefaults } = useCombatConstants();
+  const { data: constants = EMPTY_CONSTANTS, isLoading } = useCombatConstants();
+  const updateConstantMutation = useUpdateCombatConstant();
+  const initializeDefaultsMutation = useInitializeCombatConstantDefaults();
   const [editingId, setEditingId] = useState<number | null>(null);
 
-  useEffect(() => {
-    fetchConstants();
-  }, [fetchConstants]);
-
   const handleUpdate = async (id: number, value: number) => {
-    await updateConstant(id, value);
+    await updateConstantMutation.mutateAsync({ id, value });
     setEditingId(null);
   };
 
-  const handleInitializeDefaults = async () => {
+  const handleInitializeDefaults = () => {
     if (!confirm('Initialize default combat constants? This will create standard values from system.txt if they don\'t exist.')) {
       return;
     }
-    await initializeDefaults();
+    initializeDefaultsMutation.mutate();
   };
 
   const ConstantRow: React.FC<{ constant: CombatConstant }> = ({ constant }) => {
@@ -148,7 +158,7 @@ const CombatConstantsPanel: React.FC = () => {
     );
   };
 
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="combat-constants-panel loading">
         Loading combat constants...
