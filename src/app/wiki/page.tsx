@@ -145,8 +145,8 @@ const WikiBrowser: React.FC = () => {
   const fetchEntry = async (sectionSlug: string, entrySlug: string) => {
     setLoading(true);
     try {
-      const response = await api.get<{success: boolean, data: WikiEntryDetail}>(`/wiki/sections/${sectionSlug}/entries/${entrySlug}`);
-      setCurrentEntry(response.data.data);
+      const response = await api.get<WikiEntryDetail>(`/wiki/sections/${sectionSlug}/entries/${entrySlug}`);
+      setCurrentEntry(response.data);
       setView('entry');
     } catch (error) {
       console.error('Error fetching entry:', error);
@@ -164,8 +164,8 @@ const WikiBrowser: React.FC = () => {
 
     setLoading(true);
     try {
-      const response = await api.get<{success: boolean, data: WikiEntry[]}>(`/wiki/search?q=${encodeURIComponent(query)}`);
-      setSearchResults(response.data.data || []);
+      const response = await api.get<WikiEntry[]>(`/wiki/search?q=${encodeURIComponent(query)}`);
+      setSearchResults(response.data || []);
       setView('search');
     } catch (error) {
       console.error('Error searching:', error);
@@ -177,8 +177,8 @@ const WikiBrowser: React.FC = () => {
   const handleTagClick = async (tag: string) => {
     setLoading(true);
     try {
-      const response = await api.get<{success: boolean, data: WikiEntry[]}>(`/wiki/tags/${encodeURIComponent(tag)}/entries`);
-      setTagEntries(response.data.data || []);
+      const response = await api.get<WikiEntry[]>(`/wiki/tags/${encodeURIComponent(tag)}/entries`);
+      setTagEntries(response.data || []);
       setSelectedTag(tag);
       setView('tag');
     } catch (error) {
