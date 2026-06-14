@@ -1,9 +1,21 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import './SkillValidation.css';
-import { useSkillValidation } from '../../contexts/SkillValidationContext';
-import { SkillValidationRule } from '../../../services/skillValidationService';
+import {
+  useSkillValidationRules,
+  useUpdateSkillValidationRule,
+  useInitializeSkillValidationDefaults,
+} from '../../hooks/queries/useSkillValidation';
+import { SkillValidationRule, SkillTypesByCategory } from '../../../services/skillValidationService';
+
+const EMPTY_RULES: SkillTypesByCategory = {
+  attack: [],
+  defence: [],
+  counter: [],
+  buff_debuff: [],
+  healing: [],
+};
 
 const categoryLabels = {
   attack: 'Attack Skills',
@@ -14,23 +26,21 @@ const categoryLabels = {
 };
 
 const SkillValidationPanel: React.FC = () => {
-  const { rules, loading, fetchRules, updateRule, initializeDefaults } = useSkillValidation();
+  const { data: rules = EMPTY_RULES, isLoading } = useSkillValidationRules();
+  const updateRuleMutation = useUpdateSkillValidationRule();
+  const initializeDefaultsMutation = useInitializeSkillValidationDefaults();
   const [editingId, setEditingId] = useState<number | null>(null);
 
-  useEffect(() => {
-    fetchRules();
-  }, [fetchRules]);
-
   const handleUpdate = async (id: number, updateData: Partial<SkillValidationRule>) => {
-    await updateRule(id, updateData);
+    await updateRuleMutation.mutateAsync({ id, updateData });
     setEditingId(null);
   };
 
-  const handleInitializeDefaults = async () => {
+  const handleInitializeDefaults = () => {
     if (!confirm('Initialize default validation rules from system.txt? This will create standard rules if they don\'t exist.')) {
       return;
     }
-    await initializeDefaults();
+    initializeDefaultsMutation.mutate();
   };
 
   const RuleRow: React.FC<{ rule: SkillValidationRule }> = ({ rule }) => {
@@ -146,7 +156,7 @@ const SkillValidationPanel: React.FC = () => {
     );
   };
 
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="skill-validation-panel loading">
         Loading skill validation rules...
