@@ -8,7 +8,7 @@ import { useActiveCombatRound } from '@/app/hooks/queries/useCombatRounds';
 import { useActiveEvent } from '@/app/hooks/queries/useEvents';
 import { useAcquiredSkills } from '@/app/hooks/queries/useSkills';
 import { getErrorMessage } from '@/utils/errorHandling';
-import Modal from '../common/Modal';
+import Modal from '@/app/components/common/Modal';
 import './SkillsModal.css';
 
 interface SkillWithTarget extends Skill {

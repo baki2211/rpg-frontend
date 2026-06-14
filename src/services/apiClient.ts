@@ -1,5 +1,5 @@
-import { API_CONFIG } from '../config/api';
-import { ROUTES } from '../config/routes';
+import { API_CONFIG } from '@/config/api';
+import { ROUTES } from '@/config/routes';
 import { CSRF_HEADER_NAME, getCsrfToken } from './csrfService';
 
 // Hardcoded so a 401-response body can never steer the redirect target.

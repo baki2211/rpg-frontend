@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import ReactMarkdown from 'react-markdown';
 import rehypeSanitize from 'rehype-sanitize';
 import './WikiBrowser.css';
-import { api } from '../../services/apiClient';
+import { api } from '@/services/apiClient';
 
 // WikiSection interface removed as it's not used in this component
 

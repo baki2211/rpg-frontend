@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { api } from '../../services/apiClient';
+import { api } from '@/services/apiClient';
 
 const ProtectedPage = () => {
   const router = useRouter();

@@ -1,5 +1,5 @@
 import React from 'react';
-import type { EngineLog } from '../../../../services/engineLogsService';
+import type { EngineLog } from '@/services/engineLogsService';
 
 interface LogEntryProps {
   log: EngineLog;

@@ -10,7 +10,7 @@ import {
   WikiEntryPayload,
   SectionOrderItem,
   EntryOrderItem,
-} from '../../../services/wikiService';
+} from '@/services/wikiService';
 import { useAuthGate } from './_useAuthGate';
 
 export const wikiQueryKeys = {

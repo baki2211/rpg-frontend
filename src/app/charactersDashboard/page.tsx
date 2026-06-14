@@ -1,18 +1,18 @@
 'use client';
 
 import React, { useMemo, useState } from 'react';
-import CharacterCreationModalPanel from '../components/character/CreationModal/CharacterCreationModal';
+import CharacterCreationModalPanel from '@/app/components/character/CreationModal/CharacterCreationModal';
 import {
   useCharacters,
   useActiveNPC,
   useActivateCharacter,
   useDeleteCharacter,
   useCreateCharacter,
-} from '../hooks/queries/useCharacters';
-import { useActiveCharacter } from '../contexts/ActiveCharacterContext';
-import { getErrorMessage } from '../../utils/errorHandling';
-import CharacterCard from '../components/character/Card/CharacterCard';
-import Modal from '../components/common/Modal';
+} from '@/app/hooks/queries/useCharacters';
+import { useActiveCharacter } from '@/app/contexts/ActiveCharacterContext';
+import { getErrorMessage } from '@/utils/errorHandling';
+import CharacterCard from '@/app/components/character/Card/CharacterCard';
+import Modal from '@/app/components/common/Modal';
 import './CharactersDashboard.css';
 
 const CharactersDashboard = () => {

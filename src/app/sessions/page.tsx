@@ -1,9 +1,9 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { useAuth } from '../contexts/AuthContext';
+import { useAuth } from '@/app/contexts/AuthContext';
 import './SessionList.css';
-import { api } from '../../services/apiClient';
+import { api } from '@/services/apiClient';
 
 interface Participant {
   id: string;

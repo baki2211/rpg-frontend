@@ -19,8 +19,8 @@ import {
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
 import { SortableEntry } from './SortableEntry';
-import { useReorderWikiEntries } from '../../../hooks/queries/useWiki';
-import { useToast } from '../../../contexts/ToastContext';
+import { useReorderWikiEntries } from '@/app/hooks/queries/useWiki';
+import { useToast } from '@/app/contexts/ToastContext';
 import type { WikiEntry } from '@/services/wikiService';
 
 interface Props {

@@ -2,9 +2,9 @@
 
 import React, { useEffect, useState, type SubmitEvent } from 'react';
 import './CharacterCreationModal.css';
-import { useProfile } from '../../../hooks/queries/useUser';
-import { usePlayableRaces } from '../../../hooks/queries/useRaces';
-import { usePrimaryStats } from '../../../hooks/queries/useStatDefinitions';
+import { useProfile } from '@/app/hooks/queries/useUser';
+import { usePlayableRaces } from '@/app/hooks/queries/useRaces';
+import { usePrimaryStats } from '@/app/hooks/queries/useStatDefinitions';
 
 interface CharacterForm {
   userId: number | null;

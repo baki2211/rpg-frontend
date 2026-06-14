@@ -1,8 +1,8 @@
 'use client';
 
 import { useQuery } from '@tanstack/react-query';
-import { locationService } from '../../../services/locationService';
-import { Location } from '../../../types/types';
+import { locationService } from '@/services/locationService';
+import { Location } from '@/types/types';
 import { useAuthGate } from './_useAuthGate';
 import { useToastOnError } from './_useToastOnError';
 

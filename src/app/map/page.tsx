@@ -3,8 +3,8 @@
 import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { UPLOADS_URL } from '../../config/api';
-import { api } from '../../services/apiClient';
+import { UPLOADS_URL } from '@/config/api';
+import { api } from '@/services/apiClient';
 
 interface Location {
   id: number;

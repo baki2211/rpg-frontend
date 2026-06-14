@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import '../admin.css';
-import { api } from '../../../services/apiClient';
+import { api } from '@/services/apiClient';
 
 interface StatDefinition {
   id: number;

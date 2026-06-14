@@ -1,10 +1,10 @@
 'use client';
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { userService } from '../../../services/userService';
-import { User, DashboardData } from '../../../types/user';
-import { useToast } from '../../contexts/ToastContext';
-import { getErrorMessage } from '../../../utils/errorHandling';
+import { userService } from '@/services/userService';
+import { User, DashboardData } from '@/types/user';
+import { useToast } from '@/app/contexts/ToastContext';
+import { getErrorMessage } from '@/utils/errorHandling';
 import { useAuthGate } from './_useAuthGate';
 import { useToastOnError } from './_useToastOnError';
 

@@ -6,8 +6,8 @@ import {
   useSkillValidationRules,
   useUpdateSkillValidationRule,
   useInitializeSkillValidationDefaults,
-} from '../../hooks/queries/useSkillValidation';
-import { SkillValidationRule, SkillTypesByCategory } from '../../../services/skillValidationService';
+} from '@/app/hooks/queries/useSkillValidation';
+import { SkillValidationRule, SkillTypesByCategory } from '@/services/skillValidationService';
 
 const EMPTY_RULES: SkillTypesByCategory = {
   attack: [],

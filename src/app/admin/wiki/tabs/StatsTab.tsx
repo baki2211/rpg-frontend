@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { useWikiStats } from '../../../hooks/queries/useWiki';
+import { useWikiStats } from '@/app/hooks/queries/useWiki';
 
 interface StatsTabProps {
   active: boolean;

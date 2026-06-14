@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import './LogList.css';
-import { api } from '../../services/apiClient';
+import { api } from '@/services/apiClient';
 
 interface Participant {
   id: string;

@@ -1,8 +1,8 @@
 'use client';
 
 import React, { createContext, useContext, useMemo, useState } from 'react';
-import { useCharacters, useActiveNPC } from '../hooks/queries/useCharacters';
-import { Character } from '../../types/character';
+import { useCharacters, useActiveNPC } from '@/app/hooks/queries/useCharacters';
+import { Character } from '@/types/character';
 
 interface ActiveCharacterContextType {
   activeCharacterId: number | null;

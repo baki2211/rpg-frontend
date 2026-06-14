@@ -5,9 +5,9 @@ import {
   skillValidationService,
   SkillValidationRule,
   SkillTypesByCategory,
-} from '../../../services/skillValidationService';
-import { useToast } from '../../contexts/ToastContext';
-import { getErrorMessage } from '../../../utils/errorHandling';
+} from '@/services/skillValidationService';
+import { useToast } from '@/app/contexts/ToastContext';
+import { getErrorMessage } from '@/utils/errorHandling';
 import { useToastOnError } from './_useToastOnError';
 
 export const skillValidationQueryKeys = {

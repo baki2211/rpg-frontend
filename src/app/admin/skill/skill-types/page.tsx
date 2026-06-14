@@ -1,7 +1,7 @@
 'use client';
 import React, { useState, useEffect, type SubmitEvent } from 'react';
 import '../../admin.css';
-import { api } from '../../../../services/apiClient';
+import { api } from '@/services/apiClient';
 
 interface SkillType {
   id: number;

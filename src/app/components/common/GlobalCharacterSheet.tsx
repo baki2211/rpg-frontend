@@ -1,9 +1,9 @@
 'use client';
 
 import React from 'react';
-import { useCharacterSheet } from '../../contexts/CharacterSheetContext';
-import { useActiveCharacter } from '../../contexts/ActiveCharacterContext';
-import CharacterSheetModal from '../character/Sheet/CharacterSheetModal';
+import { useCharacterSheet } from '@/app/contexts/CharacterSheetContext';
+import { useActiveCharacter } from '@/app/contexts/ActiveCharacterContext';
+import CharacterSheetModal from '@/app/components/character/Sheet/CharacterSheetModal';
 
 const GlobalCharacterSheet: React.FC = () => {
   const { isOpen, closeCharacterSheet } = useCharacterSheet();

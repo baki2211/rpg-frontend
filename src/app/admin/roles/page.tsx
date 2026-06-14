@@ -2,8 +2,8 @@
 
 import React, { useState, useEffect } from 'react';
 import '../admin.css';
-import { api } from '../../../services/apiClient';
-import type { AuthUser } from '../../../types/auth';
+import { api } from '@/services/apiClient';
+import type { AuthUser } from '@/types/auth';
 
 type User = AuthUser & { createdAt: string };
 

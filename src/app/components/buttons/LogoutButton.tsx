@@ -3,11 +3,11 @@
 import React from "react";
 import { useRouter } from 'next/navigation';
 import { useQueryClient } from '@tanstack/react-query';
-import { useAuth } from "../../contexts/AuthContext";
-import { usePresence } from "../../contexts/PresenceContext";
-import { authService } from '../../../services/authService';
-import { WS_URL } from '../../../config/api';
-import { ROUTES } from '../../../config/routes';
+import { useAuth } from "@/app/contexts/AuthContext";
+import { usePresence } from "@/app/contexts/PresenceContext";
+import { authService } from '@/services/authService';
+import { WS_URL } from '@/config/api';
+import { ROUTES } from '@/config/routes';
 
 const LogoutButton: React.FC = () => {
   const router = useRouter();

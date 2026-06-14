@@ -1,18 +1,18 @@
 'use client';
 
 import React, { useState, type SubmitEvent } from 'react';
-import { RichTextEditor } from '../components/RichTextEditor';
-import { EntriesHierarchicalList } from '../components/EntriesHierarchicalList';
-import { EntriesSortableList } from '../components/EntriesSortableList';
-import { EntriesPlainList } from '../components/EntriesPlainList';
+import { RichTextEditor } from '@/app/admin/wiki/components/RichTextEditor';
+import { EntriesHierarchicalList } from '@/app/admin/wiki/components/EntriesHierarchicalList';
+import { EntriesSortableList } from '@/app/admin/wiki/components/EntriesSortableList';
+import { EntriesPlainList } from '@/app/admin/wiki/components/EntriesPlainList';
 import {
   useWikiSections,
   useWikiEntries,
   useCreateWikiEntry,
   useUpdateWikiEntry,
   useDeleteWikiEntry,
-} from '../../../hooks/queries/useWiki';
-import { useToast } from '../../../contexts/ToastContext';
+} from '@/app/hooks/queries/useWiki';
+import { useToast } from '@/app/contexts/ToastContext';
 import type { WikiEntry } from '@/services/wikiService';
 
 interface EntriesTabProps {

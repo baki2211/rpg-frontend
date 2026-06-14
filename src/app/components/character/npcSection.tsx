@@ -6,7 +6,7 @@ import {
   useNPCActiveCharacter,
   useActivateNPC,
   useDeactivateNPC,
-} from '../../hooks/queries/useNPCs';
+} from '@/app/hooks/queries/useNPCs';
 
 const NPCSection: React.FC = () => {
   const { data: availableNPCs = [], isLoading: availableLoading } = useAvailableNPCs();

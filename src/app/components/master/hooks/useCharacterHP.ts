@@ -1,7 +1,7 @@
 // TODO(backend): replace seed + apply with real HP endpoint
 // (see docs/master_panel_split_plan.md "Data sources")
 import { useCallback, useState } from 'react';
-import type { ChatUser } from '../../../hooks/queries/useChatUsers';
+import type { ChatUser } from '@/app/hooks/queries/useChatUsers';
 
 export interface CharacterHP {
   characterId: string;

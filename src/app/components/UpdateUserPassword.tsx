@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, type SubmitEvent } from 'react';
-import { useAllUsers, useUpdateUserPassword, useAdminResetUserPassword } from '../hooks/queries/useUser';
+import { useAllUsers, useUpdateUserPassword, useAdminResetUserPassword } from '@/app/hooks/queries/useUser';
 import '../register/register.css';
 import '../admin/admin.css';
 

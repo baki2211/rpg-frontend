@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import Image from 'next/image';
-import { UPLOADS_URL } from '../../../../config/api';
-import CharacterSheetModal from '../Sheet/CharacterSheetModal';
-import { Character } from '../../../../types/character';
+import { UPLOADS_URL } from '@/config/api';
+import CharacterSheetModal from '@/app/components/character/Sheet/CharacterSheetModal';
+import { Character } from '@/types/character';
 import './CharacterCard';
 
 interface CharacterCardProps {

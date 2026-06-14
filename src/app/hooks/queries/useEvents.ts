@@ -1,9 +1,9 @@
 'use client';
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { eventsService, GameEvent } from '../../../services/eventsService';
-import { useToast } from '../../contexts/ToastContext';
-import { getErrorMessage } from '../../../utils/errorHandling';
+import { eventsService, GameEvent } from '@/services/eventsService';
+import { useToast } from '@/app/contexts/ToastContext';
+import { getErrorMessage } from '@/utils/errorHandling';
 import { useAuthGate } from './_useAuthGate';
 import { useToastOnError } from './_useToastOnError';
 

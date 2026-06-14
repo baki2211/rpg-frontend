@@ -1,6 +1,6 @@
 'use client';
 
-import { useAuth } from '../../contexts/AuthContext';
+import { useAuth } from '@/app/contexts/AuthContext';
 
 // Shared gate for auth-required TanStack Query hooks. AND this into the
 // query's `enabled` so we don't fire authenticated endpoints on /login,

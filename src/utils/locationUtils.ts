@@ -1,4 +1,4 @@
-import { api } from '../services/apiClient';
+import { api } from '@/services/apiClient';
 
 export const getLocationFromPath = async (pathname: string): Promise<string> => {
   if (pathname.startsWith('/chat/')) {

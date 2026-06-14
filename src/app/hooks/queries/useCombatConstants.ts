@@ -5,9 +5,9 @@ import {
   combatConstantsService,
   CombatConstant,
   ConstantsByCategory,
-} from '../../../services/combatConstantsService';
-import { useToast } from '../../contexts/ToastContext';
-import { getErrorMessage } from '../../../utils/errorHandling';
+} from '@/services/combatConstantsService';
+import { useToast } from '@/app/contexts/ToastContext';
+import { getErrorMessage } from '@/utils/errorHandling';
 import { useAuthGate } from './_useAuthGate';
 import { useToastOnError } from './_useToastOnError';
 

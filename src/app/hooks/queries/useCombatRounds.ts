@@ -4,9 +4,9 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   combatRoundsService,
   CombatRound,
-} from '../../../services/combatRoundsService';
-import { useToast } from '../../contexts/ToastContext';
-import { getErrorMessage } from '../../../utils/errorHandling';
+} from '@/services/combatRoundsService';
+import { useToast } from '@/app/contexts/ToastContext';
+import { getErrorMessage } from '@/utils/errorHandling';
 import { useToastOnError } from './_useToastOnError';
 
 export const combatRoundsQueryKeys = {

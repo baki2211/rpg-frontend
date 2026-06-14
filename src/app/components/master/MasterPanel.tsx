@@ -1,15 +1,15 @@
 import React, { useState } from 'react';
-import { useAuth } from '../../contexts/AuthContext';
-import { useToast } from '../../contexts/ToastContext';
-import { useChatUsers } from '../../hooks/queries/useChatUsers';
-import { useEngineLogsByLocation } from '../../hooks/queries/useEngineLogs';
+import { useAuth } from '@/app/contexts/AuthContext';
+import { useToast } from '@/app/contexts/ToastContext';
+import { useChatUsers } from '@/app/hooks/queries/useChatUsers';
+import { useEngineLogsByLocation } from '@/app/hooks/queries/useEngineLogs';
 import {
   useActiveCombatRound,
   useResolvedCombatRounds,
   useCreateCombatRound,
   useResolveCombatRound,
   useCancelCombatRound,
-} from '../../hooks/queries/useCombatRounds';
+} from '@/app/hooks/queries/useCombatRounds';
 import {
   useActiveEvent,
   useRecentEvents,
@@ -17,7 +17,7 @@ import {
   useCloseEvent,
   useFreezeEvent,
   useUnfreezeEvent,
-} from '../../hooks/queries/useEvents';
+} from '@/app/hooks/queries/useEvents';
 import {
   HEALTH_COLOR,
   STATUS_EFFECTS,

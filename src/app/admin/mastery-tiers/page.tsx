@@ -8,8 +8,8 @@ import {
   useUpdateMasteryTier,
   useDeleteMasteryTier,
   useInitializeMasteryTierDefaults,
-} from '../../hooks/queries/useMasteryTiers';
-import { MasteryTier } from '../../../services/masteryTiersService';
+} from '@/app/hooks/queries/useMasteryTiers';
+import { MasteryTier } from '@/services/masteryTiersService';
 
 const MasteryTiersPanel: React.FC = () => {
   const { data: tiers = [], isLoading: loading } = useMasteryTiers();

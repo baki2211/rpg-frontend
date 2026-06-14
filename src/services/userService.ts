@@ -1,5 +1,5 @@
 import { api } from './apiClient';
-import { User, DashboardData, UpdateProfileData, ChangePasswordData } from '../types/user';
+import { User, DashboardData, UpdateProfileData, ChangePasswordData } from '@/types/user';
 
 class UserService {
   async getDashboard(): Promise<DashboardData> {

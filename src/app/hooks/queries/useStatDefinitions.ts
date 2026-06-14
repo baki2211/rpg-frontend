@@ -1,7 +1,7 @@
 'use client';
 
 import { useQuery } from '@tanstack/react-query';
-import { statDefinitionsService, StatDefinition } from '../../../services/statDefinitionsService';
+import { statDefinitionsService, StatDefinition } from '@/services/statDefinitionsService';
 import { useToastOnError } from './_useToastOnError';
 
 export const statDefinitionsQueryKeys = {

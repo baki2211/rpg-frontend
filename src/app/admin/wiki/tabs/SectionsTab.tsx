@@ -18,15 +18,15 @@ import {
   sortableKeyboardCoordinates,
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
-import { SortableSection } from '../components/SortableSection';
+import { SortableSection } from '@/app/admin/wiki/components/SortableSection';
 import {
   useWikiSections,
   useCreateWikiSection,
   useUpdateWikiSection,
   useDeleteWikiSection,
   useReorderWikiSections,
-} from '../../../hooks/queries/useWiki';
-import { useToast } from '../../../contexts/ToastContext';
+} from '@/app/hooks/queries/useWiki';
+import { useToast } from '@/app/contexts/ToastContext';
 import type { WikiSection } from '@/services/wikiService';
 
 interface SectionsTabProps {

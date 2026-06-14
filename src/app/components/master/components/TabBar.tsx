@@ -1,5 +1,5 @@
 import React from 'react';
-import type { TabKey } from '../constants';
+import type { TabKey } from '@/app/components/master/constants';
 
 interface TabBarProps {
   tabs: readonly { key: TabKey; label: string }[];

@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import './EnginePanel.css';
-import { api } from '../../../services/apiClient';
+import { api } from '@/services/apiClient';
 
 interface StatDefinition {
   id: number;

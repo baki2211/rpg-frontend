@@ -1,9 +1,9 @@
 'use client';
 
 import { useState, useEffect, useRef, type SubmitEvent } from 'react';
-import { useAuth } from '../../contexts/AuthContext';
+import { useAuth } from '@/app/contexts/AuthContext';
 import { useParams } from 'next/navigation';
-import { WebSocketService } from '../../../services/webSocketService';
+import { WebSocketService } from '@/services/webSocketService';
 import { SkillsModal } from '@/app/components/skills/SkillsModal';
 import { MiniSkillRow } from '@/app/components/skills/MiniSkillRow';
 import { MasterPanel } from '@/app/components/master/MasterPanel';
@@ -13,8 +13,8 @@ import { useToast } from '@/app/contexts/ToastContext';
 import { usePresence } from '@/app/contexts/PresenceContext';
 import { useRealtimeInvalidation } from '@/app/hooks/useRealtimeInvalidation';
 import './chat.css';
-import { WS_URL } from '../../../config/api';
-import { api } from '../../../services/apiClient';
+import { WS_URL } from '@/config/api';
+import { api } from '@/services/apiClient';
 
 interface SkillEngineLogMessage {
   type: 'skill_engine_log';

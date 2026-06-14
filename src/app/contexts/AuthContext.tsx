@@ -1,10 +1,10 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect } from "react";
-import { authService } from "../../services/authService";
-import { getCsrfToken } from "../../services/csrfService";
-import { AuthUser, AuthContextType } from "../../types/auth";
-import { getErrorCode, getErrorMessage, getErrorStatus } from "../../utils/errorHandling";
+import { authService } from "@/services/authService";
+import { getCsrfToken } from "@/services/csrfService";
+import { AuthUser, AuthContextType } from "@/types/auth";
+import { getErrorCode, getErrorMessage, getErrorStatus } from "@/utils/errorHandling";
 
 const throwNotInProvider = (): never => {
   throw new Error('useAuth must be used within an AuthProvider');

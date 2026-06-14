@@ -1,5 +1,5 @@
 import { api } from './apiClient';
-import { Character } from '../types/character';
+import { Character } from '@/types/character';
 
 class CharacterService {
   async getCharacters(): Promise<Character[]> {

@@ -1,9 +1,9 @@
 'use client';
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { masteryTiersService, MasteryTier } from '../../../services/masteryTiersService';
-import { useToast } from '../../contexts/ToastContext';
-import { getErrorMessage } from '../../../utils/errorHandling';
+import { masteryTiersService, MasteryTier } from '@/services/masteryTiersService';
+import { useToast } from '@/app/contexts/ToastContext';
+import { getErrorMessage } from '@/utils/errorHandling';
 import { useAuthGate } from './_useAuthGate';
 import { useToastOnError } from './_useToastOnError';
 

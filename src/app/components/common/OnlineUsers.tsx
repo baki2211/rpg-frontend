@@ -1,7 +1,7 @@
 import React from 'react';
-import { usePresence } from '../../contexts/PresenceContext';
+import { usePresence } from '@/app/contexts/PresenceContext';
 import { useRouter } from 'next/navigation';
-import { API_URL } from '../../../config/api';
+import { API_URL } from '@/config/api';
 
 interface Location {
   id: number;

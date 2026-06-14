@@ -1,4 +1,4 @@
-import UpdateUserPassword from '../../components/UpdateUserPassword';
+import UpdateUserPassword from '@/app/components/UpdateUserPassword';
 import '../admin.css';
 
 export default function AdminUserPage() {

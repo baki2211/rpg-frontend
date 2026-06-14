@@ -3,7 +3,7 @@
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from './contexts/AuthContext';
-import { ROUTES } from '../config/routes';
+import { ROUTES } from '@/config/routes';
 
 export default function HomePage() {
   const { isAuthenticated, isLoading } = useAuth();

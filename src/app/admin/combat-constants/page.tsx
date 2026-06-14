@@ -6,8 +6,8 @@ import {
   useCombatConstants,
   useUpdateCombatConstant,
   useInitializeCombatConstantDefaults,
-} from '../../hooks/queries/useCombatConstants';
-import { CombatConstant, ConstantsByCategory } from '../../../services/combatConstantsService';
+} from '@/app/hooks/queries/useCombatConstants';
+import { CombatConstant, ConstantsByCategory } from '@/services/combatConstantsService';
 
 const EMPTY_CONSTANTS: ConstantsByCategory = {
   hp_system: [],

@@ -1,5 +1,5 @@
 import { api } from './apiClient';
-import { Race } from '../types/character';
+import { Race } from '@/types/character';
 
 class RaceService {
   async getRaces(): Promise<Race[]> {

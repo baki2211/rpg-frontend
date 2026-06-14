@@ -1,5 +1,5 @@
 import { api } from './apiClient';
-import { AuthUser, LoginResponse, RefreshResponse, RegisterData } from '../types/auth';
+import { AuthUser, LoginResponse, RefreshResponse, RegisterData } from '@/types/auth';
 
 interface ProtectedResponse {
   user: AuthUser;

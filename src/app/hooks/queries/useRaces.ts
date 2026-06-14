@@ -1,8 +1,8 @@
 'use client';
 
 import { useQuery } from '@tanstack/react-query';
-import { raceService } from '../../../services/raceService';
-import { Race } from '../../../types/character';
+import { raceService } from '@/services/raceService';
+import { Race } from '@/types/character';
 import { useAuthGate } from './_useAuthGate';
 import { useToastOnError } from './_useToastOnError';
 

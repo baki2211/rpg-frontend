@@ -2,12 +2,12 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useAuth } from '../../contexts/AuthContext';
-import { Map, Location } from '../../../types/types';
+import { useAuth } from '@/app/contexts/AuthContext';
+import { Map, Location } from '@/types/types';
 import '../admin.css';
 import Image from 'next/image';
-import { api } from '../../../services/apiClient';
-import { UPLOADS_URL } from '../../../config/api';
+import { api } from '@/services/apiClient';
+import { UPLOADS_URL } from '@/config/api';
 
 const AdminMapPanel = () => {
   const router = useRouter();

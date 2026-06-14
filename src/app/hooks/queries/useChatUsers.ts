@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from 'react';
-import { usePresence, PresenceUser } from '../../contexts/PresenceContext';
+import { usePresence, PresenceUser } from '@/app/contexts/PresenceContext';
 import { useLocation } from './useLocations';
 
 // Export ChatUser type as an alias for PresenceUser

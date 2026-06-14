@@ -1,5 +1,5 @@
 import { api } from './apiClient';
-import { Location } from '../types/types';
+import { Location } from '@/types/types';
 
 class LocationService {
   async getLocationById(locationId: string): Promise<Location> {

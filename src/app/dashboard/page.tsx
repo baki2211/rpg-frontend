@@ -2,13 +2,13 @@
 
 import React, { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import CharacterCard from '../components/character/Card/CharacterCard';
-import OnlineUsers from '../components/common/OnlineUsers';
-import SessionList from '../sessions/page';
-import { useCharacters, useActivateCharacter, useDeleteCharacter } from '../hooks/queries/useCharacters';
-import { useDashboard } from '../hooks/queries/useUser';
-import { getErrorMessage } from '../../utils/errorHandling';
-import { ROUTES } from '../../config/routes';
+import CharacterCard from '@/app/components/character/Card/CharacterCard';
+import OnlineUsers from '@/app/components/common/OnlineUsers';
+import SessionList from '@/app/sessions/page';
+import { useCharacters, useActivateCharacter, useDeleteCharacter } from '@/app/hooks/queries/useCharacters';
+import { useDashboard } from '@/app/hooks/queries/useUser';
+import { getErrorMessage } from '@/utils/errorHandling';
+import { ROUTES } from '@/config/routes';
 
 const Dashboard = () => {
   const router = useRouter();

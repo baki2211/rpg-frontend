@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { usePresence } from '../contexts/PresenceContext';
+import { usePresence } from '@/app/contexts/PresenceContext';
 import './PresenceIndicator.css';
 
 const PresenceIndicator: React.FC = () => {
