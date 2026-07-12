@@ -1,6 +1,6 @@
 .admin-panel {
   padding: 2rem;
-  background: linear-gradient(135deg, #2F4A72 0%, #0E2C40 100%);
+  background: var(--altrex-brands-arcaneRealms-gradient-background);
   min-height: 100vh;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
@@ -23,7 +23,7 @@
 .admin-header h1 {
   font-size: 3rem;
   font-weight: 700;
-  background: linear-gradient(135deg, #2F4A72 0%, #0E2C40 100%);
+  background: var(--altrex-brands-arcaneRealms-gradient-background);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -63,7 +63,7 @@
   font-size: 1.4rem;
   font-weight: 700;
   margin-bottom: 1.5rem;
-  border-bottom: 3px solid #2F4A72;
+  border-bottom: 3px solid var(--altrex-brands-arcaneRealms-primitive-navyLight);
   padding-bottom: 0.5rem;
 }
 
@@ -90,10 +90,10 @@
 }
 
 .admin-card a:hover {
-  background: linear-gradient(135deg, #2F4A72 0%, #0E2C40 100%);
+  background: var(--altrex-brands-arcaneRealms-gradient-background);
   color: white;
   transform: translateX(5px);
-  border-color: #2F4A72;
+  border-color: var(--altrex-brands-arcaneRealms-primitive-navyLight);
 }
 
 .btn-secondary-ml {
@@ -146,11 +146,11 @@
 }
 
 .skill-target-badge.target-self {
-  background-color: #4ecdc4;
+  background-color: var(--altrex-brands-arcaneRealms-primitive-teal);
 }
 
 .skill-target-badge.target-other {
-  background-color: #ff6b6b;
+  background-color: var(--altrex-brands-arcaneRealms-primitive-coral);
 }
 
 .skill-target-badge.target-any {
@@ -215,7 +215,7 @@
 }
 
 .form-control:focus {
-  border-color: #2F4A72;
+  border-color: var(--altrex-brands-arcaneRealms-primitive-navyLight);
   outline: none;
   box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
   background: rgba(255, 255, 255, 1);
@@ -252,7 +252,7 @@
 }
 
 .btn-primary {
-  background: linear-gradient(135deg, #2F4A72 0%, #0E2C40 100%);
+  background: var(--altrex-brands-arcaneRealms-gradient-background);
   color: white;
   box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
   justify-self: center;
@@ -265,7 +265,7 @@
 }
 
 .btn-danger {
-  background: linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%);
+  background: linear-gradient(135deg, var(--altrex-brands-arcaneRealms-primitive-coral) 0%, #ee5a52 100%);
   color: white;
   box-shadow: 0 8px 16px rgba(255, 107, 107, 0.3);
   margin-left: 0.5rem;
@@ -277,7 +277,7 @@
 }
 
 .btn-success {
-  background: linear-gradient(135deg, #4ecdc4 0%, #44a08d 100%);
+  background: linear-gradient(135deg, var(--altrex-brands-arcaneRealms-primitive-teal) 0%, var(--altrex-brands-arcaneRealms-primitive-tealDark) 100%);
   color: white;
   box-shadow: 0 8px 16px rgba(78, 205, 196, 0.3);
 }
@@ -307,7 +307,7 @@
 }
 
 .admin-table th {
-  background: linear-gradient(135deg, #2F4A72 0%, #0E2C40 100%);
+  background: var(--altrex-brands-arcaneRealms-gradient-background);
   font-weight: 700;
   color: white;
   font-size: 0.9rem;
@@ -410,7 +410,7 @@
 .form-group input[type="checkbox"] {
   transform: scale(1.2);
   margin-right: 0.8rem;
-  accent-color: #2F4A72;
+  accent-color: var(--altrex-brands-arcaneRealms-primitive-navyLight);
 }
 
 .form-group input[type="number"] {
@@ -580,12 +580,12 @@
 }
 
 .role-select:hover {
-  border-color: #2F4A72;
+  border-color: var(--altrex-brands-arcaneRealms-primitive-navyLight);
 }
 
 .role-select:focus {
   outline: none;
-  border-color: #2F4A72;
+  border-color: var(--altrex-brands-arcaneRealms-primitive-navyLight);
   box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
 }
 
@@ -673,7 +673,7 @@
   }
 
   .admin-header h1 {
-    background: linear-gradient(135deg, #2F4A72 0%, #0E2C40 100%);
+    background: var(--altrex-brands-arcaneRealms-gradient-background);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -698,7 +698,7 @@
   }
 
   .form-control:focus {
-    border-color: #2F4A72;
+    border-color: var(--altrex-brands-arcaneRealms-primitive-navyLight);
     background: rgba(74, 85, 104, 1);
   }
 
@@ -751,7 +751,7 @@
 
   .admin-card h3 {
     color: #e2e8f0;
-    border-bottom-color: #2F4A72;
+    border-bottom-color: var(--altrex-brands-arcaneRealms-primitive-navyLight);
   }
 
   .admin-card a {
@@ -760,7 +760,7 @@
   }
 
   .admin-card a:hover {
-    background: linear-gradient(135deg, #2F4A72 0%, #0E2C40 100%);
+    background: var(--altrex-brands-arcaneRealms-gradient-background);
     color: white;
   }
 }
@@ -803,7 +803,7 @@
   color: #2c3e50;
   margin-bottom: 1.5rem;
   text-align: center;
-  border-bottom: 2px solid #2F4A72;
+  border-bottom: 2px solid var(--altrex-brands-arcaneRealms-primitive-navyLight);
   padding-bottom: 0.5rem;
 }
 
@@ -825,7 +825,7 @@
 .map-card:hover {
   transform: translateY(-5px);
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
-  border-color: #2F4A72;
+  border-color: var(--altrex-brands-arcaneRealms-primitive-navyLight);
 }
 
 .map-card-header {
@@ -921,7 +921,7 @@
   align-items: center;
   padding: 1.5rem 2rem;
   border-bottom: 1px solid #e9ecef;
-  background: linear-gradient(135deg, #2F4A72 0%, #0E2C40 100%);
+  background: var(--altrex-brands-arcaneRealms-gradient-background);
   color: white;
 }
 
@@ -959,7 +959,7 @@
   text-align: center;
   padding: 3rem;
   font-size: 1.2rem;
-  color: #2F4A72;
+  color: var(--altrex-brands-arcaneRealms-primitive-navyLight);
   font-weight: 600;
 }
 
@@ -1093,7 +1093,7 @@
 
 .form-row input:focus,
 .form-row textarea:focus {
-  border-color: #2F4A72;
+  border-color: var(--altrex-brands-arcaneRealms-primitive-navyLight);
   outline: none;
   box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
 }
@@ -1126,7 +1126,7 @@
 }
 
 .bonus-grid input:focus {
-  border-color: #2F4A72;
+  border-color: var(--altrex-brands-arcaneRealms-primitive-navyLight);
   outline: none;
   box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.1);
 }
@@ -1134,7 +1134,7 @@
 .edit-form h4 {
   margin: 1.5rem 0 1rem 0;
   color: #2c3e50;
-  border-bottom: 2px solid #2F4A72;
+  border-bottom: 2px solid var(--altrex-brands-arcaneRealms-primitive-navyLight);
   padding-bottom: 0.5rem;
   font-size: 1.1rem;
   font-weight: 600;
@@ -1168,15 +1168,15 @@
   background: rgba(255, 255, 255, 0.95);
   border-radius: 12px;
   padding: 20px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--altrex-brands-arcaneRealms-glass-shadow);
   backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  border: 1px solid var(--altrex-brands-arcaneRealms-glass-border);
 }
 
 .simulator-card h3 {
   color: #5a5a5a;
   margin-bottom: 15px;
-  border-bottom: 2px solid #2F4A72;
+  border-bottom: 2px solid var(--altrex-brands-arcaneRealms-primitive-navyLight);
   padding-bottom: 5px;
 }
 
@@ -1192,7 +1192,7 @@
   padding: 15px;
   border-radius: 8px;
   margin: 15px 0;
-  border-left: 4px solid #2F4A72;
+  border-left: 4px solid var(--altrex-brands-arcaneRealms-primitive-navyLight);
 }
 
 .skill-info p {
@@ -1215,11 +1215,11 @@
 }
 
 .result-item {
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--altrex-brands-arcaneRealms-glass-surface);
   padding: 15px;
   border-radius: 8px;
   text-align: center;
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  border: 1px solid var(--altrex-brands-arcaneRealms-glass-border);
 }
 
 .result-item h4 {
@@ -1236,12 +1236,12 @@
 }
 
 .result-card {
-  background: linear-gradient(135deg, #2F4A72, #0E2C40);
+  background: var(--altrex-brands-arcaneRealms-gradient-primaryButton);
   color: white;
 }
 
 .result-card .result-item {
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--altrex-brands-arcaneRealms-glass-surface);
 }
 
 .result-card .result-item h4 {
@@ -1253,7 +1253,7 @@
 }
 
 .random-result {
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--altrex-brands-arcaneRealms-glass-surface);
   padding: 20px;
   border-radius: 12px;
   margin-top: 20px;
@@ -1272,7 +1272,7 @@
 }
 
 .combat-card {
-  background: linear-gradient(135deg, #D4B67A 0%, #998B5F 100%);
+  background: linear-gradient(135deg, var(--altrex-brands-arcaneRealms-primitive-gold) 0%, var(--altrex-brands-arcaneRealms-primitive-goldMuted) 100%);
   color: white;
 }
 
@@ -1290,7 +1290,7 @@
 
 .player-result {
   text-align: center;
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--altrex-brands-arcaneRealms-glass-surface);
   padding: 15px;
   border-radius: 8px;
 }
@@ -1314,7 +1314,7 @@
 .combat-outcome {
   text-align: center;
   padding: 20px;
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--altrex-brands-arcaneRealms-glass-surface);
   border-radius: 12px;
   font-size: 1.2em;
   font-weight: bold;
