@@ -138,7 +138,7 @@
 }
 
 .nav-entry.active {
-  background: #2F4A72;
+  background: var(--altrex-brands-arcaneRealms-primitive-navyLight);
   color: rgb(21, 7, 107);
   font-weight: 500;
 }
@@ -196,7 +196,7 @@
 
 .loading-spinner {
   font-size: 1.5rem;
-  color: #2F4A72;
+  color: var(--altrex-brands-arcaneRealms-primitive-navyLight);
   animation: pulse 2s infinite;
 }
 
@@ -211,7 +211,7 @@
   text-align: center;
   margin-bottom: 3rem;
   padding: 3rem 2rem;
-  background: linear-gradient(135deg, #2F4A72 0%, #0E2C40 100%);
+  background: var(--altrex-brands-arcaneRealms-gradient-background);
   color: white;
   position: relative;
   overflow: hidden;
@@ -277,7 +277,7 @@
   padding: 1rem 2rem;
   border: none;
   border-radius: 50px;
-  background: rgba(255, 255, 255, 0.2);
+  background: var(--altrex-brands-arcaneRealms-glass-border);
   color: white;
   font-weight: 600;
   cursor: pointer;
@@ -286,13 +286,13 @@
 }
 
 .wiki-search button:hover {
-  background: rgba(255, 255, 255, 0.3);
+  background: var(--altrex-brands-arcaneRealms-glass-borderHover);
   transform: translateY(-2px);
 }
 
 .back-button {
   padding: 0.75rem 1.5rem;
-  border: 2px solid rgba(255, 255, 255, 0.3);
+  border: 2px solid var(--altrex-brands-arcaneRealms-glass-borderHover);
   border-radius: 50px;
   background: transparent;
   color: white;
@@ -303,7 +303,7 @@
 }
 
 .back-button:hover {
-  background: rgba(255, 255, 255, 0.2);
+  background: var(--altrex-brands-arcaneRealms-glass-border);
   transform: translateY(-2px);
 }
 
@@ -340,7 +340,7 @@
   left: 0;
   right: 0;
   height: 4px;
-  background: linear-gradient(90deg, #2F4A72, #0E2C40);
+  background: linear-gradient(90deg, var(--altrex-brands-arcaneRealms-primitive-navyLight), var(--altrex-brands-arcaneRealms-primitive-navyDeep));
 }
 
 .section-card:hover {
@@ -369,7 +369,7 @@
 
 .entry-count {
   font-size: 0.875rem;
-  color: #2F4A72;
+  color: var(--altrex-brands-arcaneRealms-primitive-navyLight);
   font-weight: 600;
   background: #f0f4ff;
   padding: 0.25rem 0.75rem;
@@ -393,7 +393,7 @@
 
 .entry-item:hover {
   background: #f8f9fa;
-  border-color: #2F4A72;
+  border-color: var(--altrex-brands-arcaneRealms-primitive-navyLight);
   transform: translateX(4px);
 }
 
@@ -483,8 +483,8 @@
 }
 
 .tag-button:hover {
-  border-color: #2F4A72;
-  background: #2F4A72;
+  border-color: var(--altrex-brands-arcaneRealms-primitive-navyLight);
+  background: var(--altrex-brands-arcaneRealms-primitive-navyLight);
   color: white;
   transform: translateY(-2px);
   box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
@@ -519,7 +519,7 @@
 
 .section-name {
   font-weight: 600;
-  color: #2F4A72;
+  color: var(--altrex-brands-arcaneRealms-primitive-navyLight);
 }
 
 .separator {
@@ -585,7 +585,7 @@
 }
 
 .tag:hover {
-  background: #2F4A72;
+  background: var(--altrex-brands-arcaneRealms-primitive-navyLight);
   color: white;
   transform: translateY(-1px);
 }
@@ -679,7 +679,7 @@
   background: white;
   transform: translateY(-2px);
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-  border-color: #2F4A72;
+  border-color: var(--altrex-brands-arcaneRealms-primitive-navyLight);
 }
 
 .result-header {
@@ -699,7 +699,7 @@
 }
 
 .section-badge {
-  background: #2F4A72;
+  background: var(--altrex-brands-arcaneRealms-primitive-navyLight);
   color: white;
   padding: 0.25rem 0.75rem;
   border-radius: 20px;

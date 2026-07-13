@@ -1,7 +1,7 @@
 .character-creation-modal {
   max-width: 800px;
   margin: 0 auto;
-  background: linear-gradient(135deg, #2F4A72 0%, #0E2C40 100%);
+  background: var(--altrex-brands-arcaneRealms-gradient-background);
   border-radius: 20px;
   padding: 2rem;
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
@@ -53,11 +53,11 @@
 
 /* Form Styling */
 .character-creation-form {
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--altrex-brands-arcaneRealms-glass-surface);
   backdrop-filter: blur(10px);
   border-radius: 16px;
   padding: 2rem;
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  border: 1px solid var(--altrex-brands-arcaneRealms-glass-border);
 }
 
 .character-form-section {
@@ -69,7 +69,7 @@
   font-weight: 600;
   margin: 0 0 1.5rem 0;
   padding-bottom: 0.5rem;
-  border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+  border-bottom: 2px solid var(--altrex-brands-arcaneRealms-glass-border);
 }
 
 .character-form-grid {
@@ -97,9 +97,9 @@
 
 .character-form-control {
   padding: 0.75rem 1rem;
-  border: 2px solid rgba(255, 255, 255, 0.2);
+  border: 2px solid var(--altrex-brands-arcaneRealms-glass-border);
   border-radius: 10px;
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--altrex-brands-arcaneRealms-glass-surface);
   color: white;
   font-size: 1rem;
   transition: all 0.3s ease;
@@ -110,7 +110,7 @@
   outline: none;
   border-color: rgba(255, 255, 255, 0.5);
   background: rgba(255, 255, 255, 0.15);
-  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.1);
+  box-shadow: 0 0 0 3px var(--altrex-brands-arcaneRealms-glass-surface);
 }
 
 .character-form-control::placeholder {
@@ -125,9 +125,9 @@
 /* File Input Styling */
 .character-file-input {
   padding: 0.75rem;
-  border: 2px dashed rgba(255, 255, 255, 0.3);
+  border: 2px dashed var(--altrex-brands-arcaneRealms-glass-borderHover);
   border-radius: 10px;
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--altrex-brands-arcaneRealms-glass-surfaceSubtle);
   text-align: center;
   cursor: pointer;
   transition: all 0.3s ease;
@@ -135,7 +135,7 @@
 
 .character-file-input:hover {
   border-color: rgba(255, 255, 255, 0.5);
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--altrex-brands-arcaneRealms-glass-surface);
 }
 
 .character-file-input input[type="file"] {
@@ -155,7 +155,7 @@
 
 /* Stats Section */
 .stats-section {
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--altrex-brands-arcaneRealms-glass-surfaceSubtle);
   border-radius: 12px;
   padding: 1.5rem;
   margin-top: 1rem;
@@ -175,11 +175,11 @@
 }
 
 .points-remaining {
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--altrex-brands-arcaneRealms-glass-surface);
   padding: 0.5rem 1rem;
   border-radius: 20px;
   font-weight: 600;
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  border: 1px solid var(--altrex-brands-arcaneRealms-glass-border);
 }
 
 .points-remaining.warning {
@@ -198,10 +198,10 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--altrex-brands-arcaneRealms-glass-surface);
   border-radius: 12px;
   padding: 1rem;
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  border: 1px solid var(--altrex-brands-arcaneRealms-glass-border);
   transition: all 0.3s ease;
 }
 
@@ -222,9 +222,9 @@
 .stat-input {
   width: 80px;
   padding: 0.5rem;
-  border: 2px solid rgba(255, 255, 255, 0.2);
+  border: 2px solid var(--altrex-brands-arcaneRealms-glass-border);
   border-radius: 8px;
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--altrex-brands-arcaneRealms-glass-surface);
   color: white;
   text-align: center;
   font-weight: 600;
