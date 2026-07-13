@@ -1,6 +1,6 @@
 .session-container {
   padding: 2rem;
-  background: linear-gradient(135deg, #2F4A72 0%, #0E2C40 100%);
+  background: var(--altrex-brands-arcaneRealms-gradient-background);
   border-radius: 20px;
   color: white;
   min-height: 500px;
@@ -57,7 +57,7 @@
 .loading-spinner {
   width: 40px;
   height: 40px;
-  border: 4px solid rgba(255,255,255,0.3);
+  border: 4px solid var(--altrex-brands-arcaneRealms-glass-borderHover);
   border-top: 4px solid white;
   border-radius: 50%;
   animation: spin 1s linear infinite;
@@ -87,9 +87,9 @@
 
 .retry-button {
   padding: 10px 20px;
-  background: rgba(255,255,255,0.2);
+  background: var(--altrex-brands-arcaneRealms-glass-border);
   color: white;
-  border: 1px solid rgba(255,255,255,0.3);
+  border: 1px solid var(--altrex-brands-arcaneRealms-glass-borderHover);
   border-radius: 25px;
   cursor: pointer;
   font-size: 1rem;
@@ -97,7 +97,7 @@
 }
 
 .retry-button:hover {
-  background: rgba(255,255,255,0.3);
+  background: var(--altrex-brands-arcaneRealms-glass-borderHover);
   transform: translateY(-2px);
 }
 
@@ -105,9 +105,9 @@
 .no-sessions {
   text-align: center;
   padding: 3rem;
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--altrex-brands-arcaneRealms-glass-surface);
   border-radius: 15px;
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  border: 1px solid var(--altrex-brands-arcaneRealms-glass-border);
   backdrop-filter: blur(10px);
 }
 
@@ -133,12 +133,12 @@
 
 /* Table Styles */
 .table-container {
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--altrex-brands-arcaneRealms-glass-surface);
   backdrop-filter: blur(10px);
   border-radius: 15px;
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  border: 1px solid var(--altrex-brands-arcaneRealms-glass-border);
   overflow: hidden;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--altrex-brands-arcaneRealms-glass-shadow);
 }
 
 .sessions-table {
@@ -148,7 +148,7 @@
 }
 
 .sessions-table thead {
-  background: rgba(255, 255, 255, 0.2);
+  background: var(--altrex-brands-arcaneRealms-glass-border);
 }
 
 .sessions-table th {
@@ -159,16 +159,16 @@
   text-transform: uppercase;
   letter-spacing: 0.5px;
   color: white;
-  border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+  border-bottom: 2px solid var(--altrex-brands-arcaneRealms-glass-border);
 }
 
 .sessions-table tbody tr {
   transition: all 0.3s ease;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: 1px solid var(--altrex-brands-arcaneRealms-glass-surface);
 }
 
 .sessions-table tbody tr:hover {
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--altrex-brands-arcaneRealms-glass-surface);
   transform: scale(1.01);
 }
 
@@ -187,11 +187,11 @@
 }
 
 .session-row.event-session {
-  border-left: 4px solid #4ade80;
+  border-left: 4px solid var(--altrex-brands-arcaneRealms-primitive-limeActive);
 }
 
 .session-row.free-session {
-  border-left: 4px solid #2F4A72;
+  border-left: 4px solid var(--altrex-brands-arcaneRealms-primitive-navyLight);
 }
 
 /* Type Cell */
@@ -296,7 +296,7 @@
 .participant-name {
   font-size: 0.85rem;
   opacity: 0.8;
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--altrex-brands-arcaneRealms-glass-surface);
   padding: 0.25rem 0.5rem;
   border-radius: 12px;
   display: inline-block;
@@ -336,13 +336,13 @@
 
 .action-button {
   padding: 0.5rem 1rem;
-  border: 1px solid rgba(255, 255, 255, 0.3);
+  border: 1px solid var(--altrex-brands-arcaneRealms-glass-borderHover);
   border-radius: 20px;
   cursor: pointer;
   font-size: 0.85rem;
   font-weight: 600;
   transition: all 0.3s ease;
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--altrex-brands-arcaneRealms-glass-surface);
   color: white;
   white-space: nowrap;
 }

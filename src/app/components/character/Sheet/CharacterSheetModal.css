@@ -13,14 +13,14 @@
 .character-sheet-tabs {
   display: flex;
   gap: 0.5rem;
-  border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+  border-bottom: 2px solid var(--altrex-brands-arcaneRealms-glass-border);
   padding-bottom: 0.5rem;
 }
 
 .tab-button {
   padding: 0.75rem 1.5rem;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: var(--altrex-brands-arcaneRealms-glass-surfaceSubtle);
+  border: 1px solid var(--altrex-brands-arcaneRealms-glass-surface);
   border-radius: 8px 8px 0 0;
   color: rgba(255, 255, 255, 0.7);
   font-weight: 600;
@@ -30,13 +30,13 @@
 }
 
 .tab-button:hover {
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--altrex-brands-arcaneRealms-glass-surface);
   color: white;
-  border-color: rgba(255, 255, 255, 0.3);
+  border-color: var(--altrex-brands-arcaneRealms-glass-borderHover);
 }
 
 .tab-button.active {
-  background: linear-gradient(135deg, #2F4A72, #0E2C40);
+  background: var(--altrex-brands-arcaneRealms-gradient-primaryButton);
   border-color: rgba(47, 74, 114, 0.8);
   color: white;
   box-shadow: 0 4px 15px rgba(47, 74, 114, 0.4);
@@ -66,7 +66,7 @@
   height: auto;
   max-height: 500px;
   object-fit: cover;
-  border: 2px solid rgba(255, 255, 255, 0.3);
+  border: 2px solid var(--altrex-brands-arcaneRealms-glass-borderHover);
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
   border-radius: 12px;
 }
@@ -103,10 +103,10 @@
   flex-direction: column;
   align-items: center;
   gap: 0.5rem;
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--altrex-brands-arcaneRealms-glass-surfaceSubtle);
   padding: 1rem;
   border-radius: 8px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--altrex-brands-arcaneRealms-glass-surface);
 }
 
 .stat-label {
@@ -126,8 +126,8 @@
 
 /* Basic Info Section */
 .basic-info-section {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: var(--altrex-brands-arcaneRealms-glass-surfaceSubtle);
+  border: 1px solid var(--altrex-brands-arcaneRealms-glass-border);
   border-radius: 12px;
   padding: 1.5rem;
 }
@@ -152,7 +152,7 @@
   padding: 0.75rem;
   background: rgba(255, 255, 255, 0.03);
   border-radius: 6px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--altrex-brands-arcaneRealms-glass-surface);
 }
 
 .info-label {
@@ -176,14 +176,14 @@
 
 .status-badge.active {
   background: linear-gradient(135deg, rgba(47, 74, 114, 0.5), rgba(14, 44, 64, 0.5));
-  color: #4ecdc4;
+  color: var(--altrex-brands-arcaneRealms-primitive-teal);
   border: 1px solid rgba(47, 74, 114, 0.8);
 }
 
 .status-badge.inactive {
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--altrex-brands-arcaneRealms-glass-surface);
   color: rgba(255, 255, 255, 0.6);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  border: 1px solid var(--altrex-brands-arcaneRealms-glass-border);
 }
 
 .npc-badge {
@@ -192,14 +192,14 @@
   font-size: 0.85rem;
   font-weight: 600;
   background: rgba(251, 191, 36, 0.3);
-  color: #fbbf24;
+  color: var(--altrex-brands-arcaneRealms-primitive-amberBadge);
   border: 1px solid rgba(251, 191, 36, 0.5);
 }
 
 .race-description {
   margin-top: 1.5rem;
   padding-top: 1.5rem;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  border-top: 1px solid var(--altrex-brands-arcaneRealms-glass-surface);
 }
 
 .race-description h4 {
@@ -226,7 +226,7 @@
   align-items: center;
   margin-bottom: 1.5rem;
   padding-bottom: 1rem;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  border-bottom: 1px solid var(--altrex-brands-arcaneRealms-glass-border);
 }
 
 .skills-header h3 {
@@ -245,7 +245,7 @@
 }
 
 .skill-points-display strong {
-  color: #D4B67A;
+  color: var(--altrex-brands-arcaneRealms-primitive-gold);
   font-size: 1.2rem;
   margin-left: 0.5rem;
 }
@@ -257,8 +257,8 @@
 }
 
 .skill-card {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: var(--altrex-brands-arcaneRealms-glass-surfaceSubtle);
+  border: 1px solid var(--altrex-brands-arcaneRealms-glass-border);
   border-radius: 12px;
   padding: 1.25rem;
   transition: all 0.3s ease;
@@ -329,7 +329,7 @@
   display: flex;
   gap: 1rem;
   padding-top: 0.75rem;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  border-top: 1px solid var(--altrex-brands-arcaneRealms-glass-surface);
   font-size: 0.85rem;
   color: rgba(255, 255, 255, 0.6);
 }

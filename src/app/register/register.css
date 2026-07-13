@@ -14,7 +14,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: linear-gradient(135deg, #D4B67A 0%, #998B5F 50%, #1F3D52 100%);
+  background: linear-gradient(135deg, var(--altrex-brands-arcaneRealms-primitive-gold) 0%, var(--altrex-brands-arcaneRealms-primitive-goldMuted) 50%, #1F3D52 100%);
   z-index: -1;
 }
 
@@ -74,14 +74,14 @@
 }
 
 .register-card {
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--altrex-brands-arcaneRealms-glass-surface);
   backdrop-filter: blur(10px);
   border-radius: 20px;
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  border: 1px solid var(--altrex-brands-arcaneRealms-glass-border);
   padding: 3rem;
   width: 100%;
   max-width: 480px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--altrex-brands-arcaneRealms-glass-shadow);
   transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
@@ -129,9 +129,9 @@
 
 .form-group input {
   padding: 1rem;
-  border: 1px solid rgba(255, 255, 255, 0.3);
+  border: 1px solid var(--altrex-brands-arcaneRealms-glass-borderHover);
   border-radius: 12px;
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--altrex-brands-arcaneRealms-glass-surface);
   backdrop-filter: blur(5px);
   color: white;
   font-size: 1rem;
@@ -146,7 +146,7 @@
   outline: none;
   border-color: rgba(255, 255, 255, 0.6);
   background: rgba(255, 255, 255, 0.15);
-  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.1);
+  box-shadow: 0 0 0 3px var(--altrex-brands-arcaneRealms-glass-surface);
   transform: translateY(-2px);
 }
 
@@ -159,7 +159,7 @@
   padding: 1rem 2rem;
   border: none;
   border-radius: 12px;
-  background: linear-gradient(135deg, #D4B67A 0%, #998B5F 100%);
+  background: var(--altrex-brands-arcaneRealms-gradient-secondaryButtonHover);
   color: white;
   font-size: 1.1rem;
   font-weight: 600;
@@ -189,7 +189,7 @@
   display: inline-block;
   width: 16px;
   height: 16px;
-  border: 2px solid rgba(255, 255, 255, 0.3);
+  border: 2px solid var(--altrex-brands-arcaneRealms-glass-borderHover);
   border-radius: 50%;
   border-top: 2px solid white;
   animation: spin 0.8s linear infinite;
@@ -226,7 +226,7 @@
   text-align: center;
   margin-top: 2rem;
   padding-top: 1.5rem;
-  border-top: 1px solid rgba(255, 255, 255, 0.2);
+  border-top: 1px solid var(--altrex-brands-arcaneRealms-glass-border);
 }
 
 .register-footer p {
