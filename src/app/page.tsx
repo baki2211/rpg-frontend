@@ -3,6 +3,7 @@
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from './contexts/AuthContext';
+import HeaderSection from '@/app/components/common/HeaderSection';
 import { ROUTES } from '@/config/routes';
 
 export default function HomePage() {
@@ -21,12 +22,10 @@ export default function HomePage() {
 
   return (
     <div className="page-container">
-      <div className="page-header">
-        <h1>Welcome to Arcane Realms</h1>
-        <p>
-          Embark on an epic adventure in a mystical world filled with magic, mystery, and endless possibilities.
-        </p>
-      </div>
+      <HeaderSection
+        title="Welcome to Arcane Realms"
+        subtitle="Embark on an epic adventure in a mystical world filled with magic, mystery, and endless possibilities."
+      />
       
       <div className="card home-journey-card">
         <h3 className="home-journey-title">Begin Your Journey</h3>

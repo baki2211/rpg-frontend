@@ -12,6 +12,8 @@ import {
 import { useActiveCharacter } from '@/app/contexts/ActiveCharacterContext';
 import { getErrorMessage } from '@/utils/errorHandling';
 import CharacterCard from '@/app/components/character/Card/CharacterCard';
+import HeaderSection from '@/app/components/common/HeaderSection';
+import Icon from '@/app/components/common/Icon';
 import Modal from '@/app/components/common/Modal';
 import './CharactersDashboard.css';
 
@@ -51,13 +53,12 @@ const CharactersDashboard = () => {
 
   return (
     <div className="page-container">
-      <div className="page-header">
-        <h2>Your Characters</h2>
-        <p>Create and manage your adventurers for the RPG world</p>
-
+      <HeaderSection titleAs="h2" title="Your Characters" subtitle="Create and manage your adventurers for the RPG world">
         {!activeCharacter && allCharacters.length > 0 && (
           <div className="card no-active-character-warning">
-            <div className="warning-icon">⚠️</div>
+            <div className="warning-icon">
+              <Icon name="generic-reload" size={14} />
+            </div>
             <h4 className="warning-title">No Active Character</h4>
             <p className="warning-message">
               Click on a character card below to activate one and start your adventure!
@@ -80,7 +81,7 @@ const CharactersDashboard = () => {
             Create New Character
           </button>
         )}
-      </div>
+      </HeaderSection>
 
       {allCharacters.length > 0 ? (
         <div className="character-grid">

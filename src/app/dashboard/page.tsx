@@ -3,6 +3,7 @@
 import React, { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import CharacterCard from '@/app/components/character/Card/CharacterCard';
+import HeaderSection from '@/app/components/common/HeaderSection';
 import OnlineUsers from '@/app/components/common/OnlineUsers';
 import SessionList from '@/app/sessions/page';
 import { useCharacters, useActivateCharacter, useDeleteCharacter } from '@/app/hooks/queries/useCharacters';
@@ -40,10 +41,10 @@ const Dashboard = () => {
   return (
     <div className="dashboard-page">
       <div className="page-container">
-        <div className="page-header">
-          <h1>Welcome back, {user.username}!</h1>
-          <p>Manage your characters, explore the world, and connect with other adventurers</p>
-        </div>
+        <HeaderSection
+          title={`Welcome back, ${user.username}!`}
+          subtitle="Manage your characters, explore the world, and connect with other adventurers"
+        />
 
       <div className="dashboard-grid">
         {/* User Info & Active Characters */}
