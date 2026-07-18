@@ -35,6 +35,7 @@
 }
 
 .status-icon {
+  display: inline-flex;
   font-size: 16px;
   animation: pulse 2s infinite;
 }
@@ -49,6 +50,9 @@
 }
 
 .retry-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
   background: rgba(255, 255, 255, 0.2);
   border: 1px solid rgba(255, 255, 255, 0.3);
   color: inherit;

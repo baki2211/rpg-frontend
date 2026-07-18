@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { usePresence } from '@/app/contexts/PresenceContext';
+import Icon from '@/app/components/common/Icon';
 import './ServerStatusNotification.css';
 
 const ServerStatusNotification: React.FC = () => {
@@ -31,19 +32,21 @@ const ServerStatusNotification: React.FC = () => {
   const getStatusIcon = () => {
     switch (connectionStatus) {
       case 'connecting':
-        return '🔄';
+        return 'generic-sync';
       case 'error':
-        return '❌';
+        return 'generic-x-circle';
       case 'disconnected':
-        return '⚠️';
+        return 'generic-warning';
       default:
-        return 'ℹ️';
+        return 'generic-info';
     }
   };
 
   return (
     <div className={`server-status-notification ${getStatusClass()}`}>
-      <span className="status-icon">{getStatusIcon()}</span>
+      <span className="status-icon">
+        <Icon name={getStatusIcon()} size={16} />
+      </span>
       <span className="status-message">{serverMessage}</span>
       {connectionStatus === 'error' && (
         <button
@@ -51,7 +54,7 @@ const ServerStatusNotification: React.FC = () => {
           className="retry-button"
           title="Refresh page to retry connection"
         >
-          🔄 Retry
+          <Icon name="generic-reload" size={14} /> Retry
         </button>
       )}
     </div>
